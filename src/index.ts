@@ -47,8 +47,8 @@ const main = () => {
                  teapot.modelMatrix,
                  [0.0, -1.5, -8.0])
 
-  teapot.children = [bunny]   
-  bunny.children = [dragon]     
+  teapot.children.push(bunny)   
+  bunny.children.push(dragon)   
 
   let then = 0;
 

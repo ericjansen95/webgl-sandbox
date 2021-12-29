@@ -41,7 +41,7 @@ export default class Renderer {
     return true
   }
 
-  renderEntity = (entity: Entity, modelMatrix: mat4, camera: Camera) => {
+  renderEntity = (entity: Entity, worldMatrix: mat4, camera: Camera) => {
     if(!this.bind(entity)) return
 
     {
@@ -95,7 +95,7 @@ export default class Renderer {
     this.gl.uniformMatrix4fv(
       entity.material.uniformLocations.get('uModelViewMatrix'),
       false,
-      mat4.mul(mat4.create(), modelMatrix, camera.viewMatrix)
+      mat4.mul(mat4.create(), worldMatrix, camera.viewMatrix)
     )
 
     this.gl.uniform3fv(entity.material.uniformLocations.get('uLightDir'), vec3.normalize(vec3.create(), [-1.0, 1.0, 1.0]))
@@ -116,23 +116,21 @@ export default class Renderer {
   
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
-    const parentMatrix: mat4 = mat4.create()
-
-    this.renderChildren(root, parentMatrix, camera)
+    this.renderChildren(root, mat4.create(), camera)
   }
 
-  renderChildren = (parent: Entity, parentMatrix: mat4, camera: Camera) => {
+  renderChildren = (parent: Entity, parentWorldMatrix: mat4, camera: Camera) => {
 
-    const modelMatrix: mat4 = mat4.create()
+    const worldMatrix: mat4 = mat4.create()
 
-    mat4.multiply(modelMatrix,
+    mat4.multiply(worldMatrix,
                   parent.modelMatrix,
-                  parentMatrix)           
+                  parentWorldMatrix)           
 
-    this.renderEntity(parent, modelMatrix, camera)              
+    this.renderEntity(parent, worldMatrix, camera)              
 
     parent.children.forEach(child => {
-      this.renderChildren(child, modelMatrix, camera)
+      this.renderChildren(child, worldMatrix, camera)
     })
   }
 
