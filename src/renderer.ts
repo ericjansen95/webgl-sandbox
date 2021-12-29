@@ -41,7 +41,74 @@ export default class Renderer {
     return true
   }
 
-  renderScene = (root: Entity, camera: Camera, deltaTime: number) => {
+  renderEntity = (entity: Entity, modelMatrix: mat4, camera: Camera) => {
+    if(!this.bind(entity)) return
+
+    {
+      const numComponents: number = 3
+      const type: number = this.gl.FLOAT
+      const normalize: boolean = false
+      const stride: number = 0
+      const offset: number = 0
+  
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, entity.geometry.buffer.position)
+      this.gl.vertexAttribPointer(
+        entity.material.attributeLocations.get('aVertexPosition'),
+        numComponents,
+        type,
+        normalize,
+        stride,
+        offset)
+      this.gl.enableVertexAttribArray(
+        entity.material.attributeLocations.get('aVertexPosition')
+      )
+    }   
+    
+    {
+      const numComponents: number = 3
+      const type: number = this.gl.FLOAT
+      const normalize: boolean = false
+      const stride: number = 0
+      const offset: number = 0
+  
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, entity.geometry.buffer.normal)
+      this.gl.vertexAttribPointer(
+        entity.material.attributeLocations.get('aVertexNormal'),
+        numComponents,
+        type,
+        normalize,
+        stride,
+        offset)
+      this.gl.enableVertexAttribArray(
+        entity.material.attributeLocations.get('aVertexNormal')
+      )
+    } 
+
+    this.gl.useProgram(entity.material.program)       
+
+    this.gl.uniformMatrix4fv(
+      entity.material.uniformLocations.get('uProjectionMatrix'),
+      false,
+      camera.projectionMatrix
+    )
+
+    this.gl.uniformMatrix4fv(
+      entity.material.uniformLocations.get('uModelViewMatrix'),
+      false,
+      mat4.mul(mat4.create(), modelMatrix, camera.viewMatrix)
+    )
+
+    this.gl.uniform3fv(entity.material.uniformLocations.get('uLightDir'), vec3.normalize(vec3.create(), [-1.0, 1.0, 1.0]))
+    this.gl.uniform3fv(entity.material.uniformLocations.get('uViewDir'), vec3.normalize(vec3.create(), mat4.getTranslation(vec3.create(), camera.viewMatrix)))
+    this.gl.uniform1f(entity.material.uniformLocations.get('uAmbientLight'), 0.1)
+
+    {
+      const offset: number = 0
+      this.gl.drawArrays(this.gl.TRIANGLES, offset, entity.geometry.vertex.count / 3.0)
+    }
+  }
+
+  renderScene = (root: Entity, camera: Camera) => {
     this.gl.clearColor(this.clearColor[0], this.clearColor[1], this.clearColor[2], 1.0)
     this.gl.clearDepth(1.0)
     this.gl.enable(this.gl.DEPTH_TEST)
@@ -49,75 +116,24 @@ export default class Renderer {
   
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
-      if(!this.bind(root)) return
+    const parentMatrix: mat4 = mat4.create()
 
-      {
-        const numComponents: number = 3
-        const type: number = this.gl.FLOAT
-        const normalize: boolean = false
-        const stride: number = 0
-        const offset: number = 0
-    
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, root.geometry.buffer.position)
-        this.gl.vertexAttribPointer(
-          root.material.attributeLocations.get('aVertexPosition'),
-          numComponents,
-          type,
-          normalize,
-          stride,
-          offset)
-        this.gl.enableVertexAttribArray(
-          root.material.attributeLocations.get('aVertexPosition')
-        )
-      }   
-      
-      {
-        const numComponents: number = 3
-        const type: number = this.gl.FLOAT
-        const normalize: boolean = false
-        const stride: number = 0
-        const offset: number = 0
-    
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, root.geometry.buffer.normal)
-        this.gl.vertexAttribPointer(
-          root.material.attributeLocations.get('aVertexNormal'),
-          numComponents,
-          type,
-          normalize,
-          stride,
-          offset)
-        this.gl.enableVertexAttribArray(
-          root.material.attributeLocations.get('aVertexNormal')
-        )
-      } 
+    this.renderChildren(root, parentMatrix, camera)
+  }
 
-      this.gl.useProgram(root.material.program)
+  renderChildren = (parent: Entity, parentMatrix: mat4, camera: Camera) => {
 
-      mat4.rotate(root.modelMatrix,
-                  root.modelMatrix,
-                  Math.PI * 0.1 * deltaTime,
-                  [0.0, 1.0, 0.0])          
+    const modelMatrix: mat4 = mat4.create()
 
-      this.gl.uniformMatrix4fv(
-        root.material.uniformLocations.get('uProjectionMatrix'),
-        false,
-        camera.projectionMatrix
-      )
+    mat4.multiply(modelMatrix,
+                  parent.modelMatrix,
+                  parentMatrix)           
 
-      this.gl.uniformMatrix4fv(
-        root.material.uniformLocations.get('uModelViewMatrix'),
-        false,
-        mat4.mul(mat4.create(), root.modelMatrix, camera.viewMatrix)
-      )
+    this.renderEntity(parent, modelMatrix, camera)              
 
-      this.gl.uniform3fv(root.material.uniformLocations.get('uLightDir'), vec3.normalize(vec3.create(), [-1.0, 1.0, 1.0]))
-      this.gl.uniform3fv(root.material.uniformLocations.get('uViewDir'), vec3.normalize(vec3.create(), mat4.getTranslation(vec3.create(), camera.viewMatrix)))
-      this.gl.uniform1f(root.material.uniformLocations.get('uAmbientLight'), 0.1)
-
-      {
-        const offset: number = 0
-        this.gl.drawArrays(this.gl.TRIANGLES, offset, root.geometry.vertex.count / 3.0)
-      }    
+    parent.children.forEach(child => {
+      this.renderChildren(child, modelMatrix, camera)
+    })
   }
 
   createMaterial = (vsSource: string, fsSource: string): Material | null => {

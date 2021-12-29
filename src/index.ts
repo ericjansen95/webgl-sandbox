@@ -17,7 +17,7 @@ const main = () => {
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
 
-  const fpsCounter: HTMLBodyElement = document.getElementById('fpsCounter') as HTMLBodyElement
+  const fpsCounter: HTMLParagraphElement = document.getElementById('fpsCounter') as HTMLParagraphElement
   
   const renderer = new Renderer(canvas)
 
@@ -29,7 +29,7 @@ const main = () => {
 
   mat4.translate(dragon.modelMatrix,
                  dragon.modelMatrix,
-                 [0.0, 0.0, -4.0])
+                 [0.0, 1.5, 0.0])
 
   const bunny: Entity = new Entity()
   bunny.geometry.load(bunnyObj)
@@ -37,7 +37,7 @@ const main = () => {
 
   mat4.translate(bunny.modelMatrix,
                  bunny.modelMatrix,
-                 [0.0, 1.0, 0.0])
+                 [0.0, 1.5, 0.0])
 
   const teapot: Entity = new Entity()
   teapot.geometry.load(teapotObj)
@@ -45,9 +45,10 @@ const main = () => {
 
   mat4.translate(teapot.modelMatrix,
                  teapot.modelMatrix,
-                 [0.0, -1.0, 0.0])
+                 [0.0, -1.5, -8.0])
 
-  dragon.children = [bunny, teapot]               
+  teapot.children = [bunny]   
+  bunny.children = [dragon]     
 
   let then = 0;
 
@@ -56,7 +57,7 @@ const main = () => {
     const deltaTime = now - then;
     then = now;
 
-    renderer.renderScene(dragon, camera, deltaTime)
+    renderer.renderScene(teapot, camera)
 
     fpsCounter.textContent = `${Math.ceil(1 / deltaTime)} FPS`
 
