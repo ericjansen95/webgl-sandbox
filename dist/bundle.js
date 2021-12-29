@@ -1,0 +1,1 @@
+(()=>{"use strict";window.onload=function(){document.getElementById("glCanvas").getContext("webgl")||console.error("Failed to initialize WebGL!")}})();

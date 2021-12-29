@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "outDir": "./public",
+    "module": "es6",
+    "target": "es6",
+    "allowJs": true,
+    "moduleResolution": "node"
+  }
+}
