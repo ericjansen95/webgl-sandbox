@@ -2,6 +2,7 @@ import { mat4, quat } from 'gl-matrix';
 import Camera from './camera';
 import Entity from './entity';
 import Geometry from './geometry';
+import Plane from './plane';
 import Renderer from './renderer';
 import Time from './time';
 
@@ -34,7 +35,7 @@ const main = () => {
   const dragonGeometry: Geometry = new Geometry()
   dragonGeometry.load(dragonObj)
 
-  dragon.addComponent(dragonGeometry)
+  //dragon.addComponent(dragonGeometry)
 
   dragon.material = renderer.createMaterial(vsDefaultSource, fsPhongSource)
 
@@ -49,10 +50,7 @@ const main = () => {
   const bunnyGeometry: Geometry = new Geometry()
   bunnyGeometry.load(bunnyObj)
 
-  bunny.addComponent(bunnyGeometry)
-
-  bunny.addComponent(new Geometry())
-  bunny.getComponent(Geometry).load(bunnyObj)
+  //bunny.addComponent(bunnyGeometry)
 
   bunny.material = renderer.createMaterial(vsDefaultSource, fsPhongSource)
 
@@ -62,6 +60,20 @@ const main = () => {
 
   bunny.children.push(dragon)   
 
+  const plane: Entity = new Entity()
+
+  const planeGeometry: Geometry = new Plane(32) as Geometry
+  
+  plane.addComponent(planeGeometry)
+
+  plane.material = renderer.createMaterial(vsDefaultSource, fsPhongSource)
+
+  mat4.translate(plane.modelMatrix,
+                 plane.modelMatrix,
+                 [0.0, 0.0, -4.0])
+
+  console.log(plane)
+
   // TEAPOT               
 
   const teapot: Entity = new Entity()
@@ -69,21 +81,23 @@ const main = () => {
   const teapotGeometry: Geometry = new Geometry()
   teapotGeometry.load(teapotObj)
 
-  teapot.addComponent(teapotGeometry)
+  //teapot.addComponent(teapotGeometry)
 
   teapot.material = renderer.createMaterial(vsDefaultSource, fsPhongSource)
 
   mat4.translate(teapot.modelMatrix,
                  teapot.modelMatrix,
-                 [0.0, -1.0, -14.0])
+                 [0.0, 0.0, -4.0])
 
-  teapot.children.push(bunny)   
+  teapot.children.push(bunny) 
+  teapot.children.push(plane)  
 
   const update = curTime => {
     Time.tick(curTime)
 
     // WHY IS CURRENT TIME NOT WORKING?!
 
+    /*
     mat4.rotate(teapot.modelMatrix,
       teapot.modelMatrix,
       Math.PI * 0.016,
@@ -93,8 +107,9 @@ const main = () => {
         bunny.modelMatrix,
         Math.PI * 0.016,
         [0.0, 1.0, 0.0])
+    */
 
-    renderer.renderScene(teapot, camera)
+    renderer.renderScene(plane, camera)
 
     // ToDo(Eric) Wrap this in Debug static class
     fpsCounter.textContent = `${Math.ceil(1 / Time.deltaTime)} FPS`
