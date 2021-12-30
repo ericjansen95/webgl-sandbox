@@ -2,6 +2,8 @@ import { vec3, mat4 } from "gl-matrix"
 import Camera from "./camera"
 import { Material } from "./material"
 import Entity from "./entity"
+import Time from "./time"
+import Geometry from "./geometry"
 
 const DEFAULT_CLEAR_COLOR_LUMINANCE = 0.25
 
@@ -22,27 +24,29 @@ export default class Renderer {
     }
   }
 
-  bind = (entity: Entity): boolean => {
-    if(!entity.geometry) return false
-    if(entity.geometry.buffer) return true
+  bind = (geometry: Geometry): boolean => {
+    if(!geometry) return false
+    if(geometry.buffer) return true
 
-    entity.geometry.buffer = {
+    geometry.buffer = {
       position: this.gl.createBuffer(),
       normal: this.gl.createBuffer()
     }
 
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, entity.geometry.buffer.position)
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(entity.geometry.vertex.positions), this.gl.STATIC_DRAW)
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, geometry.buffer.position)
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(geometry.vertex.positions), this.gl.STATIC_DRAW)
     
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, entity.geometry.buffer.normal)
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, geometry.buffer.normal)
     // vertex normals => normalized vertex positions
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(entity.geometry.vertex.normals), this.gl.STATIC_DRAW)
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(geometry.vertex.normals), this.gl.STATIC_DRAW)
   
     return true
   }
 
   renderEntity = (entity: Entity, worldMatrix: mat4, camera: Camera) => {
-    if(!this.bind(entity)) return
+    const geometry: Geometry | null = entity.getComponent(Geometry)
+
+    if(!this.bind(geometry)) return
 
     {
       const numComponents: number = 3
@@ -51,7 +55,7 @@ export default class Renderer {
       const stride: number = 0
       const offset: number = 0
   
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, entity.geometry.buffer.position)
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, geometry.buffer.position)
       this.gl.vertexAttribPointer(
         entity.material.attributeLocations.get('aVertexPosition'),
         numComponents,
@@ -71,7 +75,7 @@ export default class Renderer {
       const stride: number = 0
       const offset: number = 0
   
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, entity.geometry.buffer.normal)
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, geometry.buffer.normal)
       this.gl.vertexAttribPointer(
         entity.material.attributeLocations.get('aVertexNormal'),
         numComponents,
@@ -104,7 +108,7 @@ export default class Renderer {
 
     {
       const offset: number = 0
-      this.gl.drawArrays(this.gl.TRIANGLES, offset, entity.geometry.vertex.count / 3.0)
+      this.gl.drawArrays(this.gl.TRIANGLES, offset, geometry.vertex.count / 3.0)
     }
   }
 
@@ -124,8 +128,8 @@ export default class Renderer {
     const worldMatrix: mat4 = mat4.create()
 
     mat4.multiply(worldMatrix,
-                  parent.modelMatrix,
-                  parentWorldMatrix)           
+                  parentWorldMatrix,
+                  parent.modelMatrix)    
 
     this.renderEntity(parent, worldMatrix, camera)              
 

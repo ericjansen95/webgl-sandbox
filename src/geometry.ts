@@ -1,6 +1,7 @@
 import { vec3 } from "gl-matrix"
+import { Component } from "./component"
 
-export default class Geometry {
+export default class Geometry implements Component {
   vertex: {
     count: number
     positions: Array<number>
@@ -13,8 +14,11 @@ export default class Geometry {
   } | null
 
   constructor() {
+    this.vertex = null
     this.buffer = null
   }
+
+  update = () => {}
 
   load = (obj: string) => {
     this.vertex = {
