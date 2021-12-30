@@ -28,86 +28,22 @@ const main = () => {
 
   const camera: Camera = new Camera(45, canvas.width / canvas.height)
 
-  // DRAGON
-
-  const dragon: Entity = new Entity()
-
-  const dragonGeometry: Geometry = new Geometry()
-  dragonGeometry.load(dragonObj)
-
-  //dragon.addComponent(dragonGeometry)
-
-  dragon.material = renderer.createMaterial(vsDefaultSource, fsPhongSource)
-
-  mat4.translate(dragon.modelMatrix,
-                 dragon.modelMatrix,
-                 [-2.0, 0, 0.0])
-
-  // BUNNY
-
-  const bunny: Entity = new Entity()
-
-  const bunnyGeometry: Geometry = new Geometry()
-  bunnyGeometry.load(bunnyObj)
-
-  //bunny.addComponent(bunnyGeometry)
-
-  bunny.material = renderer.createMaterial(vsDefaultSource, fsPhongSource)
-
-  mat4.translate(bunny.modelMatrix,
-                 bunny.modelMatrix,
-                 [-4.0, 0, 0.0])
-
-  bunny.children.push(dragon)   
-
   const plane: Entity = new Entity()
 
+  // subdivide plane in 32 x 32 rects based of 2 triangles
   const planeGeometry: Geometry = new Plane(32) as Geometry
-  
   plane.addComponent(planeGeometry)
 
   plane.material = renderer.createMaterial(vsDefaultSource, fsPhongSource)
 
   mat4.translate(plane.modelMatrix,
                  plane.modelMatrix,
-                 [0.0, 0.0, -4.0])
-
-  console.log(plane)
-
-  // TEAPOT               
-
-  const teapot: Entity = new Entity()
-
-  const teapotGeometry: Geometry = new Geometry()
-  teapotGeometry.load(teapotObj)
-
-  //teapot.addComponent(teapotGeometry)
-
-  teapot.material = renderer.createMaterial(vsDefaultSource, fsPhongSource)
-
-  mat4.translate(teapot.modelMatrix,
-                 teapot.modelMatrix,
-                 [0.0, 0.0, -4.0])
-
-  teapot.children.push(bunny) 
-  teapot.children.push(plane)  
+                 [0.0, -0.25, -3.0])
 
   const update = curTime => {
     Time.tick(curTime)
 
     // WHY IS CURRENT TIME NOT WORKING?!
-
-    /*
-    mat4.rotate(teapot.modelMatrix,
-      teapot.modelMatrix,
-      Math.PI * 0.016,
-      [0.0, 1.0, 0.0])
-
-    mat4.rotate(bunny.modelMatrix,
-        bunny.modelMatrix,
-        Math.PI * 0.016,
-        [0.0, 1.0, 0.0])
-    */
 
     renderer.renderScene(plane, camera)
 
