@@ -1,4 +1,4 @@
-import { mat4, quat } from 'gl-matrix';
+import { mat4, quat, vec3 } from 'gl-matrix';
 import Camera from './camera';
 import Entity from './entity';
 import Geometry from './geometry';
@@ -40,10 +40,60 @@ const main = () => {
                  plane.modelMatrix,
                  [0.0, -0.25, -3.0])
 
+  // ToDo(Eric) Move this into global input system which allows keybinds               
+  const inputDir: vec3 = vec3.create();  
+
+  document.onkeyup = (event) => {
+    switch(event.key) {
+      case 'a':
+        inputDir[0] = 0.0
+        break
+      case 'w':
+        inputDir[2] = 0.0
+        break
+      case 'd':
+        inputDir[0] = 0.0
+        break
+      case 's':
+        inputDir[2] = 0.0
+        break      
+      default:
+        console.log("key up =", event.key)
+        break
+    }
+  }
+
+  document.onkeydown = (event) => {
+    switch(event.key) {
+      case 'a':
+        inputDir[0] = 1.0
+        break
+      case 'w':
+        inputDir[2] = 1.0
+        break
+      case 'd':
+        inputDir[0] = -1.0
+        break
+      case 's':
+        inputDir[2] = -1.0
+        break 
+      default:
+        console.log("key down =", event.key)
+        break
+    }
+  }
+
   const update = curTime => {
     Time.tick(curTime)
 
     // WHY IS CURRENT TIME NOT WORKING?!
+
+    // move camera
+    mat4.translate(camera.viewMatrix,
+                   camera.viewMatrix,
+                   vec3.scale(vec3.create(), 
+                              inputDir, 
+                              0.01))
 
     renderer.renderScene(plane, camera)
 
