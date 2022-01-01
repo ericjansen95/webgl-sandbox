@@ -1,4 +1,4 @@
-import Geometry from "./geometry";
+import Geometry, { calcNormals } from "./geometry";
 
 export default class Plane extends Geometry {
   constructor(subdivisions: number = 1) {
@@ -24,7 +24,6 @@ export default class Plane extends Geometry {
       }
     }
 
-    for(let triangleIndex = 0; triangleIndex < this.vertex.count / 3.0; triangleIndex++)
-      this.vertex.normals.push(...[0.0, 1.0, 0.0])
+    this.vertex.normals = calcNormals(this.vertex.positions, true)
   }
 }

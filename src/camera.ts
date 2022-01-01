@@ -15,6 +15,6 @@ export default class Camera {
     this.viewMatrix = mat4.create()
     mat4.translate(this.viewMatrix,
                   this.viewMatrix, 
-                  [0.0, -0.5, 0.0])
+                  [0.0, -0.1, 0.0])
   }
 }

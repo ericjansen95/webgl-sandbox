@@ -1,4 +1,4 @@
-import { vec3 } from "gl-matrix"
+import { vec3, vec4 } from "gl-matrix"
 import { Component } from "./component"
 
 export default class Geometry implements Component {
@@ -51,16 +51,43 @@ export default class Geometry implements Component {
     })
 
     this.vertex.count = this.vertex.positions.length
+    this.vertex.normals = calcNormals(this.vertex.positions)
+  }
+}
 
-    for(let positionIndex = 0; positionIndex < this.vertex.count; positionIndex += 3) {
-      const normal: vec3 = vec3.create()
-      normal[0] = this.vertex.positions[positionIndex]
-      normal[1] = this.vertex.positions[positionIndex + 1]
-      normal[2] = this.vertex.positions[positionIndex + 2]
+export const calcNormals = (positions: Array<number>, flat: boolean = false): Array<number> | null => {
+
+  const normals: Array<number> = new Array<number>()
+
+  if(flat) {
+    for(let positionIndex = 0; positionIndex < positions.length; positionIndex += 9) {
+      const p1: vec3 = [positions[positionIndex], positions[positionIndex + 1], positions[positionIndex + 2]]
+      const p2: vec3 = [positions[positionIndex + 3], positions[positionIndex + 4], positions[positionIndex + 5]]    
+      const p3: vec3 = [positions[positionIndex + 6], positions[positionIndex + 7], positions[positionIndex + 8]]
+      
+      const vecA: vec3 = vec3.create()
+      vec3.sub(vecA, p2, p1)
   
+      const vecB: vec3 = vec3.create()
+      vec3.sub(vecB, p3, p1)
+  
+      let normal: vec3 = vec3.create()
+  
+      vec3.cross(normal, vecA, vecB)
       vec3.normalize(normal, normal)
   
-      this.vertex.normals.push(...normal)
+      normals.push(...normal, ...normal, ...normal)
     }
+
+    return normals
   }
+
+  for(let positionIndex = 0; positionIndex < positions.length; positionIndex += 3) {
+    const normal: vec3 = [positions[positionIndex], positions[positionIndex + 1], positions[positionIndex + 2]]
+    vec3.normalize(normal, normal)
+
+    normals.push(...normal)
+  }
+
+  return normals
 }

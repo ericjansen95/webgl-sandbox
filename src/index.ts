@@ -8,8 +8,10 @@ import Time from './time';
 
 // Shader imports
 const vsDefaultSource: string = require('/public/res/shader/default.vs') as string
+const vsDisplaceSource: string = require('/public/res/shader/displace.vs') as string
 const fsLambertSource: string = require('/public/res/shader/lambert.fs') as string
 const fsPhongSource: string = require('/public/res/shader/phong.fs') as string
+const fsHeightSource: string = require('/public/res/shader/height.fs') as string
 
 // Geometry imports => obj vertex and index buffers
 const dragonObj: string = require('/public/res/geo/dragon.txt') as string
@@ -31,14 +33,26 @@ const main = () => {
   const plane: Entity = new Entity()
 
   // subdivide plane in 32 x 32 rects based of 2 triangles
-  const planeGeometry: Geometry = new Plane(32) as Geometry
+  const planeGeometry: Geometry = new Plane(1024) as Geometry
   plane.addComponent(planeGeometry)
 
-  plane.material = renderer.createMaterial(vsDefaultSource, fsPhongSource)
+  plane.material = renderer.createMaterial(vsDisplaceSource, fsHeightSource)
 
   mat4.translate(plane.modelMatrix,
                  plane.modelMatrix,
-                 [0.0, -0.25, -3.0])
+                 [0.0, 0.0, -2.0])
+
+  const dragon: Entity = new Entity()
+  
+  const dragonGeometry: Geometry = new Geometry()
+  dragonGeometry.load(dragonObj)  
+  dragon.addComponent(dragonGeometry)
+
+  dragon.material = renderer.createMaterial(vsDefaultSource, fsPhongSource)
+
+  mat4.translate(dragon.modelMatrix,
+                 dragon.modelMatrix,
+                 [0.0, 0.0, -6.0])
 
   // ToDo(Eric) Move this into global input system which allows keybinds               
   const inputDir: vec3 = vec3.create();  
@@ -58,7 +72,6 @@ const main = () => {
         inputDir[2] = 0.0
         break      
       default:
-        console.log("key up =", event.key)
         break
     }
   }
@@ -78,7 +91,6 @@ const main = () => {
         inputDir[2] = -1.0
         break 
       default:
-        console.log("key down =", event.key)
         break
     }
   }

@@ -10,6 +10,7 @@ const DEFAULT_CLEAR_COLOR_LUMINANCE = 0.25
 export default class Renderer {
   gl: WebGL2RenderingContext
   clearColor: vec3
+  heightmap: WebGLTexture
 
   constructor(canvas: HTMLCanvasElement) {
     // ToDo(Eric) Use webgl2 here instead of webgl 1.0
@@ -22,6 +23,24 @@ export default class Renderer {
       console.error('Failed to initialize WebGL!') 
       return
     }
+
+    // Create a texture.
+    this.heightmap = this.gl.createTexture();
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.heightmap);
+     
+    // Fill the texture with a 1x1 blue pixel.
+    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE,
+                       new Uint8Array([0, 0, 255, 255]));
+     
+    // Asynchronously load an image
+    var image = new Image();
+    image.src = "/res/tex/antarticaHeightmap.png";
+    image.addEventListener('load', () => {
+      // Now that the image has loaded make copy it to the texture.
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.heightmap);
+      this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, image);
+      this.gl.generateMipmap(this.gl.TEXTURE_2D);
+    });
   }
 
   bind = (geometry: Geometry): boolean => {
@@ -106,6 +125,8 @@ export default class Renderer {
     this.gl.uniform3fv(entity.material.uniformLocations.get('uViewDir'), vec3.normalize(vec3.create(), mat4.getTranslation(vec3.create(), camera.viewMatrix)))
     this.gl.uniform1f(entity.material.uniformLocations.get('uAmbientLight'), 0.1)
 
+    this.gl.uniform1i(entity.material.uniformLocations.get('uTexture'), 0)
+
     {
       const offset: number = 0
       this.gl.drawArrays(this.gl.TRIANGLES, offset, geometry.vertex.count / 3.0)
@@ -164,7 +185,8 @@ export default class Renderer {
     uniformLocations.set('uLightDir', this.gl.getUniformLocation(program, 'uLightDir'))
     uniformLocations.set('uViewDir', this.gl.getUniformLocation(program, 'uViewDir'))
     uniformLocations.set('uAmbientLight', this.gl.getUniformLocation(program, 'uAmbientLight'))
-    
+    uniformLocations.set('uTexture', this.gl.getUniformLocation(program, 'uTexture'))
+        
     return {
       program,
       attributeLocations,
