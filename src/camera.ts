@@ -16,5 +16,9 @@ export default class Camera {
     mat4.translate(this.viewMatrix,
                   this.viewMatrix, 
                   [0.0, -0.025, 0.0])
+
+    mat4.rotateX(this.viewMatrix,
+                 this.viewMatrix,
+                 Math.PI * 0.05)              
   }
 }
