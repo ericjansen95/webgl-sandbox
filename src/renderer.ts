@@ -23,27 +23,9 @@ export default class Renderer {
       console.error('Failed to initialize WebGL!') 
       return
     }
-
-    // Create a texture.
-    this.heightmap = this.gl.createTexture();
-    this.gl.bindTexture(this.gl.TEXTURE_2D, this.heightmap);
-     
-    // Fill the texture with a 1x1 blue pixel.
-    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE,
-                       new Uint8Array([0, 0, 255, 255]));
-     
-    // Asynchronously load an image
-    var image = new Image();
-    image.src = "/res/tex/antarticaHeightmap.png";
-    image.addEventListener('load', () => {
-      // Now that the image has loaded make copy it to the texture.
-      this.gl.bindTexture(this.gl.TEXTURE_2D, this.heightmap);
-      this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, image);
-      this.gl.generateMipmap(this.gl.TEXTURE_2D);
-    });
   }
 
-  bind = (geometry: Geometry): boolean => {
+  bindGeometry = (geometry: Geometry): boolean => {
     if(!geometry) return false
     if(geometry.buffer) return true
 
@@ -62,10 +44,48 @@ export default class Renderer {
     return true
   }
 
+  bindMaterial = (material: Material, modelMatrix: mat4, viewMatrix: mat4, projectionMatrix: mat4, lightDir: vec3): boolean => {
+    
+    this.gl.useProgram(material.program)       
+
+    this.gl.uniformMatrix4fv(
+      material.uniformLocations.get('uModelMatrix'),
+      false,
+      modelMatrix
+    )
+
+    this.gl.uniformMatrix4fv(
+      material.uniformLocations.get('uViewMatrix'),
+      false,
+      viewMatrix
+    )
+
+    this.gl.uniformMatrix4fv(
+      material.uniformLocations.get('uProjectionMatrix'),
+      false,
+      projectionMatrix
+    )
+
+    switch(material.type) {
+      case "LAMBERT": {
+        material.bind(this.gl, lightDir)
+        return true
+      }
+      case "TERRAIN": {
+        material.bind(this.gl, lightDir, 0)
+        return true
+      }
+      default: {
+        console.error("Renderer::bindMaterial(): Invalid or unimplemented material type!")
+        return false
+      }
+    }
+  }
+
   renderEntity = (entity: Entity, worldMatrix: mat4, camera: Camera) => {
     const geometry: Geometry | null = entity.getComponent(Geometry)
 
-    if(!this.bind(geometry)) return
+    if(!this.bindGeometry(geometry)) return
 
     {
       const numComponents: number = 3
@@ -107,25 +127,11 @@ export default class Renderer {
       )
     } 
 
-    this.gl.useProgram(entity.material.program)       
-
-    this.gl.uniformMatrix4fv(
-      entity.material.uniformLocations.get('uProjectionMatrix'),
-      false,
-      camera.projectionMatrix
-    )
-
-    this.gl.uniformMatrix4fv(
-      entity.material.uniformLocations.get('uModelViewMatrix'),
-      false,
-      mat4.mul(mat4.create(), worldMatrix, camera.viewMatrix)
-    )
-
-    this.gl.uniform3fv(entity.material.uniformLocations.get('uLightDir'), vec3.normalize(vec3.create(), [-0.75, 0.5, 0.0]))
-    this.gl.uniform3fv(entity.material.uniformLocations.get('uViewDir'), vec3.normalize(vec3.create(), mat4.getTranslation(vec3.create(), camera.viewMatrix)))
-    this.gl.uniform1f(entity.material.uniformLocations.get('uAmbientLight'), 0.1)
-
-    this.gl.uniform1i(entity.material.uniformLocations.get('uTexture'), 0)
+    this.bindMaterial(entity.material, 
+                      worldMatrix,
+                      camera.viewMatrix,
+                      camera.projectionMatrix,
+                      vec3.normalize(vec3.create(), [-0.75, 0.5, 0.0]))
 
     {
       const offset: number = 0
@@ -159,7 +165,7 @@ export default class Renderer {
     })
   }
 
-  createMaterial = (vsSource: string, fsSource: string): Material | null => {
+  compileProgram = (vsSource: string, fsSource: string): {program: Material["program"], uniformLocations: Material["uniformLocations"], attributeLocations: Material["attributeLocations"]} | null => {
     const vertexShader = this.loadShader(this.gl.VERTEX_SHADER, vsSource)
     const fragmentShader = this.loadShader(this.gl.FRAGMENT_SHADER, fsSource)
   
@@ -180,17 +186,14 @@ export default class Renderer {
 
     const uniformLocations: Map<string, WebGLUniformLocation> = new Map<string, WebGLUniformLocation>();
 
+    uniformLocations.set('uModelMatrix', this.gl.getUniformLocation(program, 'uModelMatrix'))
+    uniformLocations.set('uViewMatrix', this.gl.getUniformLocation(program, 'uViewMatrix'))
     uniformLocations.set('uProjectionMatrix', this.gl.getUniformLocation(program, 'uProjectionMatrix'))
-    uniformLocations.set('uModelViewMatrix', this.gl.getUniformLocation(program, 'uModelViewMatrix'))
-    uniformLocations.set('uLightDir', this.gl.getUniformLocation(program, 'uLightDir'))
-    uniformLocations.set('uViewDir', this.gl.getUniformLocation(program, 'uViewDir'))
-    uniformLocations.set('uAmbientLight', this.gl.getUniformLocation(program, 'uAmbientLight'))
-    uniformLocations.set('uTexture', this.gl.getUniformLocation(program, 'uTexture'))
         
     return {
       program,
       attributeLocations,
-      uniformLocations
+      uniformLocations,
     }
   }
 

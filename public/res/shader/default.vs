@@ -1,12 +1,14 @@
 attribute vec4 aVertexPosition;
 attribute vec3 aVertexNormal;
 
-uniform mat4 uModelViewMatrix;
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 
 varying vec3 vVertexNormal;
 
 void main() {
-  gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-  vVertexNormal = mat3(uModelViewMatrix) * aVertexNormal;
+  mat4 modelViewMatrix = uModelMatrix * uViewMatrix;
+  gl_Position = uProjectionMatrix * modelViewMatrix * aVertexPosition;
+  vVertexNormal = mat3(modelViewMatrix) * aVertexNormal;
 }

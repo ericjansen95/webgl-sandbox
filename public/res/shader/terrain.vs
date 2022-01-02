@@ -1,7 +1,8 @@
 attribute vec4 aVertexPosition;
 attribute vec3 aVertexNormal;
 
-uniform mat4 uModelViewMatrix;
+uniform mat4 uModelMatrix;
+uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform sampler2D uTexture;
 
@@ -25,5 +26,6 @@ void main() {
   // https://stackoverflow.com/questions/49640250/calculate-normals-from-heightmap
   vVertexNormal = vec4(normalize(vec3(2.0 * (heightRight - heightLeft), 4.0, 2.0 * (heightBottom - heightTop))), heightCenter);
 
-  gl_Position = uProjectionMatrix * uModelViewMatrix * position;  
+  mat4 modelViewMatrix = uModelMatrix * uViewMatrix;
+  gl_Position = uProjectionMatrix * modelViewMatrix * position;  
 }

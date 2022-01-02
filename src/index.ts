@@ -1,22 +1,12 @@
-import { mat4, quat, vec3 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 import Camera from './camera';
 import Entity from './entity';
 import Geometry from './geometry';
+import LambertMaterial from './materials/lambertMaterial';
+import TerrainMaterial from './materials/terrainMaterial';
 import Plane from './plane';
 import Renderer from './renderer';
 import Time from './time';
-
-// Shader imports
-const vsDefaultSource: string = require('/public/res/shader/default.vs') as string
-const vsDisplaceSource: string = require('/public/res/shader/displace.vs') as string
-const fsLambertSource: string = require('/public/res/shader/lambert.fs') as string
-const fsPhongSource: string = require('/public/res/shader/phong.fs') as string
-const fsHeightSource: string = require('/public/res/shader/height.fs') as string
-
-// Geometry imports => obj vertex and index buffers
-const dragonObj: string = require('/public/res/geo/dragon.txt') as string
-const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
-const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 
 const main = () => {
   const canvas: HTMLCanvasElement = document.getElementById('glCanvas') as HTMLCanvasElement
@@ -36,23 +26,11 @@ const main = () => {
   const planeGeometry: Geometry = new Plane(1024) as Geometry
   plane.addComponent(planeGeometry)
 
-  plane.material = renderer.createMaterial(vsDisplaceSource, fsHeightSource)
+  plane.material = new TerrainMaterial(renderer, "/res/tex/antarticaHeightmap.png")
 
   mat4.translate(plane.modelMatrix,
                  plane.modelMatrix,
                  [0.0, 0.0, -1.0])
-
-  const dragon: Entity = new Entity()
-  
-  const dragonGeometry: Geometry = new Geometry()
-  dragonGeometry.load(dragonObj)  
-  dragon.addComponent(dragonGeometry)
-
-  dragon.material = renderer.createMaterial(vsDefaultSource, fsPhongSource)
-
-  mat4.translate(dragon.modelMatrix,
-                 dragon.modelMatrix,
-                 [0.0, 0.0, -6.0])
 
   // ToDo(Eric) Move this into global input system which allows keybinds               
   const inputDir: vec3 = vec3.create();  
