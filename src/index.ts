@@ -70,7 +70,13 @@ const main = () => {
         break
       case 's':
         inputDir[2] = 0.0
-        break      
+        break   
+      case 'q':
+        inputDir[1] = 0.0
+        break
+      case 'e':
+        inputDir[1] = 0.0
+        break           
       default:
         break
     }
@@ -90,6 +96,12 @@ const main = () => {
       case 's':
         inputDir[2] = -1.0
         break 
+      case 'q':
+        inputDir[1] = -1.0
+        break
+      case 'e':
+        inputDir[1] = 1.0
+        break           
       default:
         break
     }
@@ -105,7 +117,7 @@ const main = () => {
                    camera.viewMatrix,
                    vec3.scale(vec3.create(), 
                               inputDir, 
-                              0.0025))
+                              0.001))
 
     renderer.renderScene(plane, camera)
 

@@ -1,8 +1,8 @@
 
 import { mat4 } from 'gl-matrix';
 
-const DEFAULT_Z_NEAR: number = 0.01
-const DEFAULT_Z_FAR: number = 100.0
+const DEFAULT_Z_NEAR: number = 0.001
+const DEFAULT_Z_FAR: number = 10.0
 
 export default class Camera {
   projectionMatrix: mat4
