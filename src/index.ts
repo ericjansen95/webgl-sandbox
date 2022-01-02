@@ -20,17 +20,31 @@ const main = () => {
 
   const camera: Camera = new Camera(45, canvas.width / canvas.height)
 
-  const plane: Entity = new Entity()
+  // TERRAIN
+  const terrain: Entity = new Entity()
 
-  // subdivide plane in 32 x 32 rects based of 2 triangles
-  const planeGeometry: Geometry = new Plane(1024) as Geometry
-  plane.addComponent(planeGeometry)
+  const terrainGeometry: Geometry = new Plane(1024) as Geometry
+  terrain.addComponent(terrainGeometry)
 
-  plane.material = new TerrainMaterial(renderer, "/res/tex/antarticaHeightmap.png")
+  terrain.material = new TerrainMaterial(renderer, "/res/tex/antarticaHeightmap.png")       
 
-  mat4.translate(plane.modelMatrix,
-                 plane.modelMatrix,
-                 [0.0, 0.0, -1.0])
+  // WATER
+  const water: Entity = new Entity()
+
+  const waterGeometry: Geometry = new Plane(8) as Geometry
+  water.addComponent(waterGeometry)
+
+  water.material = new LambertMaterial(renderer, [0.831, 0.945, 0.976])
+
+  mat4.translate(water.modelMatrix,
+                 water.modelMatrix,
+                 [0.0, 0.001, 0.0])
+
+  mat4.scale(water.modelMatrix,
+             water.modelMatrix,
+             [100.0, 1.0, 100.0])
+
+  terrain.children.push(water)
 
   // ToDo(Eric) Move this into global input system which allows keybinds               
   const inputDir: vec3 = vec3.create();  
@@ -97,7 +111,7 @@ const main = () => {
                               inputDir, 
                               0.001))
 
-    renderer.renderScene(plane, camera)
+    renderer.renderScene(terrain, camera)
 
     // ToDo(Eric) Wrap this in Debug static class
     fpsCounter.textContent = `${Math.ceil(1 / Time.deltaTime)} FPS`

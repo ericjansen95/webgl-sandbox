@@ -26,6 +26,6 @@ void main() {
   // https://stackoverflow.com/questions/49640250/calculate-normals-from-heightmap
   vVertexNormal = vec4(normalize(vec3(2.0 * (heightRight - heightLeft), 4.0, 2.0 * (heightBottom - heightTop))), heightCenter);
 
-  mat4 modelViewMatrix = uModelMatrix * uViewMatrix;
+  mat4 modelViewMatrix = uViewMatrix * uModelMatrix;
   gl_Position = uProjectionMatrix * modelViewMatrix * position;  
 }
