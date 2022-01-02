@@ -3,11 +3,13 @@ export default class Time {
   static deltaTime: number
   private static prevTime: number
 
-  constructor() {
-
+  static init = (startTime: number) => {
+    this.startTime = startTime
+    this.deltaTime = 0.0
+    this.prevTime = startTime
   }
 
-  static tick = (curTime) => {
+  static tick = (curTime: number) => {
     this.deltaTime = Math.round((curTime - this.prevTime) * 100 ) / 100000
     this.prevTime = curTime
   }

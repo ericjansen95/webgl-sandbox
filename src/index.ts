@@ -2,6 +2,7 @@ import { mat4, vec3 } from 'gl-matrix';
 import Camera from './camera';
 import Entity from './entity';
 import Geometry from './geometry';
+import Input from './input';
 import LambertMaterial from './materials/lambertMaterial';
 import TerrainMaterial from './materials/terrainMaterial';
 import Plane from './plane';
@@ -46,61 +47,20 @@ const main = () => {
 
   terrain.children.push(water)
 
+  // register input events
+  Input.init(document)
+  Time.init(Date.now())
+
   // ToDo(Eric) Move this into global input system which allows keybinds               
-  const inputDir: vec3 = vec3.create();  
-
-  document.onkeyup = (event) => {
-    switch(event.key) {
-      case 'a':
-        inputDir[0] = 0.0
-        break
-      case 'w':
-        inputDir[2] = 0.0
-        break
-      case 'd':
-        inputDir[0] = 0.0
-        break
-      case 's':
-        inputDir[2] = 0.0
-        break   
-      case 'q':
-        inputDir[1] = 0.0
-        break
-      case 'e':
-        inputDir[1] = 0.0
-        break           
-      default:
-        break
-    }
-  }
-
-  document.onkeydown = (event) => {
-    switch(event.key) {
-      case 'a':
-        inputDir[0] = 1.0
-        break
-      case 'w':
-        inputDir[2] = 1.0
-        break
-      case 'd':
-        inputDir[0] = -1.0
-        break
-      case 's':
-        inputDir[2] = -1.0
-        break 
-      case 'q':
-        inputDir[1] = -1.0
-        break
-      case 'e':
-        inputDir[1] = 1.0
-        break           
-      default:
-        break
-    }
-  }
+  let inputDir: vec3 = vec3.create();  
 
   const update = curTime => {
     Time.tick(curTime)
+
+    // ToDo(Eric) Handle multi key down event
+    inputDir = [Input.isKeyDown('a') ? 1.0 : Input.isKeyDown('d') ? -1.0 : 0.0,
+                Input.isKeyDown('q') ? 1.0 : Input.isKeyDown('e') ? -1.0 : 0.0,
+                Input.isKeyDown('w') ? 1.0 : Input.isKeyDown('s') ? -1.0 : 0.0]
 
     // WHY IS CURRENT TIME NOT WORKING?!
 
@@ -109,7 +69,7 @@ const main = () => {
                    camera.viewMatrix,
                    vec3.scale(vec3.create(), 
                               inputDir, 
-                              0.001))
+                              0.25 * Time.deltaTime))
 
     renderer.renderScene(terrain, camera)
 
