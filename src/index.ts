@@ -40,7 +40,7 @@ const main = () => {
 
   mat4.translate(plane.modelMatrix,
                  plane.modelMatrix,
-                 [0.0, 0.0, -2.0])
+                 [0.0, 0.0, -1.0])
 
   const dragon: Entity = new Entity()
   
@@ -105,7 +105,7 @@ const main = () => {
                    camera.viewMatrix,
                    vec3.scale(vec3.create(), 
                               inputDir, 
-                              0.01))
+                              0.0025))
 
     renderer.renderScene(plane, camera)
 

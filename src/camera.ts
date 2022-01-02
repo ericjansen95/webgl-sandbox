@@ -1,7 +1,7 @@
 
 import { mat4 } from 'gl-matrix';
 
-const DEFAULT_Z_NEAR: number = 0.1
+const DEFAULT_Z_NEAR: number = 0.01
 const DEFAULT_Z_FAR: number = 100.0
 
 export default class Camera {
@@ -15,6 +15,6 @@ export default class Camera {
     this.viewMatrix = mat4.create()
     mat4.translate(this.viewMatrix,
                   this.viewMatrix, 
-                  [0.0, -0.1, 0.0])
+                  [0.0, -0.025, 0.0])
   }
 }

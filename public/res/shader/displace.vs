@@ -5,11 +5,25 @@ uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform sampler2D uTexture;
 
-varying vec3 vVertexNormal;
+varying vec4 vVertexNormal;
+
+// ToDo(Eric) Move this in a uniform?
+float STEP = 0.00195;
+
+float HEIGHT_SCALAR = 0.02;
 
 void main() {
-  float heightScalar = 0.025;
-  float height = texture2D(uTexture, vec2((aVertexPosition.x + 1.0) * 0.5, (aVertexPosition.z + 1.0) * 0.5)).y;
-  gl_Position = uProjectionMatrix * uModelViewMatrix * (aVertexPosition + vec4(0.0, height * heightScalar, 0.0, 0.0));
-  vVertexNormal = vec3(height, height, height);
+  float heightLeft = texture2D(uTexture, vec2((aVertexPosition.x - STEP + 1.0) * 0.5, (aVertexPosition.z + 1.0) * 0.5)).y;
+  float heightTop = texture2D(uTexture, vec2((aVertexPosition.x + 1.0) * 0.5, (aVertexPosition.z + STEP + 1.0) * 0.5)).y;
+  float heightRight = texture2D(uTexture, vec2((aVertexPosition.x + STEP + 1.0) * 0.5, (aVertexPosition.z + 1.0) * 0.5)).y;
+  float heightBottom = texture2D(uTexture, vec2((aVertexPosition.x + 1.0) * 0.5, (aVertexPosition.z - STEP + 1.0) * 0.5)).y;
+  
+  float heightCenter = texture2D(uTexture, vec2((aVertexPosition.x + 1.0) * 0.5, (aVertexPosition.z + 1.0) * 0.5)).y;
+
+  vec4 position = vec4(aVertexPosition.x, aVertexPosition.y + heightCenter * HEIGHT_SCALAR, aVertexPosition.z, aVertexPosition.w);
+
+  // https://stackoverflow.com/questions/49640250/calculate-normals-from-heightmap
+  vVertexNormal = vec4(normalize(vec3(2.0 * (heightRight - heightLeft), 4.0, 2.0 * (heightBottom - heightTop))), heightCenter);
+
+  gl_Position = uProjectionMatrix * uModelViewMatrix * position;  
 }

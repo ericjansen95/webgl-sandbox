@@ -121,7 +121,7 @@ export default class Renderer {
       mat4.mul(mat4.create(), worldMatrix, camera.viewMatrix)
     )
 
-    this.gl.uniform3fv(entity.material.uniformLocations.get('uLightDir'), vec3.normalize(vec3.create(), [-1.0, 1.0, 1.0]))
+    this.gl.uniform3fv(entity.material.uniformLocations.get('uLightDir'), vec3.normalize(vec3.create(), [-0.5, 0.5, 0.0]))
     this.gl.uniform3fv(entity.material.uniformLocations.get('uViewDir'), vec3.normalize(vec3.create(), mat4.getTranslation(vec3.create(), camera.viewMatrix)))
     this.gl.uniform1f(entity.material.uniformLocations.get('uAmbientLight'), 0.1)
 
