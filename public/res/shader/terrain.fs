@@ -10,7 +10,10 @@ vec4 LIGHT_GREEN = vec4(0.725,0.850,0.502,1.0);
 vec4 BROWN = vec4(0.553,0.431,0.338,1.0);
 vec4 WHITE = vec4(0.95,0.95,0.95,1.0);
 
-float SNOW_THRESHOLD = 0.4;
+float STEEPNESS_THRESHOLD = 0.7;
+float SNOW_THRESHOLD = 0.6;
+
+vec3 UP_VECTOR = vec3(0.0, 1.0, 0.0);
 
 void main() {
   float height = vVertexNormal.w;
@@ -18,13 +21,19 @@ void main() {
   if(height < 0.01)
     discard;
 
-  float snowMask = step(SNOW_THRESHOLD, height); 
-  vec4 color = mix(GREEN, LIGHT_GREEN, height / SNOW_THRESHOLD) * (1.0 - snowMask) + mix(BROWN, WHITE, (height - SNOW_THRESHOLD + 0.1) / (1.0 - SNOW_THRESHOLD)) * snowMask;
-
   vec3 normal = normalize(vVertexNormal.xyz);
+  float steepness = dot(normal, normalize(UP_VECTOR));
+
+  float steepnessMask = step(STEEPNESS_THRESHOLD, steepness);
+  float snowMask = step(SNOW_THRESHOLD, height);
+
+  vec4 color = (mix(GREEN, LIGHT_GREEN, height) * steepnessMask +
+               mix(BROWN, WHITE, height) * (1.0 - steepnessMask)) * (1.0 - snowMask) +
+               WHITE * snowMask;
+
   float light = dot(normal, normalize(uLightDir));
 
-  color.xyz *= max(uAmbientLight, light);
+  color.xyz *= max(uAmbientLight, light - steepness * 0.05);
 
   gl_FragColor = color;
 }

@@ -6,8 +6,11 @@ import Input from './input';
 import LambertMaterial from './materials/lambertMaterial';
 import TerrainMaterial from './materials/terrainMaterial';
 import Plane from './plane';
+import Console from './console';
 import Renderer from './renderer';
 import Time from './time';
+
+const CAMERA_SPEED = 0.25;
 
 const main = () => {
   const canvas: HTMLCanvasElement = document.getElementById('glCanvas') as HTMLCanvasElement
@@ -16,7 +19,7 @@ const main = () => {
   canvas.height = window.innerHeight
 
   const fpsCounter: HTMLParagraphElement = document.getElementById('fpsCounter') as HTMLParagraphElement
-  
+
   const renderer = new Renderer(canvas)
 
   const camera: Camera = new Camera(45, canvas.width / canvas.height)
@@ -50,6 +53,8 @@ const main = () => {
   // register input events
   Input.init(document)
   Time.init(Date.now())
+  Console.init(document)
+  //Console.setVisible(true) 
 
   // ToDo(Eric) Move this into global input system which allows keybinds               
   let inputDir: vec3 = vec3.create();  
@@ -58,9 +63,10 @@ const main = () => {
     Time.tick(curTime)
 
     // ToDo(Eric) Handle multi key down event
+    // ToDo(Eric) Handle single shot get key down vs is key pressed
     inputDir = [Input.isKeyDown('a') ? 1.0 : Input.isKeyDown('d') ? -1.0 : 0.0,
                 Input.isKeyDown('q') ? 1.0 : Input.isKeyDown('e') ? -1.0 : 0.0,
-                Input.isKeyDown('w') ? 1.0 : Input.isKeyDown('s') ? -1.0 : 0.0]
+                Input.isKeyDown('w') ? 1.0 : Input.isKeyDown('s') ? -1.0 : 0.0]           
 
     // WHY IS CURRENT TIME NOT WORKING?!
 
@@ -69,7 +75,7 @@ const main = () => {
                    camera.viewMatrix,
                    vec3.scale(vec3.create(), 
                               inputDir, 
-                              0.25 * Time.deltaTime))
+                              CAMERA_SPEED * Time.deltaTime))
 
     renderer.renderScene(terrain, camera)
 

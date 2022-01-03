@@ -44,7 +44,7 @@ export default class TerrainMaterial implements Material {
   }
 
   bind = (gl: WebGL2RenderingContext, lightDir: vec3, textureLocation: number) => {
-    gl.uniform1f(this.uniformLocations.get('uAmbientLight'), 0.1)
+    gl.uniform1f(this.uniformLocations.get('uAmbientLight'), 0.25)
     gl.uniform3fv(this.uniformLocations.get('uLightDir'), lightDir)
 
     gl.uniform1i(this.uniformLocations.get('uTexture'), textureLocation)
