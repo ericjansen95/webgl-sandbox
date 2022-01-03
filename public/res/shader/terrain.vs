@@ -11,7 +11,7 @@ varying vec4 vVertexNormal;
 // ToDo(Eric) Move this in a uniform?
 float STEP = 0.00195;
 
-float HEIGHT_SCALAR = 0.02;
+float HEIGHT_SCALAR = 0.025;
 
 void main() {
   float heightLeft = texture2D(uTexture, vec2((aVertexPosition.x - STEP + 1.0) * 0.5, (aVertexPosition.z + 1.0) * 0.5)).y;
@@ -23,7 +23,7 @@ void main() {
 
   vec4 position = vec4(aVertexPosition.x, aVertexPosition.y + heightCenter * HEIGHT_SCALAR, aVertexPosition.z, aVertexPosition.w);
 
-  vVertexNormal = vec4(normalize(vec3((heightRight - heightLeft), 0.1, (heightBottom - heightTop))), heightCenter);
+  vVertexNormal = vec4(normalize(vec3((heightRight - heightLeft), 0.15, (heightBottom - heightTop))), heightCenter);
 
   mat4 modelViewMatrix = uViewMatrix * uModelMatrix;
   gl_Position = uProjectionMatrix * modelViewMatrix * position;  
