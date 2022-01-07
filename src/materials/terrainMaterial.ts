@@ -74,21 +74,33 @@ export default class TerrainMaterial implements Material {
     canvasHeightmap.style.cssText = 'position: absolute; width: 256px; height: 256px; right: 0px; top: 0px; z-index: 200;'
     document.body.appendChild(canvasHeightmap)
 
-    const MIN_ERROSION_TRAIN_COUNT: number = 64
-    let errosionTrailCount: number = 0
+    // ToDo(Eric) Get rid of canvas as a middle step between image and blob and user xmlhttprequest to load source image directly as blob
 
-    const MIN_START_HEIGHT = Math.ceil(255 * 0.25)
+    const toBlob = async () => {
+      await canvasHeightmap.toBlob(
+        async (blob: Blob) => {console.log(new Uint8Array(await blob.arrayBuffer()))},
+        "image/png",
+        1
+      )
+    }
+
+    toBlob()
+
+    return
+
+    const MIN_ERROSION_COUNT: number = 512
+    let errosionCount: number = 0
 
     const pixelData: Uint8ClampedArray = new Uint8ClampedArray([255, 0, 0, 255])
     const imageData: ImageData = new ImageData(pixelData, 1.0)
 
-    while(errosionTrailCount < MIN_ERROSION_TRAIN_COUNT) {
+    while(errosionCount < MIN_ERROSION_COUNT) {
       let height: number = 0.0
 
       let xPos: number = 0.0
       let yPos: number = 0.0
   
-      while(height <= MIN_START_HEIGHT) {
+      while(height === 0.0) {
         xPos = Math.ceil(Math.random() * heightmap.height)
         yPos = Math.ceil(Math.random() * heightmap.width)
     
@@ -107,7 +119,7 @@ export default class TerrainMaterial implements Material {
       let deltaHeightX: number = 1
       let deltaHeightY: number = 1
 
-      while(height < prevHeight && height > 1 && (deltaHeightX !== 0 || deltaHeightY !== 0)) {
+      while(height < prevHeight && height && (deltaHeightX || deltaHeightY)) {
         const heightLeft: number = canvasHeightmap.getContext('2d').getImageData(xPos + 1, yPos, 1, 1).data[0]
         const heightTop: number = canvasHeightmap.getContext('2d').getImageData(xPos, yPos + 1, 1, 1).data[0]
         const heightRight: number = canvasHeightmap.getContext('2d').getImageData(xPos - 1, yPos, 1, 1).data[0]
@@ -132,11 +144,9 @@ export default class TerrainMaterial implements Material {
         positions.push({x: xPos, y: yPos})
       }
 
-      if(positions.length > 4) {
-        errosionTrailCount++
-        console.log(`Errosion trails ${errosionTrailCount} / ${MIN_ERROSION_TRAIN_COUNT}`)
-        positions.forEach(position => canvasErrosion.getContext('2d').putImageData(imageData, position.x, position.y))
-      }
+      errosionCount++
+      console.log(`Errosion count ${errosionCount} / ${MIN_ERROSION_COUNT}`)
+      positions.forEach(position => canvasErrosion.getContext('2d').putImageData(imageData, position.x, position.y))
     }
   }
 
