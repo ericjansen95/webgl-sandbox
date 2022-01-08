@@ -13,6 +13,7 @@ import Time from './time';
 const CAMERA_SPEED = 0.25;
 
 const main = () => {
+  
   const canvas: HTMLCanvasElement = document.getElementById('glCanvas') as HTMLCanvasElement
 
   canvas.width = window.innerWidth
@@ -30,7 +31,7 @@ const main = () => {
   const terrainGeometry: Geometry = new Plane(1024) as Geometry
   terrain.addComponent(terrainGeometry)
 
-  terrain.material = new TerrainMaterial(renderer, "/res/tex/antarticaHeightmap.png")       
+  terrain.material = new TerrainMaterial("/res/tex/antarticaHeightmap.png")       
 
   // WATER
   const water: Entity = new Entity()
@@ -38,7 +39,7 @@ const main = () => {
   const waterGeometry: Geometry = new Plane(8) as Geometry
   water.addComponent(waterGeometry)
 
-  water.material = new LambertMaterial(renderer, [0.831, 0.945, 0.976])
+  water.material = new LambertMaterial([0.831, 0.945, 0.976])
 
   mat4.translate(water.modelMatrix,
                  water.modelMatrix,

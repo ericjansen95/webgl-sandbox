@@ -1,6 +1,6 @@
 import { vec3 } from "gl-matrix";
-import { Material, MaterialType } from "../material";
-import Renderer from "../renderer"
+import { compileProgram, Material, MaterialType } from "../material";
+import Renderer, { GL } from "../renderer"
 
 const vsTerrainSource: string = require('/public/res/shader/terrain.vs') as string
 const fsTerrainSorce: string = require('/public/res/shader/terrain.fs') as string
@@ -12,34 +12,34 @@ export default class TerrainMaterial implements Material {
   uniformLocations: Map<string, WebGLUniformLocation>
   heightmap: WebGLTexture
 
-  constructor(renderer: Renderer, heightmapUri: string) {
+  constructor(heightmapUri: string) {
     this.type = "TERRAIN"
 
-    const {program, attributeLocations, uniformLocations} = renderer.compileProgram(vsTerrainSource, fsTerrainSorce)
+    const {program, attributeLocations, uniformLocations} = compileProgram(vsTerrainSource, fsTerrainSorce)
     
     this.program = program
     this.attributeLocations = attributeLocations
     this.uniformLocations = uniformLocations
 
-    this.uniformLocations.set('uAmbientLight', renderer.gl.getUniformLocation(program, 'uAmbientLight'))
-    this.uniformLocations.set('uLightDir', renderer.gl.getUniformLocation(program, 'uLightDir'))
+    this.uniformLocations.set('uAmbientLight', GL.getUniformLocation(program, 'uAmbientLight'))
+    this.uniformLocations.set('uLightDir', GL.getUniformLocation(program, 'uLightDir'))
 
-    this.uniformLocations.set('uTexture', renderer.gl.getUniformLocation(program, 'uTexture'))
+    this.uniformLocations.set('uTexture', GL.getUniformLocation(program, 'uTexture'))
 
-    this.heightmap = renderer.gl.createTexture();
-    renderer.gl.bindTexture(renderer.gl.TEXTURE_2D, this.heightmap);
+    this.heightmap = GL.createTexture();
+    GL.bindTexture(GL.TEXTURE_2D, this.heightmap);
 
     // ToDo(Eric) Manage texture level / position!
-    renderer.gl.texImage2D(renderer.gl.TEXTURE_2D, 0, renderer.gl.RGBA, 1, 1, 0, renderer.gl.RGBA, renderer.gl.UNSIGNED_BYTE,
+    GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, 1, 1, 0, GL.RGBA, GL.UNSIGNED_BYTE,
                             new Uint8Array([0, 0, 255, 255]));
       
     var image = new Image();
     image.src = heightmapUri;
 
     image.addEventListener('load', () => {
-      renderer.gl.bindTexture(renderer.gl.TEXTURE_2D, this.heightmap);
-      renderer.gl.texImage2D(renderer.gl.TEXTURE_2D, 0, renderer.gl.RGBA, renderer.gl.RGBA, renderer.gl.UNSIGNED_BYTE, image);
-      renderer.gl.generateMipmap(renderer.gl.TEXTURE_2D);
+      GL.bindTexture(GL.TEXTURE_2D, this.heightmap);
+      GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, image);
+      GL.generateMipmap(GL.TEXTURE_2D);
     });
   }
 
