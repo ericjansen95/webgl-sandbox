@@ -1,9 +1,10 @@
 import { vec3, mat4 } from "gl-matrix"
 import Camera from "./camera"
-import { Material } from "./material"
+import Material from "./material"
 import Entity from "./entity"
 import Time from "./time"
 import Geometry from "./geometry"
+import TerrainMaterial from "./materials/terrainMaterial"
 
 const DEFAULT_CLEAR_COLOR_LUMINANCE = 0.25
 
@@ -11,7 +12,6 @@ export let GL: WebGL2RenderingContext;
 
 export default class Renderer {
   clearColor: vec3
-  heightmap: WebGLTexture
 
   constructor(canvas: HTMLCanvasElement) {
     // ToDo(Eric) Use webgl2 here instead of webgl 1.0
@@ -69,11 +69,11 @@ export default class Renderer {
 
     switch(material.type) {
       case "LAMBERT": {
-        material.bind(GL, lightDir)
+        material.bind(lightDir)
         return true
       }
       case "TERRAIN": {
-        material.bind(GL, lightDir, 0)
+        material.bind(lightDir, 0)
         return true
       }
       default: {
@@ -85,8 +85,9 @@ export default class Renderer {
 
   renderEntity = (entity: Entity, worldMatrix: mat4, camera: Camera) => {
     const geometry: Geometry | null = entity.getComponent(Geometry)
+    const material: Material | null = entity.getComponent(Material)
 
-    if(!this.bindGeometry(geometry)) return
+    if(!this.bindGeometry(geometry) || !material) return
 
     {
       const numComponents: number = 3
@@ -97,14 +98,14 @@ export default class Renderer {
   
       GL.bindBuffer(GL.ARRAY_BUFFER, geometry.buffer.position)
       GL.vertexAttribPointer(
-        entity.material.attributeLocations.get('aVertexPosition'),
+        material.attributeLocations.get('aVertexPosition'),
         numComponents,
         type,
         normalize,
         stride,
         offset)
       GL.enableVertexAttribArray(
-        entity.material.attributeLocations.get('aVertexPosition')
+        material.attributeLocations.get('aVertexPosition')
       )
     }   
     
@@ -117,18 +118,18 @@ export default class Renderer {
   
       GL.bindBuffer(GL.ARRAY_BUFFER, geometry.buffer.normal)
       GL.vertexAttribPointer(
-        entity.material.attributeLocations.get('aVertexNormal'),
+        material.attributeLocations.get('aVertexNormal'),
         numComponents,
         type,
         normalize,
         stride,
         offset)
       GL.enableVertexAttribArray(
-        entity.material.attributeLocations.get('aVertexNormal')
+        material.attributeLocations.get('aVertexNormal')
       )
     } 
 
-    this.bindMaterial(entity.material, 
+    this.bindMaterial(material, 
                       worldMatrix,
                       camera.viewMatrix,
                       camera.projectionMatrix,

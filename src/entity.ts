@@ -1,11 +1,10 @@
 import { mat4 } from "gl-matrix";
 import { Component } from "./component";
 import Geometry from "./geometry";
-import { Material } from "./material";
+import Material from "./material";
 
 export default class Entity {
   modelMatrix: mat4
-  material: Material
   children: Array<Entity> 
   components: Array<Component>
 
@@ -42,7 +41,8 @@ export default class Entity {
 
     this.components.forEach(curComponent => {
       // ToDo(Eric) Handle multipe component returns if type matches
-      if(curComponent instanceof interfaceType)
+      // @ts-expect-error
+      if(curComponent instanceof interfaceType || curComponent.prototype instanceof interfaceType)
         component = curComponent
     })
 

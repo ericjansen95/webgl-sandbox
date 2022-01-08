@@ -1,18 +1,16 @@
 import { vec3 } from "gl-matrix";
-import { compileProgram, Material, MaterialType } from "../material";
-import Renderer, { GL } from "../renderer"
+import Material, { compileProgram, MaterialType } from "../material";
+import { GL } from "../renderer"
 
 const vsDefaultSource: string = require('/public/res/shader/default.vs') as string
 const fsLambertSource: string = require('/public/res/shader/lambert.fs') as string
 
-export default class LambertMaterial implements Material {
-  type: MaterialType
+export default class LambertMaterial extends Material {
   color: vec3
-  program: WebGLProgram
-  attributeLocations: Map<string, number>
-  uniformLocations: Map<string, WebGLUniformLocation>
 
   constructor(color) {
+    super()
+
     this.type = "LAMBERT"
 
     const {program, attributeLocations, uniformLocations} = compileProgram(vsDefaultSource, fsLambertSource)
@@ -28,9 +26,9 @@ export default class LambertMaterial implements Material {
     this.uniformLocations.set('uLightDir', GL.getUniformLocation(program, 'uLightDir'))
   }
 
-  bind = (gl: WebGL2RenderingContext, lightDir: vec3) => {
-    gl.uniform1f(this.uniformLocations.get('uAmbientLight'), 0.1)
-    gl.uniform3fv(this.uniformLocations.get('uLightDir'), lightDir)
-    gl.uniform3fv(this.uniformLocations.get('uColor'), this.color)
+  bind = (lightDir: vec3) => {
+    GL.uniform1f(this.uniformLocations.get('uAmbientLight'), 0.1)
+    GL.uniform3fv(this.uniformLocations.get('uLightDir'), lightDir)
+    GL.uniform3fv(this.uniformLocations.get('uColor'), this.color)
   }
 }

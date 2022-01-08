@@ -1,13 +1,22 @@
+import { Component } from "./component"
 import { GL } from "./renderer"
 
 export type MaterialType = "LAMBERT" | "TERRAIN"
 
-export interface Material {
+// @ts-expect-error
+export default class Material implements Component {
   type: MaterialType
   program: WebGLProgram
+
   attributeLocations: Map<string, number>
   uniformLocations: Map<string, WebGLUniformLocation>
+
   bind: Function
+
+  constructor() {
+    this.attributeLocations = new Map<string, number>()
+    this.uniformLocations = new Map<string, WebGLUniformLocation>()
+  }
 }
 
 export const compileProgram = (vsSource: string, fsSource: string): {program: Material["program"], uniformLocations: Material["uniformLocations"], attributeLocations: Material["attributeLocations"]} | null => {

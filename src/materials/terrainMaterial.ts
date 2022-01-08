@@ -1,18 +1,16 @@
 import { vec3 } from "gl-matrix";
-import { compileProgram, Material, MaterialType } from "../material";
-import Renderer, { GL } from "../renderer"
+import Material, { compileProgram, MaterialType } from "../material";
+import { GL } from "../renderer"
 
 const vsTerrainSource: string = require('/public/res/shader/terrain.vs') as string
 const fsTerrainSorce: string = require('/public/res/shader/terrain.fs') as string
 
-export default class TerrainMaterial implements Material {
-  type: MaterialType
-  program: WebGLProgram
-  attributeLocations: Map<string, number>
-  uniformLocations: Map<string, WebGLUniformLocation>
+export default class TerrainMaterial extends Material {
   heightmap: WebGLTexture
 
   constructor(heightmapUri: string) {
+    super()
+
     this.type = "TERRAIN"
 
     const {program, attributeLocations, uniformLocations} = compileProgram(vsTerrainSource, fsTerrainSorce)
@@ -43,10 +41,10 @@ export default class TerrainMaterial implements Material {
     });
   }
 
-  bind = (gl: WebGL2RenderingContext, lightDir: vec3, textureLocation: number) => {
-    gl.uniform1f(this.uniformLocations.get('uAmbientLight'), 0.25)
-    gl.uniform3fv(this.uniformLocations.get('uLightDir'), lightDir)
+  bind = (lightDir: vec3, textureLocation: number) => {
+    GL.uniform1f(this.uniformLocations.get('uAmbientLight'), 0.25)
+    GL.uniform3fv(this.uniformLocations.get('uLightDir'), lightDir)
 
-    gl.uniform1i(this.uniformLocations.get('uTexture'), textureLocation)
+    GL.uniform1i(this.uniformLocations.get('uTexture'), textureLocation)
   }
 }

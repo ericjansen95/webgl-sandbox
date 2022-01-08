@@ -1,3 +1,3 @@
 export interface Component {
-  update: Function
+  update?: Function
 }

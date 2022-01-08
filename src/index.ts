@@ -9,6 +9,7 @@ import Plane from './plane';
 import Console from './console';
 import Renderer from './renderer';
 import Time from './time';
+import Material from './material';
 
 const CAMERA_SPEED = 0.25;
 
@@ -31,7 +32,8 @@ const main = () => {
   const terrainGeometry: Geometry = new Plane(1024) as Geometry
   terrain.addComponent(terrainGeometry)
 
-  terrain.material = new TerrainMaterial("/res/tex/antarticaHeightmap.png")       
+  const terrainMaterial: Material = new TerrainMaterial("/res/tex/antarticaHeightmap.png") as Material
+  terrain.addComponent(terrainMaterial)      
 
   // WATER
   const water: Entity = new Entity()
@@ -39,7 +41,8 @@ const main = () => {
   const waterGeometry: Geometry = new Plane(8) as Geometry
   water.addComponent(waterGeometry)
 
-  water.material = new LambertMaterial([0.831, 0.945, 0.976])
+  const waterMaterial: Material = new LambertMaterial([0.831, 0.945, 0.976]) as Material
+  water.addComponent(waterMaterial)
 
   mat4.translate(water.modelMatrix,
                  water.modelMatrix,
