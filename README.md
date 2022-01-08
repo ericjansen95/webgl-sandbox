@@ -9,6 +9,13 @@ A basic WebGl renderer supporting obj geometry loading.
 - Lambert and Phong lighting
 - Terrain rendering with vertex heightmap displacement
 
+<table>
+  <tr>
+    <td> <img src="/public/res/img/terrain.jpg"  alt="1" width = 360px height = 640px ></td>
+    <td><img src="/public/res/img/phong.JPG" alt="2" width = 360px height = 640px></td>
+  </tr> 
+</table>
+
 ## Getting Started
 
 ### Installing
