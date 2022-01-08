@@ -1,15 +1,17 @@
 import { mat4, vec3 } from 'gl-matrix';
 import Camera from './camera';
 import Entity from './entity';
-import Geometry from './geometry';
+import Geometry from './components/geometry';
 import Input from './input';
-import LambertMaterial from './materials/lambertMaterial';
-import TerrainMaterial from './materials/terrainMaterial';
+import LambertMaterial from './components/materials/lambertMaterial';
+import TerrainMaterial from './components/materials/terrainMaterial';
 import Plane from './plane';
 import Console from './console';
 import Renderer from './renderer';
 import Time from './time';
 import Material from './material';
+import Terrain from './components/terrain';
+import { Component } from './components/component';
 
 const CAMERA_SPEED = 0.25;
 
@@ -28,19 +30,13 @@ const main = () => {
 
   // TERRAIN
   const terrain: Entity = new Entity()
-
-  const terrainGeometry: Geometry = new Plane(1024) as Geometry
-  terrain.addComponent(terrainGeometry)
-
-  const terrainMaterial: Material = new TerrainMaterial("/res/tex/antarticaHeightmap.png") as Material
-  terrain.addComponent(terrainMaterial)      
+  const terrainComponent: Component = new Terrain() as Component
+  terrain.addComponent(terrainComponent)
 
   // WATER
   const water: Entity = new Entity()
-
   const waterGeometry: Geometry = new Plane(8) as Geometry
   water.addComponent(waterGeometry)
-
   const waterMaterial: Material = new LambertMaterial([0.831, 0.945, 0.976]) as Material
   water.addComponent(waterMaterial)
 
@@ -71,8 +67,6 @@ const main = () => {
     inputDir = [Input.isKeyDown('a') ? 1.0 : Input.isKeyDown('d') ? -1.0 : 0.0,
                 Input.isKeyDown('q') ? 1.0 : Input.isKeyDown('e') ? -1.0 : 0.0,
                 Input.isKeyDown('w') ? 1.0 : Input.isKeyDown('s') ? -1.0 : 0.0]           
-
-    // WHY IS CURRENT TIME NOT WORKING?!
 
     // move camera
     mat4.translate(camera.viewMatrix,

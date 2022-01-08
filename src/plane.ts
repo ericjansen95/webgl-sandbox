@@ -1,4 +1,4 @@
-import Geometry, { calcNormals } from "./geometry";
+import Geometry, { calcNormals } from "./components/geometry";
 
 export default class Plane extends Geometry {
   constructor(subdivisions: number = 1) {

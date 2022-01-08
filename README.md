@@ -11,8 +11,8 @@ A basic WebGl renderer supporting obj geometry loading.
 
 <table>
   <tr>
-    <td> <img src="/public/res/img/terrain.jpg"  alt="1" width = 640px height = 360px ></td>
-    <td><img src="/public/res/img/phong.JPG" alt="2" width = 640px height = 360px></td>
+    <td> <img src="/public/res/img/terrain.jpg"  alt="terrain" width = 640px height = 300px ></td>
+    <td><img src="/public/res/img/phong.JPG" alt="phong" width = 640px height = 300px></td>
   </tr> 
 </table>
 

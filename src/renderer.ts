@@ -3,8 +3,8 @@ import Camera from "./camera"
 import Material from "./material"
 import Entity from "./entity"
 import Time from "./time"
-import Geometry from "./geometry"
-import TerrainMaterial from "./materials/terrainMaterial"
+import Geometry from "./components/geometry"
+import TerrainMaterial from "./components/materials/terrainMaterial"
 
 const DEFAULT_CLEAR_COLOR_LUMINANCE = 0.25
 

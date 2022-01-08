@@ -1,6 +1,6 @@
 import { vec3 } from "gl-matrix";
-import Material, { compileProgram, MaterialType } from "../material";
-import { GL } from "../renderer"
+import Material, { compileProgram, MaterialType } from "../../material";
+import { GL } from "../../renderer"
 
 const vsDefaultSource: string = require('/public/res/shader/default.vs') as string
 const fsLambertSource: string = require('/public/res/shader/lambert.fs') as string

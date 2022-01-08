@@ -1,4 +1,4 @@
-import { Component } from "./component"
+import { Component } from "./components/component"
 import { GL } from "./renderer"
 
 export type MaterialType = "LAMBERT" | "TERRAIN"

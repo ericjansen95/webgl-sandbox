@@ -1,6 +1,6 @@
 import { mat4 } from "gl-matrix";
-import { Component } from "./component";
-import Geometry from "./geometry";
+import { Component } from "./components/component";
+import Geometry from "./components/geometry";
 import Material from "./material";
 
 export default class Entity {
@@ -16,13 +16,24 @@ export default class Entity {
 
   addComponent = (component: any) => {
     this.components.push(component)
+
+    // ToDo(Eric) Handle callbacks in map?
+    // Make callback argument type save
+    if(component.onAdd)
+      component.onAdd(this)
   }
 
   removeComponent = (interfaceType: any) => {
-    this.components.forEach(component => {
+    this.components.forEach(curComponent => {
       // ToDo(Eric) Handle multipe components with same type
-      if(component instanceof interfaceType)
-        this.components.splice(this.components.indexOf(component), 1);
+      // ToDo(Eric) Handle internal component cleanup
+      // @ts-expect-error
+      if(curComponent instanceof interfaceType || curComponent.prototype instanceof interfaceType) {
+        this.components.splice(this.components.indexOf(curComponent), 1);
+
+        if(curComponent.onRemove)
+          curComponent.onRemove(this)
+      }
     })
   }
 
