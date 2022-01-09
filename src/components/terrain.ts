@@ -66,5 +66,9 @@ export default class Terrain implements Component {
         entity.children.push(terrainChunk)
       }
     }
+
+    mat4.scale(entity.modelMatrix,
+               entity.modelMatrix,
+               [this.size, 1.0, this.size])
   }
 }
