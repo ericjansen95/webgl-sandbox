@@ -22,6 +22,7 @@ const main = () => {
   canvas.height = window.innerHeight
 
   const fpsCounter: HTMLParagraphElement = document.getElementById('fpsCounter') as HTMLParagraphElement
+  const drawCounter: HTMLParagraphElement = document.getElementById('drawCounter') as HTMLParagraphElement
 
   const renderer = new Renderer(canvas)
 
@@ -80,6 +81,9 @@ const main = () => {
 
     // ToDo(Eric) Wrap this in Debug static class
     fpsCounter.textContent = `${Math.ceil(1 / Time.deltaTime)} FPS`
+
+    // ToDo(Eric) Wrap this in Debug static class
+    drawCounter.textContent = `${renderer.drawCalls} Draw Calls >:[`
 
     requestAnimationFrame(update);
   }

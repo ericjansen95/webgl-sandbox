@@ -10,7 +10,10 @@
 
 	<body style="margin: 0%; overflow: hidden;">
 		<script src="bundle.js"></script>
-		<p id="fpsCounter" style="font-family: monospace; position: absolute; margin: 6px; padding: 6px; background-color: black; font-size: 12px; color: greenyellow; font-weight: bold; z-index: 100;"></p>
+		<div style="position: absolute; font-weight: bold; z-index: 100; font-family: monospace; font-size: 12px;">
+			<p id="fpsCounter" style="margin: 6px; padding: 6px; background-color: black; color: greenyellow; width: fit-content"></p>
+			<p id="drawCounter" style="margin: 6px; padding: 6px; background-color: black; color: lightcoral; width: fit-content"></p>			
+		</div>
 		<canvas id="glCanvas" width="640" height="480" style="z-index: -100;"></canvas>
 	</body>
 </html>

@@ -6,13 +6,12 @@ import Plane from "../plane";
 import { Component } from "./component";
 import Geometry from "./geometry";
 import TerrainMaterial from "./materials/terrainMaterial";
-import UnlitMaterial from "./materials/unlitMaterial";
 
 const TERRAIN_HEIGHTMAP_URI: string = "/res/tex/antarticaHeightmap.png"
 
 // these settings are also related to the heightmap resolution
 // going to high with a low heightmap makes not much sense
-const TERRAIN_CHUNK_LOW_SUBDEVISIONS: number = 4
+const TERRAIN_CHUNK_LOW_SUBDEVISIONS: number = 8
 const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 128
 
 const TERRAIN_CHUNK_SIZE = 200
@@ -40,7 +39,7 @@ export default class Terrain implements Component {
     this.chunks = new Array<Entity>()
 
     this.lowMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height) as Material
-    this.lowMaterial.wireframe = true
+    // this.lowMaterial.wireframe = true
     this.lowGeometry = new Plane(TERRAIN_CHUNK_LOW_SUBDEVISIONS) as Geometry
 
     this.highMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height) as Material

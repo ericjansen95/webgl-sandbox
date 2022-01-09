@@ -12,6 +12,7 @@ export let GL: WebGL2RenderingContext;
 
 export default class Renderer {
   clearColor: vec3
+  drawCalls: number
 
   constructor(canvas: HTMLCanvasElement) {
     // ToDo(Eric) Use webgl2 here instead of webgl 1.0
@@ -93,6 +94,8 @@ export default class Renderer {
 
     if(!this.bindGeometry(geometry) || !material) return
 
+    this.drawCalls++
+
     {
       const numComponents: number = 3
       const type: number = GL.FLOAT
@@ -154,6 +157,8 @@ export default class Renderer {
     GL.depthFunc(GL.LEQUAL)
   
     GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
+
+    this.drawCalls = 0
 
     this.renderChildren(root, mat4.create(), camera)
   }
