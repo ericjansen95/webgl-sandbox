@@ -4,7 +4,6 @@ import Entity from './entity';
 import Geometry from './components/geometry';
 import Input from './input';
 import LambertMaterial from './components/materials/lambertMaterial';
-import TerrainMaterial from './components/materials/terrainMaterial';
 import Plane from './plane';
 import Console from './console';
 import Renderer from './renderer';

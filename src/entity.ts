@@ -1,7 +1,5 @@
 import { mat4 } from "gl-matrix";
 import { Component } from "./components/component";
-import Geometry from "./components/geometry";
-import Material from "./material";
 
 export default class Entity {
   modelMatrix: mat4

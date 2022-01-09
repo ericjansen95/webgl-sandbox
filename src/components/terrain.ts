@@ -15,6 +15,7 @@ export default class Terrain implements Component {
   constructor() {
     this.geometry = new Plane(TERRAIN_PLANE_SUBDEVISIONS) as Geometry
     this.material = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI) as Material
+    this.material.wireframe = true
   }
 
   onAdd = (entity: Entity) => {
