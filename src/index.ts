@@ -59,7 +59,7 @@ const main = () => {
 
   // ToDo(Eric) Move this into global input system which allows keybinds               
   let inputDir: vec3 = vec3.create();  
-
+  
   const update = curTime => {
     Time.tick(curTime)
 

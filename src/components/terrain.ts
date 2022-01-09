@@ -1,4 +1,4 @@
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, vec2, vec3 } from "gl-matrix";
 import Camera from "../camera";
 import Entity from "../entity";
 import Material from "../material";
@@ -10,7 +10,7 @@ import TerrainMaterial from "./materials/terrainMaterial";
 
 const TERRAIN_HEIGHTMAP_URI: string = "/res/tex/antarticaHeightmap.png"
 
-const TERRAIN_CHUNK_SUBDEVISIONS: number = 128
+const TERRAIN_CHUNK_SUBDEVISIONS: number = 32
 const TERRAIN_CHUNK_SIZE = 200
 
 export default class Terrain implements Component {
@@ -20,7 +20,8 @@ export default class Terrain implements Component {
 
   chunkCount: number
 
-  constructor(size: number = 1000, height: number = 30) {
+  // size is in units / m
+  constructor(size: number = 2000, height: number = 80) {
     this.size = size + size % TERRAIN_CHUNK_SIZE
     this.height = height
 
@@ -30,22 +31,33 @@ export default class Terrain implements Component {
   onUpdate = (entity: Entity, camera: Camera) => {
     const cameraPos: vec3 = vec3.create()
     mat4.getTranslation(cameraPos, camera.viewMatrix)
+    // ToDo(Eric) Check why we have to make this transform
+    // => this seems wrong
     vec3.multiply(cameraPos, cameraPos, [-1.0, 1.0, -1.0])
+    // ToDo(Eric) Transform bb check in 0-1 range on both axis
+    cameraPos[0] += this.size
+    cameraPos[2] += this.size
     
     entity.children.forEach(chunk => {
-
+      // ToDo(Eric) Create bounding box class and store it in geometry component
+      // => calculate only on geo update and not every frame!
       const chunkModelMatrix: mat4 = mat4.create()
       mat4.multiply(chunkModelMatrix, entity.modelMatrix, chunk.modelMatrix)
 
       const chunkPos: vec3 = vec3.create()
       mat4.getTranslation(chunkPos, chunkModelMatrix)
-
-      const distance: number = Math.abs(vec3.distance(cameraPos, chunkPos))
-
       
+      // ToDo(Eric) Transform bb check in 0-1 range on both axis
+      const chunkCornerLowerLeft: vec2 = [chunkPos[0] - TERRAIN_CHUNK_SIZE + this.size, chunkPos[2] + TERRAIN_CHUNK_SIZE + this.size]      
+      const chunkCornerUpperRight: vec2 = [chunkPos[0] + TERRAIN_CHUNK_SIZE + this.size, chunkPos[2] - TERRAIN_CHUNK_SIZE + this.size]
+
       const material: Material = chunk.getComponent(Material) as Material
 
-      if(distance < TERRAIN_CHUNK_SIZE * 1.1) {
+      // ToDo(Eric) Create method on bb class to handle checks
+      if(cameraPos[0] >= chunkCornerLowerLeft[0] && 
+        cameraPos[0] <= chunkCornerUpperRight[0] && 
+        cameraPos[2] <= chunkCornerLowerLeft[1] && 
+        cameraPos[2] >= chunkCornerUpperRight[1]) {
         if(!material.wireframe)
           material.wireframe = true
       } else if(material.wireframe) {

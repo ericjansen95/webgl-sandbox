@@ -143,7 +143,7 @@ export default class Renderer {
 
     {
       const offset: number = 0
-      const mode: number = material.wireframe ? GL.LINE_LOOP : GL.TRIANGLES
+      const mode: number = material.wireframe ? GL.LINE_STRIP : GL.TRIANGLES
       GL.drawArrays(mode, offset, geometry.vertex.count / 3.0)
     }
   }
