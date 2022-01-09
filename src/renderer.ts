@@ -84,6 +84,12 @@ export default class Renderer {
   }
 
   renderEntity = (entity: Entity, worldMatrix: mat4, camera: Camera) => {
+    //ToDo(Eric) Split update and render loop => how to handle worldMatrix for update?
+    entity.components.forEach(curComponent => {
+      if(curComponent.onUpdate)
+        curComponent.onUpdate(entity, camera)
+    })
+
     const geometry: Geometry | null = entity.getComponent(Geometry)
     const material: Material | null = entity.getComponent(Material)
 

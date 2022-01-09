@@ -1,4 +1,5 @@
 import { mat4, vec3 } from "gl-matrix";
+import Camera from "../camera";
 import Entity from "../entity";
 import Material from "../material";
 import Plane from "../plane";
@@ -13,11 +14,9 @@ const TERRAIN_CHUNK_SUBDEVISIONS: number = 128
 const TERRAIN_CHUNK_SIZE = 200
 
 export default class Terrain implements Component {
-  //geometry: Geometry
-  //material: Material
-
   size: number
   height: number
+  activeTerrainMaterial: Material
 
   chunkCount: number
 
@@ -26,17 +25,36 @@ export default class Terrain implements Component {
     this.height = height
 
     this.chunkCount = this.size / TERRAIN_CHUNK_SIZE
+  }
 
-    //this.geometry = new Plane(TERRAIN_PLANE_SUBDEVISIONS) as Geometry
-    //this.material = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI) as Material
+  onUpdate = (entity: Entity, camera: Camera) => {
+    const cameraPos: vec3 = vec3.create()
+    mat4.getTranslation(cameraPos, camera.viewMatrix)
+    vec3.multiply(cameraPos, cameraPos, [-1.0, 1.0, -1.0])
+    
+    entity.children.forEach(chunk => {
+
+      const chunkModelMatrix: mat4 = mat4.create()
+      mat4.multiply(chunkModelMatrix, entity.modelMatrix, chunk.modelMatrix)
+
+      const chunkPos: vec3 = vec3.create()
+      mat4.getTranslation(chunkPos, chunkModelMatrix)
+
+      const distance: number = Math.abs(vec3.distance(cameraPos, chunkPos))
+
+      
+      const material: Material = chunk.getComponent(Material) as Material
+
+      if(distance < TERRAIN_CHUNK_SIZE * 1.1) {
+        if(!material.wireframe)
+          material.wireframe = true
+      } else if(material.wireframe) {
+        material.wireframe = false
+      }
+    })
   }
 
   onAdd = (entity: Entity) => {
-    //entity.addComponent(this.geometry)
-    //entity.addComponent(this.material)    
-
-    let chunkModelMatrix: mat4 = mat4.create()
-
     const step: number = 2.0 / this.chunkCount
     const scale: vec3 = [step * 0.5, 1.0, step * 0.5]
 
@@ -59,6 +77,8 @@ export default class Terrain implements Component {
         const terrainChunkGeometry: Geometry = new Plane(TERRAIN_CHUNK_SUBDEVISIONS) as Geometry
         terrainChunk.addComponent(terrainChunkGeometry)
 
+        // ToDo(Eric) Use shared material stored in terrain component?
+        // Set offset dynamically in material bind function
         const terrainChunkMaterial: Material = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height, chunkModelMatrix) as Material
         terrainChunk.addComponent(terrainChunkMaterial)
 

@@ -1,5 +1,7 @@
 import { mat4 } from "gl-matrix";
 import { Component } from "./components/component";
+import TerrainMaterial from "./components/materials/terrainMaterial";
+import Material from "./material";
 
 export default class Entity {
   modelMatrix: mat4
@@ -36,7 +38,6 @@ export default class Entity {
   }
 
   getComponent = (interfaceType: any): any | null => {
-
     /*
 
     ToDo(Eric) Error handling => invalid type / instance of interface
