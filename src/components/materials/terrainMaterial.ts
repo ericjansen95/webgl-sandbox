@@ -1,4 +1,4 @@
-import { vec3 } from "gl-matrix";
+import { mat4, vec3 } from "gl-matrix";
 import Material, { compileProgram, MaterialType } from "../../material";
 import { GL } from "../../renderer"
 
@@ -7,9 +7,14 @@ const fsTerrainSorce: string = require('/public/res/shader/terrain.fs') as strin
 
 export default class TerrainMaterial extends Material {
   heightmap: WebGLTexture
+  height: number
+  offsetMatrix: mat4
 
-  constructor(heightmapUri: string) {
+  constructor(heightmapUri: string, height: number, offsetMatrix) {
     super()
+
+    this.height = height
+    this.offsetMatrix = offsetMatrix
 
     this.type = "TERRAIN"
 
@@ -19,10 +24,13 @@ export default class TerrainMaterial extends Material {
     this.attributeLocations = attributeLocations
     this.uniformLocations = uniformLocations
 
+    this.uniformLocations.set('uOffsetMatrix', GL.getUniformLocation(program, 'uOffsetMatrix'))
+
     this.uniformLocations.set('uAmbientLight', GL.getUniformLocation(program, 'uAmbientLight'))
     this.uniformLocations.set('uLightDir', GL.getUniformLocation(program, 'uLightDir'))
 
     this.uniformLocations.set('uTexture', GL.getUniformLocation(program, 'uTexture'))
+    this.uniformLocations.set('uHeight', GL.getUniformLocation(program, 'uHeight'))
 
     this.heightmap = GL.createTexture();
     GL.bindTexture(GL.TEXTURE_2D, this.heightmap);
@@ -46,5 +54,7 @@ export default class TerrainMaterial extends Material {
     GL.uniform3fv(this.uniformLocations.get('uLightDir'), lightDir)
 
     GL.uniform1i(this.uniformLocations.get('uTexture'), textureLocation)
+    GL.uniform1f(this.uniformLocations.get('uHeight'), this.height)
+    GL.uniformMatrix4fv(this.uniformLocations.get('uOffsetMatrix'), false, this.offsetMatrix)
   }
 }

@@ -4,27 +4,31 @@ attribute vec3 aVertexNormal;
 uniform mat4 uModelMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
+
+uniform mat4 uOffsetMatrix;
+
 uniform sampler2D uTexture;
+uniform float uHeight;
 
 varying vec4 vVertexNormal;
 
 // ToDo(Eric) Move this in a uniform?
 float STEP = 0.00195;
 
-float HEIGHT_SCALAR = 0.025;
-
 void main() {
-  float heightLeft = texture2D(uTexture, vec2((aVertexPosition.x - STEP + 1.0) * 0.5, (aVertexPosition.z + 1.0) * 0.5)).y;
-  float heightTop = texture2D(uTexture, vec2((aVertexPosition.x + 1.0) * 0.5, (aVertexPosition.z + STEP + 1.0) * 0.5)).y;
-  float heightRight = texture2D(uTexture, vec2((aVertexPosition.x + STEP + 1.0) * 0.5, (aVertexPosition.z + 1.0) * 0.5)).y;
-  float heightBottom = texture2D(uTexture, vec2((aVertexPosition.x + 1.0) * 0.5, (aVertexPosition.z - STEP + 1.0) * 0.5)).y;
-  
-  float heightCenter = texture2D(uTexture, vec2((aVertexPosition.x + 1.0) * 0.5, (aVertexPosition.z + 1.0) * 0.5)).y;
 
-  vec4 position = vec4(aVertexPosition.x, aVertexPosition.y + heightCenter * HEIGHT_SCALAR, aVertexPosition.z, aVertexPosition.w);
+  vec2 uvPosition = (uOffsetMatrix * aVertexPosition).xz;
+
+  float heightLeft = texture2D(uTexture, vec2((uvPosition.x - STEP + 1.0) * 0.5, (uvPosition.y + 1.0) * 0.5)).y;
+  float heightTop = texture2D(uTexture, vec2((uvPosition.x + 1.0) * 0.5, (uvPosition.y + STEP + 1.0) * 0.5)).y;
+  float heightRight = texture2D(uTexture, vec2((uvPosition.x + STEP + 1.0) * 0.5, (uvPosition.y + 1.0) * 0.5)).y;
+  float heightBottom = texture2D(uTexture, vec2((uvPosition.x + 1.0) * 0.5, (uvPosition.y - STEP + 1.0) * 0.5)).y;
+  
+  float heightCenter = texture2D(uTexture, vec2((uvPosition.x + 1.0) * 0.5, (uvPosition.y + 1.0) * 0.5)).y;
+
+  vec4 position = vec4(aVertexPosition.x, aVertexPosition.y + heightCenter * uHeight, aVertexPosition.z, aVertexPosition.w);
 
   vVertexNormal = vec4(normalize(vec3((heightRight - heightLeft), 0.15, (heightBottom - heightTop))), heightCenter);
 
-  mat4 modelViewMatrix = uViewMatrix * uModelMatrix;
-  gl_Position = uProjectionMatrix * modelViewMatrix * position;  
+  gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * position;  
 }

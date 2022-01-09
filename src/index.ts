@@ -12,7 +12,7 @@ import Material from './material';
 import Terrain from './components/terrain';
 import { Component } from './components/component';
 
-const CAMERA_SPEED = 0.25;
+const CAMERA_SPEED = 250;
 
 const main = () => {
   

@@ -7,9 +7,9 @@ import Geometry from "./geometry";
 import LambertMaterial from "./materials/lambertMaterial";
 import TerrainMaterial from "./materials/terrainMaterial";
 
-const TERRAIN_PLANE_SUBDEVISIONS: number = 1024
 const TERRAIN_HEIGHTMAP_URI: string = "/res/tex/antarticaHeightmap.png"
 
+const TERRAIN_CHUNK_SUBDEVISIONS: number = 128
 const TERRAIN_CHUNK_SIZE = 200
 
 export default class Terrain implements Component {
@@ -21,7 +21,7 @@ export default class Terrain implements Component {
 
   chunkCount: number
 
-  constructor(size: number = 1000, height: number = 0) {
+  constructor(size: number = 1000, height: number = 30) {
     this.size = size + size % TERRAIN_CHUNK_SIZE
     this.height = height
 
@@ -56,11 +56,10 @@ export default class Terrain implements Component {
         const terrainChunk: Entity = new Entity()
         terrainChunk.modelMatrix = chunkModelMatrix
 
-        const terrainChunkGeometry: Geometry = new Plane() as Geometry
+        const terrainChunkGeometry: Geometry = new Plane(TERRAIN_CHUNK_SUBDEVISIONS) as Geometry
         terrainChunk.addComponent(terrainChunkGeometry)
 
-        const terrainChunkMaterial: Material = new LambertMaterial([1.0, 0.0, 1.0]) as Material
-        terrainChunkMaterial.wireframe = true
+        const terrainChunkMaterial: Material = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height, chunkModelMatrix) as Material
         terrainChunk.addComponent(terrainChunkMaterial)
 
         entity.children.push(terrainChunk)
