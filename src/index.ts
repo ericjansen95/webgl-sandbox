@@ -32,6 +32,7 @@ const main = () => {
   const terrainComponent: Component = new Terrain() as Component
   terrain.addComponent(terrainComponent)
 
+  /*
   // WATER
   const water: Entity = new Entity()
   const waterGeometry: Geometry = new Plane(8) as Geometry
@@ -48,6 +49,7 @@ const main = () => {
              [100.0, 1.0, 100.0])
 
   terrain.children.push(water)
+  */
 
   // register input events
   Input.init(document)
