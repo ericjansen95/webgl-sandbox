@@ -10,12 +10,10 @@ export default class TerrainMaterial extends Material {
   height: number
   offsetMatrix: mat4
 
-  constructor(heightmapUri: string, height: number, offsetMatrix) {
+  constructor(heightmapUri: string, height: number) {
     super()
 
     this.height = height
-    this.offsetMatrix = offsetMatrix
-
     this.type = "TERRAIN"
 
     const {program, attributeLocations, uniformLocations} = compileProgram(vsTerrainSource, fsTerrainSorce)
@@ -49,12 +47,12 @@ export default class TerrainMaterial extends Material {
     });
   }
 
-  bind = (lightDir: vec3, textureLocation: number) => {
+  bind = (lightDir: vec3, textureLocation: number, offsetMatrix: mat4) => {
     GL.uniform1f(this.uniformLocations.get('uAmbientLight'), 0.25)
     GL.uniform3fv(this.uniformLocations.get('uLightDir'), lightDir)
 
     GL.uniform1i(this.uniformLocations.get('uTexture'), textureLocation)
     GL.uniform1f(this.uniformLocations.get('uHeight'), this.height)
-    GL.uniformMatrix4fv(this.uniformLocations.get('uOffsetMatrix'), false, this.offsetMatrix)
+    GL.uniformMatrix4fv(this.uniformLocations.get('uOffsetMatrix'), false, offsetMatrix)
   }
 }

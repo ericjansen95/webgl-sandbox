@@ -45,14 +45,14 @@ export default class Renderer {
     return true
   }
 
-  bindMaterial = (material: Material, modelMatrix: mat4, viewMatrix: mat4, projectionMatrix: mat4, lightDir: vec3): boolean => {
+  bindMaterial = (material: Material, worldMatrix: mat4, modelMatrix: mat4, viewMatrix: mat4, projectionMatrix: mat4, lightDir: vec3): boolean => {
     
     GL.useProgram(material.program)       
 
     GL.uniformMatrix4fv(
       material.uniformLocations.get('uModelMatrix'),
       false,
-      modelMatrix
+      worldMatrix
     )
 
     GL.uniformMatrix4fv(
@@ -73,7 +73,7 @@ export default class Renderer {
         return true
       }
       case "TERRAIN": {
-        material.bind(lightDir, 0)
+        material.bind(lightDir, 0, modelMatrix)
         return true
       }
       default: {
@@ -84,12 +84,6 @@ export default class Renderer {
   }
 
   renderEntity = (entity: Entity, worldMatrix: mat4, camera: Camera) => {
-    //ToDo(Eric) Split update and render loop => how to handle worldMatrix for update?
-    entity.components.forEach(curComponent => {
-      if(curComponent.onUpdate)
-        curComponent.onUpdate(entity, camera)
-    })
-
     const geometry: Geometry | null = entity.getComponent(Geometry)
     const material: Material | null = entity.getComponent(Material)
 
@@ -137,6 +131,7 @@ export default class Renderer {
 
     this.bindMaterial(material, 
                       worldMatrix,
+                      entity.modelMatrix,
                       camera.viewMatrix,
                       camera.projectionMatrix,
                       vec3.normalize(vec3.create(), [-0.75, 0.5, 0.0]))
@@ -160,12 +155,17 @@ export default class Renderer {
   }
 
   renderChildren = (parent: Entity, parentWorldMatrix: mat4, camera: Camera) => {
-
     const worldMatrix: mat4 = mat4.create()
 
     mat4.multiply(worldMatrix,
                   parentWorldMatrix,
                   parent.modelMatrix)    
+
+    //ToDo(Eric) Split update and render loop => how to handle worldMatrix for update?
+    parent.components.forEach(curComponent => {
+      if(curComponent.onUpdate)
+        curComponent.onUpdate(parent, camera)
+    })
 
     this.renderEntity(parent, worldMatrix, camera)              
 

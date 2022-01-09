@@ -32,7 +32,6 @@ const main = () => {
   const terrainComponent: Component = new Terrain() as Component
   terrain.addComponent(terrainComponent)
 
-  /*
   // WATER
   const water: Entity = new Entity()
   const waterGeometry: Geometry = new Plane(8) as Geometry
@@ -42,14 +41,13 @@ const main = () => {
 
   mat4.translate(water.modelMatrix,
                  water.modelMatrix,
-                 [0.0, 0.001, 0.0])
+                 [0.0, 8.0, 0.0])
 
   mat4.scale(water.modelMatrix,
              water.modelMatrix,
-             [100.0, 1.0, 100.0])
+             [10.0, 1.0, 10.0])
 
   terrain.children.push(water)
-  */
 
   // register input events
   Input.init(document)
@@ -59,7 +57,7 @@ const main = () => {
 
   // ToDo(Eric) Move this into global input system which allows keybinds               
   let inputDir: vec3 = vec3.create();  
-  
+
   const update = curTime => {
     Time.tick(curTime)
 
