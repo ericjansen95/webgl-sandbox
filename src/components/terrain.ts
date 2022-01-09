@@ -23,15 +23,17 @@ export default class Terrain implements Component {
   highGeometry: Geometry
 
   chunkCount: number
-  chunks: Array<{entity: Entity, active: boolean}>
+  activeChunkIndex: number | null
+  chunks: Array<Entity>
 
   // size is in units / m
-  constructor(size: number = 2000, height: number = 80) {
+  constructor(size: number = 2000, height: number = 50) {
     this.size = size + size % TERRAIN_CHUNK_SIZE
     this.height = height
 
+    this.activeChunkIndex = null
     this.chunkCount = this.size / TERRAIN_CHUNK_SIZE
-    this.chunks = new Array<{entity: Entity, active: boolean}>()
+    this.chunks = new Array<Entity>()
 
     this.lowGeometry = new Plane(TERRAIN_CHUNK_LOW_SUBDEVISIONS) as Geometry
     this.highGeometry = new Plane(TERRAIN_CHUNK_HIGH_SUBDEVISIONS) as Geometry
@@ -53,12 +55,12 @@ export default class Terrain implements Component {
                    chunkModelMatrix,
                    scale)
 
-        const entity: Entity = new Entity()
-        entity.modelMatrix = chunkModelMatrix
-        entity.addComponent(this.lowGeometry)
-        entity.addComponent(this.material)
+        const chunk: Entity = new Entity()
+        chunk.modelMatrix = chunkModelMatrix
+        chunk.addComponent(this.lowGeometry)
+        chunk.addComponent(this.material)
 
-        this.chunks.push({entity, active: false})
+        this.chunks.push(chunk)
       }
     }
   }
@@ -73,11 +75,12 @@ export default class Terrain implements Component {
     cameraPos[0] += this.size
     cameraPos[2] += this.size
     
-    this.chunks.forEach(chunk => {
+    for(let chunkIndex = 0; chunkIndex < this.chunks.length; chunkIndex++) {
+      const chunk: Entity = this.chunks[chunkIndex]
       // ToDo(Eric) Create bounding box class and store it in geometry component
       // => calculate only on geo update and not every frame!
       const chunkModelMatrix: mat4 = mat4.create()
-      mat4.multiply(chunkModelMatrix, entity.modelMatrix, chunk.entity.modelMatrix)
+      mat4.multiply(chunkModelMatrix, entity.modelMatrix, chunk.modelMatrix)
 
       const chunkPos: vec3 = vec3.create()
       mat4.getTranslation(chunkPos, chunkModelMatrix)
@@ -86,29 +89,39 @@ export default class Terrain implements Component {
       const chunkCornerLowerLeft: vec2 = [chunkPos[0] - TERRAIN_CHUNK_SIZE + this.size, chunkPos[2] + TERRAIN_CHUNK_SIZE + this.size]      
       const chunkCornerUpperRight: vec2 = [chunkPos[0] + TERRAIN_CHUNK_SIZE + this.size, chunkPos[2] - TERRAIN_CHUNK_SIZE + this.size]
 
-      const material: Material = chunk.entity.getComponent(Material) as Material
-
       // ToDo(Eric) Create method on bb class to handle checks
       if(cameraPos[0] >= chunkCornerLowerLeft[0] && 
         cameraPos[0] <= chunkCornerUpperRight[0] && 
         cameraPos[2] <= chunkCornerLowerLeft[1] && 
         cameraPos[2] >= chunkCornerUpperRight[1]) {
-        if(!chunk.active) {
-          chunk.active = true
-          // TMP
-          chunk.entity.components[0] = this.highGeometry as Component
-        }  
-      } else if (chunk.active) {
-        chunk.active = false
-        // TMP
-        chunk.entity.components[0] = this.lowGeometry as Component
+
+        if(chunkIndex === this.activeChunkIndex) return  
+
+        this.chunks.forEach(chunk => {chunk.components[0] = this.lowGeometry as Component })
+
+        this.activeChunkIndex = chunkIndex
+
+        for(let offsetScalar = -1; offsetScalar <= 1; offsetScalar++) {
+          const chunkIndex: number = this.activeChunkIndex + this.chunkCount * offsetScalar
+
+          // ToDo(Eric) Find a real solution
+          // this is trash!
+          try { this.chunks[chunkIndex - 1].components[0] = this.highGeometry as Component } catch {}
+          try { this.chunks[chunkIndex].components[0] = this.highGeometry as Component } catch {}
+          try { this.chunks[chunkIndex + 1].components[0] = this.highGeometry as Component } catch {}
+        }
       }
-    })
+    }
+
+    /*
+    this.chunks.forEach(chunk => {chunk.components[0] = this.lowGeometry as Component })
+    this.activeChunkIndex = null
+    */
   }
 
   onAdd = (entity: Entity) => {
     
-    entity.children = this.chunks.map(({entity}) => entity)
+    entity.children = this.chunks
 
     mat4.scale(entity.modelMatrix,
                entity.modelMatrix,
