@@ -2,7 +2,7 @@
 import { mat4 } from 'gl-matrix';
 
 const DEFAULT_Z_NEAR: number = 0.1
-const DEFAULT_Z_FAR: number = 10000.0
+const DEFAULT_Z_FAR: number = 100000.0
 
 export default class Camera {
   projectionMatrix: mat4
@@ -15,7 +15,7 @@ export default class Camera {
     this.viewMatrix = mat4.create()
     mat4.translate(this.viewMatrix,
                   this.viewMatrix, 
-                  [0.0, -250, -3000.0])
+                  [0.0, -750, -20000.0])
 
     mat4.rotateX(this.viewMatrix,
                  this.viewMatrix,

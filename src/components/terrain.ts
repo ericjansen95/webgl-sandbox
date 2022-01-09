@@ -6,11 +6,14 @@ import Plane from "../plane";
 import { Component } from "./component";
 import Geometry from "./geometry";
 import TerrainMaterial from "./materials/terrainMaterial";
+import UnlitMaterial from "./materials/unlitMaterial";
 
 const TERRAIN_HEIGHTMAP_URI: string = "/res/tex/antarticaHeightmap.png"
 
-const TERRAIN_CHUNK_LOW_SUBDEVISIONS: number = 32
-const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 512
+// these settings are also related to the heightmap resolution
+// going to high with a low heightmap makes not much sense
+const TERRAIN_CHUNK_LOW_SUBDEVISIONS: number = 4
+const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 128
 
 const TERRAIN_CHUNK_SIZE = 200
 
@@ -18,8 +21,9 @@ export default class Terrain implements Component {
   size: number
   height: number
 
-  material: Material
+  lowMaterial: Material
   lowGeometry: Geometry
+  highMaterial: Material
   highGeometry: Geometry
 
   chunkCount: number
@@ -27,7 +31,7 @@ export default class Terrain implements Component {
   chunks: Array<Entity>
 
   // size is in units / m
-  constructor(size: number = 2000, height: number = 50) {
+  constructor(size: number = 10000, height: number = 250) {
     this.size = size + size % TERRAIN_CHUNK_SIZE
     this.height = height
 
@@ -35,9 +39,12 @@ export default class Terrain implements Component {
     this.chunkCount = this.size / TERRAIN_CHUNK_SIZE
     this.chunks = new Array<Entity>()
 
+    this.lowMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height) as Material
+    this.lowMaterial.wireframe = true
     this.lowGeometry = new Plane(TERRAIN_CHUNK_LOW_SUBDEVISIONS) as Geometry
+
+    this.highMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height) as Material
     this.highGeometry = new Plane(TERRAIN_CHUNK_HIGH_SUBDEVISIONS) as Geometry
-    this.material = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height) as Material
 
     const step: number = 2.0 / this.chunkCount
     const scale: vec3 = [step * 0.5, 1.0, step * 0.5]
@@ -58,7 +65,7 @@ export default class Terrain implements Component {
         const chunk: Entity = new Entity()
         chunk.modelMatrix = chunkModelMatrix
         chunk.addComponent(this.lowGeometry)
-        chunk.addComponent(this.material)
+        chunk.addComponent(this.lowMaterial)
 
         this.chunks.push(chunk)
       }
@@ -97,7 +104,11 @@ export default class Terrain implements Component {
 
         if(chunkIndex === this.activeChunkIndex) return  
 
-        this.chunks.forEach(chunk => {chunk.components[0] = this.lowGeometry as Component })
+        // TMP
+        this.chunks.forEach(chunk => {
+          chunk.components[0] = this.lowGeometry as Component
+          chunk.components[1] = this.lowMaterial as Component 
+        })
 
         this.activeChunkIndex = chunkIndex
 
@@ -106,9 +117,18 @@ export default class Terrain implements Component {
 
           // ToDo(Eric) Find a real solution
           // this is trash!
-          try { this.chunks[chunkIndex - 1].components[0] = this.highGeometry as Component } catch {}
-          try { this.chunks[chunkIndex].components[0] = this.highGeometry as Component } catch {}
-          try { this.chunks[chunkIndex + 1].components[0] = this.highGeometry as Component } catch {}
+          try { 
+            this.chunks[chunkIndex - 1].components[0] = this.highGeometry as Component
+            this.chunks[chunkIndex - 1].components[1] = this.highMaterial as Component
+          } catch {}
+          try { 
+            this.chunks[chunkIndex].components[0] = this.highGeometry as Component
+            this.chunks[chunkIndex].components[1] = this.highMaterial as Component
+          } catch {}
+          try { 
+            this.chunks[chunkIndex + 1].components[0] = this.highGeometry as Component
+            this.chunks[chunkIndex + 1].components[1] = this.highMaterial as Component
+          } catch {}
         }
       }
     }

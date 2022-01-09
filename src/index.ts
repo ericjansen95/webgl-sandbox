@@ -12,7 +12,7 @@ import Material from './material';
 import Terrain from './components/terrain';
 import { Component } from './components/component';
 
-const CAMERA_SPEED = 250;
+const CAMERA_SPEED = 2000;
 
 const main = () => {
   
@@ -32,6 +32,7 @@ const main = () => {
   const terrainComponent: Component = new Terrain() as Component
   terrain.addComponent(terrainComponent)
 
+  /*
   // WATER
   const water: Entity = new Entity()
   const waterGeometry: Geometry = new Plane(8) as Geometry
@@ -41,13 +42,14 @@ const main = () => {
 
   mat4.translate(water.modelMatrix,
                  water.modelMatrix,
-                 [0.0, 8.0, 0.0])
+                 [0.0, 20.0, 0.0])
 
   mat4.scale(water.modelMatrix,
              water.modelMatrix,
-             [10.0, 1.0, 10.0])
+             [100.0, 1.0, 100.0])
 
   terrain.children.push(water)
+  */
 
   // register input events
   Input.init(document)

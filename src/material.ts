@@ -1,7 +1,7 @@
 import { Component } from "./components/component"
 import { GL } from "./renderer"
 
-export type MaterialType = "LAMBERT" | "TERRAIN"
+export type MaterialType = "LAMBERT" | "TERRAIN" | "UNLIT"
 
 // @ts-expect-error
 export default class Material implements Component {

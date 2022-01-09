@@ -8,6 +8,7 @@ A basic WebGl renderer supporting obj geometry loading.
 - Component system for geometry and materials
 - Lambert and Phong lighting
 - Terrain rendering with vertex heightmap displacement
+- Discrete terrain space partitioning with geometric level of detail 
 
 <table>
   <tr>

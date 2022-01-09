@@ -76,6 +76,10 @@ export default class Renderer {
         material.bind(lightDir, 0, modelMatrix)
         return true
       }
+      case "UNLIT": {
+        material.bind()
+        return true
+      }
       default: {
         console.error("Renderer::bindMaterial(): Invalid or unimplemented material type!")
         return false
