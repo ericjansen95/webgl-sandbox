@@ -30,8 +30,8 @@ export default class Geometry implements Component {
     const vertexPositions: Array<Array<number>> = []
 
     objLines.forEach(line => {
-      const components: Array<string> = line.split(' ');
-      const prefix: string = components[0];
+      const components: Array<string> = line.split(' ')
+      const prefix: string = components[0]
   
       if(prefix === "#" || prefix === "s") return
   

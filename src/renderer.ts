@@ -2,9 +2,8 @@ import { vec3, mat4 } from "gl-matrix"
 import Camera from "./camera"
 import Material from "./material"
 import Entity from "./entity"
-import Time from "./time"
 import Geometry from "./components/geometry"
-import TerrainMaterial from "./components/materials/terrainMaterial"
+import Transform from "./components/transform"
 
 const DEFAULT_CLEAR_COLOR_LUMINANCE = 0.25
 
@@ -46,7 +45,7 @@ export default class Renderer {
     return true
   }
 
-  bindMaterial = (material: Material, worldMatrix: mat4, modelMatrix: mat4, viewMatrix: mat4, projectionMatrix: mat4, lightDir: vec3): boolean => {
+  bindMaterial = (material: Material, worldMatrix: mat4, viewMatrix: mat4, projectionMatrix: mat4, lightDir: vec3): boolean => {
     
     GL.useProgram(material.program)       
 
@@ -74,7 +73,7 @@ export default class Renderer {
         return true
       }
       case "TERRAIN": {
-        material.bind(lightDir, 0, modelMatrix)
+        material.bind(lightDir, 0, worldMatrix)
         return true
       }
       case "UNLIT": {
@@ -88,7 +87,7 @@ export default class Renderer {
     }
   }
 
-  renderEntity = (entity: Entity, worldMatrix: mat4, camera: Camera) => {
+  renderEntity = (entity: Entity, camera: Camera) => {
     const geometry: Geometry | null = entity.getComponent(Geometry)
     const material: Material | null = entity.getComponent(Material)
 
@@ -136,9 +135,8 @@ export default class Renderer {
       )
     } 
 
-    this.bindMaterial(material, 
-                      worldMatrix,
-                      entity.modelMatrix,
+    this.bindMaterial(material,
+                      entity.getComponent(Transform).worldMatrix,
                       camera.viewMatrix,
                       camera.projectionMatrix,
                       vec3.normalize(vec3.create(), [-0.75, 0.5, 0.0]))
@@ -160,26 +158,21 @@ export default class Renderer {
 
     this.drawCalls = 0
 
-    this.renderChildren(root, mat4.create(), camera)
+    this.renderChildren(root, camera)
   }
 
-  renderChildren = (parent: Entity, parentWorldMatrix: mat4, camera: Camera) => {
-    const worldMatrix: mat4 = mat4.create()
-
-    mat4.multiply(worldMatrix,
-                  parentWorldMatrix,
-                  parent.modelMatrix)    
+  renderChildren = (self: Entity, camera: Camera) => {
 
     //ToDo(Eric) Split update and render loop => how to handle worldMatrix for update?
-    parent.components.forEach(curComponent => {
+    self.components.forEach(curComponent => {
       if(curComponent.onUpdate)
-        curComponent.onUpdate(parent, camera)
+        curComponent.onUpdate(self, camera)
     })
 
-    this.renderEntity(parent, worldMatrix, camera)              
+    this.renderEntity(self, camera)              
 
-    parent.children.forEach(child => {
-      this.renderChildren(child, worldMatrix, camera)
+    self.getComponent(Transform).children.forEach(child => {
+      this.renderChildren(child, camera)
     })
   }
 }

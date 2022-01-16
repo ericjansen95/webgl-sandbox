@@ -7,7 +7,7 @@ export default class TerrainChunk implements Component {
 
   }
 
-  onAdd = (entity: Entity) => {
+  onAdd = (self: Entity) => {
 
   }
 }

@@ -6,15 +6,20 @@ import Plane from "../plane";
 import { Component } from "./component";
 import Geometry from "./geometry";
 import TerrainMaterial from "./materials/terrainMaterial";
+import UnlitMaterial from "./materials/unlitMaterial";
+import Transform from "./transform";
 
 const TERRAIN_HEIGHTMAP_URI: string = "/res/tex/antarticaHeightmap.png"
 
 // these settings are also related to the heightmap resolution
 // going to high with a low heightmap makes not much sense
-const TERRAIN_CHUNK_LOW_SUBDEVISIONS: number = 8
-const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 128
 
-const TERRAIN_CHUNK_SIZE = 200
+// high subdevisions ~= heightmap resolution / (terrain size / chunk size)
+// 64 ~= 41 = 2048 / (10000 / 200)
+const TERRAIN_CHUNK_LOW_SUBDEVISIONS: number = 1
+const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 64
+
+const TERRAIN_CHUNK_SIZE = 0.1
 
 export default class Terrain implements Component {
   size: number
@@ -30,39 +35,44 @@ export default class Terrain implements Component {
   chunks: Array<Entity>
 
   // size is in units / m
-  constructor(size: number = 10000, height: number = 250) {
-    this.size = size + size % TERRAIN_CHUNK_SIZE
+  constructor(size: number = 2, height: number = 1) {
+    this.size = size
+
+    console.log("size =", this.size)
+
     this.height = height
 
     this.activeChunkIndex = null
-    this.chunkCount = this.size / TERRAIN_CHUNK_SIZE
     this.chunks = new Array<Entity>()
 
-    this.lowMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height) as Material
-    // this.lowMaterial.wireframe = true
+    this.lowMaterial = new UnlitMaterial([1.0, 0.0, 1.0]) as Material
+    // this.lowMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height) as Material
+    this.lowMaterial.wireframe = true
     this.lowGeometry = new Plane(TERRAIN_CHUNK_LOW_SUBDEVISIONS) as Geometry
 
     this.highMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height) as Material
     this.highGeometry = new Plane(TERRAIN_CHUNK_HIGH_SUBDEVISIONS) as Geometry
 
-    const step: number = 2.0 / this.chunkCount
-    const scale: vec3 = [step * 0.5, 1.0, step * 0.5]
+    const step: number = 1.0 / (this.size / TERRAIN_CHUNK_SIZE)
+
+    console.log("step =", step)
+
+    const chunkScale: vec3 = [step * 0.5, 1.0, step * 0.5]
+
+    console.log("scale =", chunkScale)
 
     // ToDo(Eric) Figure out how to do this in one loop!
-    for(let xOffset = -1.0; xOffset < 1.0; xOffset += step) {
-      for(let zOffset = 1.0; zOffset > -1.0; zOffset -= step) {
-        const chunkOffset: vec3 = [xOffset + step * 0.5, 0.0, zOffset - step * 0.5]
+    for(let xPos = 0.0; xPos <= 1.0; xPos += step) {
+      for(let zPos = 0.0; zPos <= 1.0; zPos += step) {
+        const chunkPos: vec3 = [xPos, 0.0, zPos]
 
-        const chunkModelMatrix: mat4 = mat4.create()
-        mat4.translate(chunkModelMatrix,
-                       chunkModelMatrix, 
-                       chunkOffset)
-        mat4.scale(chunkModelMatrix,
-                   chunkModelMatrix,
-                   scale)
+        //console.log(chunkPos)
 
         const chunk: Entity = new Entity()
-        chunk.modelMatrix = chunkModelMatrix
+
+        chunk.getComponent(Transform).setPosition(chunkPos)
+        chunk.getComponent(Transform).setScale(chunkScale)
+
         chunk.addComponent(this.lowGeometry)
         chunk.addComponent(this.lowMaterial)
 
@@ -71,7 +81,11 @@ export default class Terrain implements Component {
     }
   }
 
-  onUpdate = (entity: Entity, camera: Camera) => {
+  onUpdate = (self: Entity, camera: Camera) => {
+
+    //console.log(this.chunks.filter(chunk => !chunk.getComponent(Transform)))
+    return
+
     const cameraPos: vec3 = vec3.create()
     mat4.getTranslation(cameraPos, camera.viewMatrix)
     // ToDo(Eric) Check why we have to make this transform
@@ -83,13 +97,9 @@ export default class Terrain implements Component {
     
     for(let chunkIndex = 0; chunkIndex < this.chunks.length; chunkIndex++) {
       const chunk: Entity = this.chunks[chunkIndex]
-      // ToDo(Eric) Create bounding box class and store it in geometry component
-      // => calculate only on geo update and not every frame!
-      const chunkModelMatrix: mat4 = mat4.create()
-      mat4.multiply(chunkModelMatrix, entity.modelMatrix, chunk.modelMatrix)
 
       const chunkPos: vec3 = vec3.create()
-      mat4.getTranslation(chunkPos, chunkModelMatrix)
+      mat4.getTranslation(chunkPos, chunk.getComponent(Transform).worldMatrix)
       
       // ToDo(Eric) Transform bb check in 0-1 range on both axis
       const chunkCornerLowerLeft: vec2 = [chunkPos[0] - TERRAIN_CHUNK_SIZE + this.size, chunkPos[2] + TERRAIN_CHUNK_SIZE + this.size]      
@@ -138,12 +148,8 @@ export default class Terrain implements Component {
     */
   }
 
-  onAdd = (entity: Entity) => {
-    
-    entity.children = this.chunks
-
-    mat4.scale(entity.modelMatrix,
-               entity.modelMatrix,
-               [this.size, 1.0, this.size])
+  onAdd = (self: Entity) => {
+    this.chunks.forEach(chunk => self.getComponent(Transform).addChild(chunk))
+    self.getComponent(Transform).setScale([this.size, 1.0, this.size])
   }
 }

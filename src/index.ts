@@ -11,8 +11,11 @@ import Time from './time';
 import Material from './material';
 import Terrain from './components/terrain';
 import { Component } from './components/component';
+import Transform from './components/transform';
 
-const CAMERA_SPEED = 2000;
+const dragonObj: string = require('/public/res/geo/dragon.txt') as string
+
+const CAMERA_SPEED = 1;
 
 const main = () => {
   
@@ -27,6 +30,27 @@ const main = () => {
   const renderer = new Renderer(canvas)
 
   const camera: Camera = new Camera(45, canvas.width / canvas.height)
+
+  /*
+  const dragonGeometry: Geometry = new Geometry() as Geometry
+  dragonGeometry.load(dragonObj)
+
+  const dragonMaterial: Material = new LambertMaterial([1.0, 1.0, 1.0]) as Material
+
+  const dragon: Entity = new Entity()
+  dragon.addComponent(dragonGeometry)
+  dragon.addComponent(dragonMaterial)
+
+  const dragon2: Entity = new Entity()
+  dragon2.addComponent(dragonGeometry)
+  dragon2.addComponent(dragonMaterial)
+    
+  dragon.getComponent(Transform).setPosition([0.0, 0.0, 0.0])
+  dragon2.getComponent(Transform).setScale([0.25, 0.25, 0.25])
+  dragon2.getComponent(Transform).setPosition([-2.0, 0.0, 0.0])
+
+  dragon.getComponent(Transform).addChild(dragon2)
+  */
 
   // TERRAIN
   const terrain: Entity = new Entity()
@@ -85,9 +109,9 @@ const main = () => {
     // ToDo(Eric) Wrap this in Debug static class
     drawCounter.textContent = `${renderer.drawCalls} Draw Calls >:[`
 
-    requestAnimationFrame(update);
+    requestAnimationFrame(update)
   }
-  requestAnimationFrame(update);
+  requestAnimationFrame(update)
 }
 
 window.onload = main;

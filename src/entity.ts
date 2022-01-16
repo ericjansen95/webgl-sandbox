@@ -1,17 +1,13 @@
-import { mat4 } from "gl-matrix";
 import { Component } from "./components/component";
-import TerrainMaterial from "./components/materials/terrainMaterial";
-import Material from "./material";
+import Transform from "./components/transform";
 
 export default class Entity {
-  modelMatrix: mat4
-  children: Array<Entity> 
   components: Array<Component>
 
   constructor() {
-    this.modelMatrix = mat4.create()
-    this.children = new Array<Entity>()
     this.components = new Array<Component>()
+
+    this.addComponent(new Transform())
   }
 
   addComponent = (component: any) => {
