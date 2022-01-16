@@ -1,7 +1,7 @@
 attribute vec4 aVertexPosition;
 attribute vec3 aVertexNormal;
 
-uniform mat4 uModelMatrix;
+uniform mat4 uWorldMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 
@@ -17,7 +17,7 @@ float STEP = 0.00195;
 
 void main() {
 
-  vec2 uvPosition = (uOffsetMatrix * aVertexPosition).xz;
+  vec2 uvPosition = (uOffsetMatrix * aVertexPosition).xz * 2.0 - vec2(1.0, 1.0);
 
   float heightLeft = texture2D(uTexture, vec2((uvPosition.x - STEP + 1.0) * 0.5, (uvPosition.y + 1.0) * 0.5)).y;
   float heightTop = texture2D(uTexture, vec2((uvPosition.x + 1.0) * 0.5, (uvPosition.y + STEP + 1.0) * 0.5)).y;
@@ -30,5 +30,5 @@ void main() {
 
   vVertexNormal = vec4(normalize(vec3((heightRight - heightLeft), 0.15, (heightBottom - heightTop))), heightCenter);
 
-  gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * position;  
+  gl_Position = uProjectionMatrix * uViewMatrix * uWorldMatrix * position;  
 }

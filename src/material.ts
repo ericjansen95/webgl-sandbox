@@ -42,7 +42,7 @@ export const compileProgram = (vsSource: string, fsSource: string): {program: Ma
 
   const uniformLocations: Map<string, WebGLUniformLocation> = new Map<string, WebGLUniformLocation>();
 
-  uniformLocations.set('uModelMatrix', GL.getUniformLocation(program, 'uModelMatrix'))
+  uniformLocations.set('uWorldMatrix', GL.getUniformLocation(program, 'uWorldMatrix'))
   uniformLocations.set('uViewMatrix', GL.getUniformLocation(program, 'uViewMatrix'))
   uniformLocations.set('uProjectionMatrix', GL.getUniformLocation(program, 'uProjectionMatrix'))
       

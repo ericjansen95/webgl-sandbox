@@ -45,14 +45,18 @@ export default class Renderer {
     return true
   }
 
-  bindMaterial = (material: Material, worldMatrix: mat4, viewMatrix: mat4, projectionMatrix: mat4, lightDir: vec3): boolean => {
-    
+  bindMaterial = (entity: Entity, viewMatrix: mat4, projectionMatrix: mat4, lightDir: vec3): boolean => {
+    const transform: Transform = entity.getComponent(Transform) as Transform
+    const material: Material = entity.getComponent(Material) as Material
+  
+    if(!transform || !material) return false
+
     GL.useProgram(material.program)       
 
     GL.uniformMatrix4fv(
-      material.uniformLocations.get('uModelMatrix'),
+      material.uniformLocations.get('uWorldMatrix'),
       false,
-      worldMatrix
+      transform.worldMatrix
     )
 
     GL.uniformMatrix4fv(
@@ -73,7 +77,7 @@ export default class Renderer {
         return true
       }
       case "TERRAIN": {
-        material.bind(lightDir, 0, worldMatrix)
+        material.bind(lightDir, 0, transform.modelMatrix)
         return true
       }
       case "UNLIT": {
@@ -135,11 +139,10 @@ export default class Renderer {
       )
     } 
 
-    this.bindMaterial(material,
-                      entity.getComponent(Transform).worldMatrix,
-                      camera.viewMatrix,
-                      camera.projectionMatrix,
-                      vec3.normalize(vec3.create(), [-0.75, 0.5, 0.0]))
+    if(!this.bindMaterial(entity,
+                          camera.viewMatrix,
+                          camera.projectionMatrix,
+                          vec3.normalize(vec3.create(), [-0.75, 0.5, 0.0]))) return
 
     {
       const offset: number = 0
