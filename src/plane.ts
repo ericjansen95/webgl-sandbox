@@ -1,3 +1,4 @@
+import { vec3 } from "gl-matrix";
 import Geometry, { calcNormals } from "./components/geometry";
 
 export default class Plane extends Geometry {
@@ -7,7 +8,9 @@ export default class Plane extends Geometry {
     this.vertex = {
       count: 3 * 3 * 2 * subdivisions * subdivisions,
       positions: new Array<number>(),
-      normals: new Array<number>()
+      normals: new Array<number>(),
+      min: vec3.create(),
+      max: vec3.create()
     }
 
     const step: number = 2.0 / subdivisions

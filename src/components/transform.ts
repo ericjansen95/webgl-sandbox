@@ -60,18 +60,15 @@ export default class Transform implements Component {
 
     this.modelMatrix = mat4.create()
 
+    mat4.translate(this.modelMatrix, this.modelMatrix, this.position)
+
+    mat4.scale(this.modelMatrix, this.modelMatrix, this.scale)
+
     // ToDo(Eric) Is this possible in one call with the library?
     mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotation[0])
     mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotation[1])
     mat4.rotateZ(this.modelMatrix, this.modelMatrix, this.rotation[2])  
 
-    mat4.translate(this.modelMatrix, this.modelMatrix, this.position)
-
-    mat4.scale(this.modelMatrix, this.modelMatrix, this.scale)
-
-    if(!this.parent) return
-
-    this.worldMatrix = mat4.clone(this.modelMatrix)    
-    mat4.multiply(this.worldMatrix, this.parent.worldMatrix, this.worldMatrix)
+    this.worldMatrix = this.parent ? mat4.multiply(this.worldMatrix, this.parent.worldMatrix, this.modelMatrix) : mat4.clone(this.modelMatrix)    
   }
 }

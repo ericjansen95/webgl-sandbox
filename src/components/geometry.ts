@@ -7,6 +7,8 @@ export default class Geometry implements Component {
     count: number
     positions: Array<number>
     normals: Array<number>
+    min: vec3
+    max: vec3
   } | null
 
   buffer: {
@@ -23,7 +25,9 @@ export default class Geometry implements Component {
     this.vertex = {
       count: 0,
       positions: new Array<number>(),
-      normals: new Array<number>()
+      normals: new Array<number>(),
+      min: vec3.create(),
+      max: vec3.create()
     }
 
     const objLines: Array<string> = obj.split('\n')
@@ -37,10 +41,18 @@ export default class Geometry implements Component {
   
       components.shift();
   
-      const values: Array<number> = components.map(value => parseFloat(value))
-  
+      const values: Array<number> = components.map(value => parseFloat(value))                  
+
       if(prefix === "v") {
         vertexPositions.push(values)
+
+        this.vertex.min = [Math.min(values[0], this.vertex.min[0]),
+                           Math.min(values[1], this.vertex.min[1]),
+                           Math.min(values[2], this.vertex.min[2])]
+
+        this.vertex.max = [Math.max(values[0], this.vertex.max[0]),
+                           Math.max(values[1], this.vertex.max[1]),
+                           Math.max(values[2], this.vertex.max[2])] 
       }
       else if(prefix === "f") {
         this.vertex.positions.push(...vertexPositions[values[0] - 1], 

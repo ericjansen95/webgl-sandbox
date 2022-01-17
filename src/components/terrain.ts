@@ -6,6 +6,7 @@ import Plane from "../plane";
 import { Component } from "./component";
 import Geometry from "./geometry";
 import TerrainMaterial from "./materials/terrainMaterial";
+import UnlitMaterial from "./materials/unlitMaterial";
 import Transform from "./transform";
 
 const TERRAIN_HEIGHTMAP_URI: string = "/res/tex/antarticaHeightmap.png"
@@ -15,10 +16,10 @@ const TERRAIN_HEIGHTMAP_URI: string = "/res/tex/antarticaHeightmap.png"
 
 // high subdevisions ~= heightmap resolution / (terrain size / chunk size)
 // 64 ~= 41 = 2048 / (10000 / 200)
-const TERRAIN_CHUNK_LOW_SUBDEVISIONS: number = 8
+const TERRAIN_CHUNK_LOW_SUBDEVISIONS: number = 1
 const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 64
 
-const TERRAIN_CHUNK_SIZE = 200
+const TERRAIN_CHUNK_SIZE = 1
 
 export default class Terrain implements Component {
   size: number
@@ -34,7 +35,7 @@ export default class Terrain implements Component {
   chunks: Array<Entity>
 
   // size is in units / m
-  constructor(size: number = 10000) {
+  constructor(size: number = 10) {
     this.size = size
 
     this.height = 0.01 // this.size * 0.0075
@@ -42,19 +43,29 @@ export default class Terrain implements Component {
     this.activeChunkIndex = null
     this.chunks = new Array<Entity>()
 
-    this.lowMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height) as Material
+    // this.lowMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height) as Material
+    this.lowMaterial = new UnlitMaterial([1.0, 0.0, 1.0]) as Material
+    this.lowMaterial.wireframe = true
     this.lowGeometry = new Plane(TERRAIN_CHUNK_LOW_SUBDEVISIONS) as Geometry
 
     this.highMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height) as Material
     this.highGeometry = new Plane(TERRAIN_CHUNK_HIGH_SUBDEVISIONS) as Geometry
 
-    const step: number = 1.0 / (this.size / TERRAIN_CHUNK_SIZE)
+    const chunkCount: number = this.size / TERRAIN_CHUNK_SIZE
+
+    console.log("chunk count =", chunkCount)
+
+    const step: number = 1.0 / chunkCount
+
+    console.log("step =", step)
 
     const chunkScale: vec3 = [step * 0.5, 1.0, step * 0.5]
 
+    console.log("chunk scale =", chunkScale)
+
     // ToDo(Eric) Figure out how to do this in one loop!
-    for(let xPos = 0.0; xPos <= 1.0; xPos += step) {
-      for(let zPos = 0.0; zPos <= 1.0; zPos += step) {
+    for(let xPos = 0.0; xPos < 1.0; xPos += step) {
+      for(let zPos = 0.0; zPos < 1.0; zPos += step) {
         const chunkPos: vec3 = [xPos, 0.0, zPos]
 
         const chunk: Entity = new Entity()

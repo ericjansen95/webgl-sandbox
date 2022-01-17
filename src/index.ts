@@ -12,6 +12,7 @@ import Material from './material';
 import Terrain from './components/terrain';
 import { Component } from './components/component';
 import Transform from './components/transform';
+import Aabb from './components/aabb';
 
 const dragonObj: string = require('/public/res/geo/dragon.txt') as string
 
@@ -31,33 +32,41 @@ const main = () => {
 
   const camera: Camera = new Camera(45, canvas.width / canvas.height)
 
-  /*
-  const dragonGeometry: Geometry = new Geometry() as Geometry
+
+  const dragonGeometry: Geometry = new Geometry()
   dragonGeometry.load(dragonObj)
 
   const dragonMaterial: Material = new LambertMaterial([1.0, 1.0, 1.0]) as Material
 
+  const dragonAabb: Aabb = new Aabb(dragonGeometry.vertex.min, dragonGeometry.vertex.max)
+  
+  const dragonAabb2: Aabb = new Aabb(dragonGeometry.vertex.min, dragonGeometry.vertex.max)
+
   const dragon: Entity = new Entity()
   dragon.addComponent(dragonGeometry)
   dragon.addComponent(dragonMaterial)
+  dragon.addComponent(dragonAabb)
 
   const dragon2: Entity = new Entity()
   dragon2.addComponent(dragonGeometry)
   dragon2.addComponent(dragonMaterial)
+  dragon2.addComponent(dragonAabb2)
     
-  dragon.getComponent(Transform).setPosition([0.0, 0.0, 0.0])
+  dragon.getComponent(Transform).setRotation([0.0, Math.PI * 0.5, 0.0])
+  dragon.getComponent(Transform).setPosition([-1.0, 0.0, 0.0])
+
   dragon2.getComponent(Transform).setScale([0.25, 0.25, 0.25])
-  dragon2.getComponent(Transform).setPosition([-2.0, 0.0, 0.0])
+  dragon2.getComponent(Transform).setRotation([0.0, Math.PI * 0.5, 0.0])
+  dragon2.getComponent(Transform).setPosition([-1.0, 0.0, 0.0])
 
   dragon.getComponent(Transform).addChild(dragon2)
-  */
+  /*
 
   // TERRAIN
   const terrain: Entity = new Entity()
   const terrainComponent: Component = new Terrain() as Component
   terrain.addComponent(terrainComponent)
 
-  /*
   // WATER
   const water: Entity = new Entity()
   const waterGeometry: Geometry = new Plane(8) as Geometry
@@ -101,7 +110,7 @@ const main = () => {
                               inputDir, 
                               CAMERA_SPEED * Time.deltaTime))
 
-    renderer.renderScene(terrain, camera)
+    renderer.renderScene(dragon, camera)
 
     // ToDo(Eric) Wrap this in Debug static class
     fpsCounter.textContent = `${Math.ceil(1 / Time.deltaTime)} FPS`
