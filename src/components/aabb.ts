@@ -29,6 +29,7 @@ export default class Aabb implements Component {
     this.box.addComponent(boxGeometry)
     this.box.addComponent(boxMaterial)
 
+    // ToDo(Eric) Offset box verts instead of scaling the matrix
     const xScale: number = this.max[0] - this.min[0]
     const yScale: number = this.max[1] - this.min[1]
     const zScale: number = this.max[2] - this.min[2]
