@@ -1,5 +1,5 @@
 import { vec3 } from "gl-matrix";
-import Geometry, { calcNormals } from "./components/geometry";
+import Geometry, { calcNormals } from "./geometry";
 
 export default class Plane extends Geometry {
   constructor(subdivisions: number = 1) {

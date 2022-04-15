@@ -1,10 +1,10 @@
 import { mat4, vec2, vec3 } from "gl-matrix";
 import Camera from "./camera";
-import Entity from "../entity";
-import Material from "../material";
-import Plane from "../plane";
+import Entity from "../core/entity";
+import Material from "./material";
+import Plane from "./geometry/plane";
 import { Component } from "./component";
-import Geometry from "./geometry";
+import Geometry from "./geometry/geometry";
 import TerrainMaterial from "./materials/terrainMaterial";
 import UnlitMaterial from "./materials/unlitMaterial";
 import Transform from "./transform";

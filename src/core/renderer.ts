@@ -1,9 +1,9 @@
 import { vec3, mat4 } from "gl-matrix"
-import Camera from "./components/camera"
-import Material from "./material"
+import Camera from "../components/camera"
+import Material from "../components/material"
 import Entity from "./entity"
-import Geometry from "./components/geometry"
-import Transform from "./components/transform"
+import Geometry from "../components/geometry/geometry"
+import Transform from "../components/transform"
 
 const DEFAULT_CLEAR_COLOR_LUMINANCE = 0.25
 
@@ -100,6 +100,13 @@ export default class Renderer {
     const geometry: Geometry | null = entity.getComponent(Geometry)
     const material: Material | null = entity.getComponent(Material)
 
+    /*
+    const cameraComponent: Camera | null = camera.getComponent(Camera)
+    const entityPosition: vec3 = entity.getComponent(Transform).getPosition()
+
+    const isInFrustum: boolean = cameraComponent.isPointInFrustrum(entityPosition)
+    */
+
     if(!geometry.visible || !this.bindGeometry(geometry) || !material) return
 
     this.drawCalls++
@@ -151,7 +158,7 @@ export default class Renderer {
 
     {
       const offset: number = 0
-      const mode: number = material.wireframe ? GL.LINE_STRIP : GL.TRIANGLES
+      const mode: number = material.wireframe ? GL.LINE_LOOP : GL.TRIANGLES
       GL.drawArrays(mode, offset, geometry.vertex.count / 3.0)
     }
   }

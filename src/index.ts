@@ -1,19 +1,17 @@
-import { mat4, vec3 } from 'gl-matrix';
+import { vec3 } from 'gl-matrix';
 import Camera from './components/camera';
-import Entity from './entity';
-import Geometry from './components/geometry';
-import Input from './input';
+import Entity from './core/entity';
+import Geometry from './components/geometry/geometry';
+import Input from './core/input';
 import LambertMaterial from './components/materials/lambertMaterial';
-import Plane from './plane';
-import Console from './console';
-import Renderer from './renderer';
-import Time from './time';
-import Material from './material';
-import Terrain from './components/terrain';
-import { Component } from './components/component';
+import Console from './core/console';
+import Renderer from './core/renderer';
+import Time from './core/time';
+import Material from './components/material';
 import Transform from './components/transform';
-import BoundingBox from './components/boundingBox';
 import BoundingSphere from './components/boundingSphere';
+import Quad from './components/geometry/quad';
+import UnlitMaterial from './components/materials/unlitMaterial';
 
 const dragonObj: string = require('/public/res/geo/dragon.txt') as string
 
@@ -57,13 +55,24 @@ const main = () => {
   dragon2.addComponent(dragonMaterial)
   dragon2.addComponent(dragon2BoundingSphere)
 
-  dragon1.getComponent(Transform).setRotation([0.0, Math.PI * 0.5, 0.0])
-  dragon1.getComponent(Transform).setPosition([-1.0, 0.0, 0.0])
+  dragon1.getComponent(Transform).setPosition([0.0, 0.0, -4.0])
 
   dragon2.getComponent(Transform).setScale([0.25, 0.25, 0.25])
-  dragon2.getComponent(Transform).setRotation([0.0, Math.PI * 0.5, 0.0])
   dragon2.getComponent(Transform).setPosition([-1.0, 0.0, 0.0])
 
+  const planeMaterial: Material = new UnlitMaterial([0.0, 1.0, 1.0]) as Material
+  planeMaterial.wireframe = true
+
+  const farPlane = new Entity()
+
+  farPlane.getComponent(Transform).setPosition([1.0, 0.0, 0.0])
+  farPlane.getComponent(Transform).setRotation([0.0, Math.PI * 0.5, 0.0])
+
+  const farPlaneGeometry: Geometry = new Quad([[-0.5, -0.5, 0.0], [-0.5, 0.5, 0.0], [0.5, 0.5, 0.0], [0.5, -0.5, 0.0]]) as Geometry
+  farPlane.addComponent(farPlaneGeometry)
+  farPlane.addComponent(planeMaterial)
+
+  dragon1.getComponent(Transform).addChild(farPlane);
   dragon1.getComponent(Transform).addChild(dragon2)
 
   /*
@@ -98,7 +107,7 @@ const main = () => {
   //Console.setVisible(true) 
 
   // ToDo(Eric) Move this into global input system which allows keybinds               
-  let inputDir: vec3 = vec3.create();  
+  let inputDir: vec3 = vec3.create()
 
   const update = curTime => {
     Time.tick(curTime)

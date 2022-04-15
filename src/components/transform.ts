@@ -1,6 +1,6 @@
 import { mat4, vec3 } from "gl-matrix";
 import Camera from "./camera";
-import Entity from "../entity";
+import Entity from "../core/entity";
 import { Component } from "./component";
 
 export default class Transform implements Component {
@@ -46,6 +46,10 @@ export default class Transform implements Component {
   setScale = (scale: vec3) => {
     this.scale = scale
     this.dirty = true
+  }
+
+  getPosition = (): vec3 => {
+    return mat4.getTranslation(vec3.create(), this.worldMatrix)
   }
 
   addChild = (entity: Entity) => {

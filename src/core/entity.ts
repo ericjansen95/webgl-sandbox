@@ -1,5 +1,5 @@
-import { Component } from "./components/component";
-import Transform from "./components/transform";
+import { Component } from "../components/component";
+import Transform from "../components/transform";
 
 export default class Entity {
   components: Array<Component>

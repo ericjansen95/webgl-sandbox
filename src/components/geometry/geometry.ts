@@ -1,5 +1,5 @@
 import { vec3, vec4 } from "gl-matrix"
-import { Component } from "./component"
+import { Component } from "../component"
 
 // @ts-expect-error
 export default class Geometry implements Component {

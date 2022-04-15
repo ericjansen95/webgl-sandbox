@@ -1,8 +1,8 @@
 import { vec3 } from "gl-matrix";
-import Entity from "../entity";
-import Material from "../material";
+import Entity from "../core/entity";
+import Material from "./material";
 import { Component } from "./component";
-import Geometry from "./geometry";
+import Geometry from "./geometry/geometry";
 import UnlitMaterial from "./materials/unlitMaterial";
 import Transform from "./transform";
 
