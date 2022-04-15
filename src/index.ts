@@ -33,39 +33,35 @@ const main = () => {
 
   const camera: Camera = new Camera(45, canvas.width / canvas.height)
 
-
   const dragonGeometry: Geometry = new Geometry()
   dragonGeometry.loadFromObj(dragonObj)
 
   const dragonMaterial: Material = new LambertMaterial([1.0, 1.0, 1.0]) as Material
 
-  //const dragonAabb: BoundingBox = new BoundingBox()
-  
-  //const dragonAabb2: BoundingBox = new BoundingBox()
+  const dragon1: Entity = new Entity()
 
   const dragonBoundingSphere: BoundingSphere = new BoundingSphere()
 
-  const dragon: Entity = new Entity()
-  dragon.addComponent(dragonGeometry)
-  dragon.addComponent(dragonMaterial)
-  //dragon.addComponent(dragonAabb)
-  dragon.addComponent(dragonBoundingSphere)
+  dragon1.addComponent(dragonGeometry)
+  dragon1.addComponent(dragonMaterial)
+  dragon1.addComponent(dragonBoundingSphere)
 
-  /*
   const dragon2: Entity = new Entity()
+
+  const dragon2BoundingSphere: BoundingSphere = new BoundingSphere()
+
   dragon2.addComponent(dragonGeometry)
   dragon2.addComponent(dragonMaterial)
-  dragon2.addComponent(dragonAabb2)
+  dragon2.addComponent(dragon2BoundingSphere)
 
-  dragon.getComponent(Transform).setRotation([0.0, Math.PI * 0.5, 0.0])
-  dragon.getComponent(Transform).setPosition([-1.0, 0.0, 0.0])
+  dragon1.getComponent(Transform).setRotation([0.0, Math.PI * 0.5, 0.0])
+  dragon1.getComponent(Transform).setPosition([-1.0, 0.0, 0.0])
 
   dragon2.getComponent(Transform).setScale([0.25, 0.25, 0.25])
   dragon2.getComponent(Transform).setRotation([0.0, Math.PI * 0.5, 0.0])
   dragon2.getComponent(Transform).setPosition([-1.0, 0.0, 0.0])
 
-  dragon.getComponent(Transform).addChild(dragon2)
-  */
+  dragon1.getComponent(Transform).addChild(dragon2)
 
   /*
 
@@ -117,10 +113,13 @@ const main = () => {
                               inputDir, 
                               CAMERA_SPEED * Time.deltaTime))
 
-    const transform = dragon.getComponent(Transform)
-    transform.setRotation([0.0, transform.rotation[1] + Math.PI * 0.1 * Time.deltaTime, 0.0])
+    const dragon1Transform = dragon1.getComponent(Transform)
+    dragon1Transform.setRotation([0.0, dragon1Transform.rotation[1] + Math.PI * 0.1 * Time.deltaTime, 0.0])
 
-    renderer.renderScene(dragon, camera)
+    const dragon2Transform = dragon2.getComponent(Transform)
+    dragon2Transform.setRotation([dragon2Transform.rotation[0] + Math.PI * 0.2 * Time.deltaTime, 0.0, 0.0])
+
+    renderer.renderScene(dragon1, camera)
 
     // ToDo(Eric) Wrap this in Debug static class
     fpsCounter.textContent = `${Math.ceil(1 / Time.deltaTime)} FPS`

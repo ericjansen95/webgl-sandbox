@@ -6,8 +6,6 @@ import Geometry from "./geometry";
 import UnlitMaterial from "./materials/unlitMaterial";
 import Transform from "./transform";
 
-const boxObj: string = require('/public/res/geo/cube.txt') as string
-
 export default class BoundingSphere implements Component {
   
   sphere: Entity | null
