@@ -9,15 +9,30 @@ import Transform from "./transform";
 const boxObj: string = require('/public/res/geo/cube.txt') as string
 
 export default class Aabb implements Component {
+  
   box: Entity | null
+
   min: vec3 
   max: vec3
+
+  self: Entity | null
+  visible: boolean
   
-  constructor(min: vec3, max: vec3, visible: boolean = true) {
-    this.min = min
-    this.max = max
-    
-    if(!visible) return
+  constructor(visible: boolean = true) {
+    this.visible = visible
+  }
+
+  setVisible = (visible: boolean) => {
+    this.visible = visible
+
+    this.createBox()
+
+    const geometry = this.box.getComponent(Geometry)
+    geometry.visible = visible
+  }
+
+  createBox = (): boolean => {
+    if(!this.visible || this.box || !this.self) return false;
 
     const boxGeometry: Geometry = new Geometry()
     boxGeometry.load(boxObj)
@@ -35,11 +50,20 @@ export default class Aabb implements Component {
     const zScale: number = this.max[2] - this.min[2]
 
     this.box.getComponent(Transform).setScale([xScale, yScale, zScale])
+
+    this.self.getComponent(Transform).addChild(this.box)
+
+    return true
   }
 
   onAdd = (self: Entity) => {
-    if(!this.box) return
+    this.self = self
 
-    self.getComponent(Transform).addChild(this.box)
+    const geometry = self.getComponent(Geometry)
+
+    this.min = geometry.vertex.min
+    this.max = geometry.vertex.max
+
+    this.createBox()
   }
 }

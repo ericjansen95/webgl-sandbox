@@ -24,6 +24,11 @@ export default class Renderer {
       console.error('Failed to initialize WebGL!') 
       return
     }
+
+    GL.clearColor(this.clearColor[0], this.clearColor[1], this.clearColor[2], 1.0)
+    GL.clearDepth(1.0)
+    GL.enable(GL.DEPTH_TEST)
+    GL.depthFunc(GL.LEQUAL)
   }
 
   bindGeometry = (geometry: Geometry): boolean => {
@@ -95,7 +100,7 @@ export default class Renderer {
     const geometry: Geometry | null = entity.getComponent(Geometry)
     const material: Material | null = entity.getComponent(Material)
 
-    if(!this.bindGeometry(geometry) || !material) return
+    if(!geometry.visible || !this.bindGeometry(geometry) || !material) return
 
     this.drawCalls++
 
@@ -151,12 +156,7 @@ export default class Renderer {
     }
   }
 
-  renderScene = (root: Entity, camera: Camera) => {
-    GL.clearColor(this.clearColor[0], this.clearColor[1], this.clearColor[2], 1.0)
-    GL.clearDepth(1.0)
-    GL.enable(GL.DEPTH_TEST)
-    GL.depthFunc(GL.LEQUAL)
-  
+  renderScene = (root: Entity, camera: Camera) => {  
     GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
 
     this.drawCalls = 0

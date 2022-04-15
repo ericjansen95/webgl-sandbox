@@ -34,4 +34,7 @@ module.exports = {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'public'),
   },
+  optimization: {
+    minimize: false
+  },
 };

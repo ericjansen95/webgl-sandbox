@@ -38,9 +38,9 @@ const main = () => {
 
   const dragonMaterial: Material = new LambertMaterial([1.0, 1.0, 1.0]) as Material
 
-  const dragonAabb: Aabb = new Aabb(dragonGeometry.vertex.min, dragonGeometry.vertex.max)
+  const dragonAabb: Aabb = new Aabb()
   
-  const dragonAabb2: Aabb = new Aabb(dragonGeometry.vertex.min, dragonGeometry.vertex.max)
+  const dragonAabb2: Aabb = new Aabb()
 
   const dragon: Entity = new Entity()
   dragon.addComponent(dragonGeometry)
@@ -52,6 +52,8 @@ const main = () => {
   dragon2.addComponent(dragonMaterial)
   dragon2.addComponent(dragonAabb2)
     
+  dragon2.getComponent(Aabb).setVisible(false)
+
   dragon.getComponent(Transform).setRotation([0.0, Math.PI * 0.5, 0.0])
   dragon.getComponent(Transform).setPosition([-1.0, 0.0, 0.0])
 
@@ -109,6 +111,10 @@ const main = () => {
                    vec3.scale(vec3.create(), 
                               inputDir, 
                               CAMERA_SPEED * Time.deltaTime))
+
+    const transform = dragon.getComponent(Transform)
+    transform.setRotation([0.0, transform.rotation[1] + Math.PI * 0.1 * Time.deltaTime, 0.0])
+    console.log("dragon y rotation =", transform.rotation[1])
 
     renderer.renderScene(dragon, camera)
 

@@ -16,9 +16,12 @@ export default class Geometry implements Component {
     normal: WebGLBuffer
   } | null
 
-  constructor() {
+  visible: boolean
+
+  constructor(visible: boolean = true) {
     this.vertex = null
     this.buffer = null
+    this.visible = visible
   }
 
   load = (obj: string) => {

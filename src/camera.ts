@@ -4,6 +4,12 @@ import { mat4 } from 'gl-matrix';
 const DEFAULT_Z_NEAR: number = 0.05
 const DEFAULT_Z_FAR: number = 100.0
 
+/*
+  - viewFrustrumPlanes = Array<Plane>
+  - distanceTo(plane, point)
+  - transform view frustrum planes based on viewMatrix
+*/
+
 export default class Camera {
   projectionMatrix: mat4
   viewMatrix: mat4
