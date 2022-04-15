@@ -2,10 +2,10 @@ import { vec3 } from "gl-matrix";
 import Geometry, { calcNormals } from "./geometry";
 
 export default class Quad extends Geometry {
-  constructor(positions: Array<vec3>) {
+  constructor(positions: Array<vec3>, visible: boolean = true, cull: boolean = true) {
     if(positions.length !== 4) console.error("Quad::constructor(): Invalid arguments!")
 
-    super()
+    super(visible, cull)
 
     this.vertex = {
       count: 18,

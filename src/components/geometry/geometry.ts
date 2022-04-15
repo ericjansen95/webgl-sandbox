@@ -17,11 +17,13 @@ export default class Geometry implements Component {
   } | null
 
   visible: boolean
+  cull: boolean
 
-  constructor(visible: boolean = true) {
+  constructor(visible: boolean = true, cull: boolean = true) {
     this.vertex = null
     this.buffer = null
     this.visible = visible
+    this.cull = cull
   }
 
   createVertexObject = () => {

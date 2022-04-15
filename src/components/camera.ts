@@ -11,7 +11,7 @@ import UnlitMaterial from './materials/unlitMaterial';
 import Material from './material';
 
 const DEFAULT_Z_NEAR: number = 0.05
-const DEFAULT_Z_FAR: number = 100.0
+const DEFAULT_Z_FAR: number = 5.0
 
 const CAMERA_FORWARD: vec3 = [0.0, 0.0, -1.0]
 const CAMERA_UP: vec3 = [0.0, 1.0, 0.0]
@@ -48,30 +48,30 @@ export default class Camera implements Component {
                      this.fov * Math.PI / 180, 
                      this.aspect, 
                      DEFAULT_Z_NEAR, 
-                     DEFAULT_Z_FAR)
+                     DEFAULT_Z_FAR * 10.0)
 
     this.updateFrustrum()
   }
 
-  isPointInFrustrum = (p: vec3): boolean => {
-    return true
+  isPointInFrustrum = (point: vec3): boolean => {
+    if(!point || !this.frustrum) return false
 
-    if(!p || !this.frustrum) return false
+    const pointNormal: vec3 = vec3.create()
 
-    const pNormal: vec3 = vec3.create()
+    for(const [planeName, plane] of Object.entries(this.frustrum)) {
+      if(planeName === "positions") continue
 
-    for(const [key, plane] of Object.entries(this.frustrum)) {
-      // console.log("plane =", key, "with normal =", plane.normal.toString())
-      
-      vec3.sub(pNormal, p, plane.position)
-      vec3.normalize(pNormal, pNormal)
+      // @ts-ignore
+      vec3.sub(pointNormal, plane.position, point)
+      vec3.normalize(pointNormal, pointNormal)
+      // @ts-ignore
+      const dot: number = vec3.dot(plane.normal, pointNormal)
 
-      const planePointDot: number = vec3.dot(plane.normal, pNormal)
-      
-      console.log("plane point dot =", planePointDot)
-
-      if(planePointDot < 0.0) {
-        console.log("point =", p.toString(), "is behind plane =", key, "with normal =", plane.normal.toString())
+      if(dot < 0.0) {
+        console.log("frustrum plane =", planeName)
+        console.log("point normal =", pointNormal.toString())
+        // @ts-ignore
+        console.log("plane normal =", plane.normal.toString())
         return false
       }
     }
@@ -109,53 +109,32 @@ export default class Camera implements Component {
 
     const farCenter: vec3 = vec3.scaleAndAdd(vec3.create(), position, CAMERA_FORWARD, DEFAULT_Z_FAR)
 
-    const farTopLeft: vec3 = vec3.add(vec3.create(), farCenter, vec3.sub(vec3.create(), farUpOffset, farSideOffset))
-    const farTopRight: vec3 = vec3.add(vec3.create(), farCenter, vec3.add(vec3.create(), farUpOffset, farSideOffset))
+    // Info: this was switched
+    const farTopRight: vec3 = vec3.add(vec3.create(), farCenter, vec3.sub(vec3.create(), farUpOffset, farSideOffset))
+    const farTopLeft: vec3 = vec3.add(vec3.create(), farCenter, vec3.add(vec3.create(), farUpOffset, farSideOffset))
     const farBottomLeft: vec3 = vec3.sub(vec3.create(), farCenter, vec3.sub(vec3.create(), farUpOffset, farSideOffset))
     const farBottomRight: vec3 = vec3.sub(vec3.create(), farCenter, vec3.add(vec3.create(), farUpOffset, farSideOffset))
 
     // PLANE CONSTRUCTION
 
-    this.frustrum.near = createPlaneFromPoints(nearTopLeft, nearTopRight, nearBottomRight)
-    this.frustrum.far = createPlaneFromPoints(farTopRight, farTopLeft, farBottomLeft)
-    this.frustrum.left = createPlaneFromPoints(nearBottomLeft, nearTopLeft, farTopLeft)
-    this.frustrum.right = createPlaneFromPoints(nearBottomRight, nearTopRight, farBottomRight)
-    this.frustrum.top = createPlaneFromPoints(nearTopRight, nearTopLeft, farTopLeft)
-    this.frustrum.bottom = createPlaneFromPoints(nearBottomLeft, farBottomLeft, farBottomRight)
+    this.frustrum.near = createPlaneFromPoints(nearTopLeft, nearTopRight, nearBottomRight, DEFAULT_Z_FAR)
+    this.frustrum.far = createPlaneFromPoints(farTopRight, farTopLeft, farBottomLeft, DEFAULT_Z_FAR)
 
-    /*
-    const planeMaterial: Material = new UnlitMaterial([1.0, 1.0, 0.0]) as Material
+    this.frustrum.left = createPlaneFromPoints(nearTopLeft, nearBottomLeft, farBottomLeft, DEFAULT_Z_FAR)
+    this.frustrum.right = createPlaneFromPoints(nearBottomRight, nearTopRight, farBottomRight, DEFAULT_Z_FAR)
 
-    const nearPlane = new Entity()
-    const nearPlaneGeometry: Geometry = new Quad([nearBottomLeft, nearTopLeft, nearTopRight, nearBottomRight]) as Geometry
-    nearPlane.addComponent(nearPlaneGeometry)
-    nearPlane.addComponent(planeMaterial)
+    this.frustrum.top = createPlaneFromPoints(nearTopRight, nearTopLeft, farTopLeft, DEFAULT_Z_FAR)
+    this.frustrum.bottom = createPlaneFromPoints(nearBottomLeft, nearBottomRight, farBottomRight, DEFAULT_Z_FAR)
 
-    const farPlane = new Entity()
-    const farPlaneGeometry: Geometry = new Quad([farBottomLeft, farTopLeft, farTopRight, farBottomRight]) as Geometry
-    farPlane.addComponent(farPlaneGeometry)
-    farPlane.addComponent(planeMaterial)
+    this.frustrum.positions.push(nearBottomLeft, nearTopLeft, nearTopRight, nearBottomRight)
+    //this.frustrum.positions.push(farBottomLeft, farTopLeft, farTopRight, farBottomRight)
 
-    const leftPlane = new Entity()
-    const leftPlaneGeometry: Geometry = new Quad([]) as Geometry
-    leftPlane.addComponent(leftPlaneGeometry)
-    leftPlane.addComponent(planeMaterial)
+    //this.frustrum.positions.push(farBottomLeft, farTopLeft, nearTopLeft, nearBottomLeft)
+    //this.frustrum.positions.push(nearBottomRight, nearTopRight, farTopRight, farBottomRight)
 
-    const rightPlane = new Entity()
-    const rightPlaneGeometry: Geometry = new Quad([]) as Geometry
-    rightPlane.addComponent(rightPlaneGeometry)
-    rightPlane.addComponent(planeMaterial)
+    //this.frustrum.positions.push(nearTopLeft, farTopLeft, farTopRight, nearTopRight)
+    //this.frustrum.positions.push(farBottomLeft, farBottomRight, nearBottomRight, nearBottomLeft)
 
-    const topPlane = new Entity()
-    const topPlaneGeometry: Geometry = new Quad([]) as Geometry
-    topPlane.addComponent(topPlaneGeometry)
-    topPlane.addComponent(planeMaterial)
-
-    const bottomPlane = new Entity()
-    const bottomPlaneGeometry: Geometry = new Quad([]) as Geometry
-    bottomPlane.addComponent(bottomPlaneGeometry)
-    bottomPlane.addComponent(planeMaterial)
-    */
   }
 
   onAdd = (self: Entity) => {
@@ -164,6 +143,6 @@ export default class Camera implements Component {
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
-    //this.updateFrustrum()
+    this.updateFrustrum()
   }
 }

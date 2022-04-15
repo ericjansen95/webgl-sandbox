@@ -14,6 +14,7 @@ import Quad from './components/geometry/quad';
 import UnlitMaterial from './components/materials/unlitMaterial';
 
 const dragonObj: string = require('/public/res/geo/dragon.txt') as string
+const boxObj: string = require('/public/res/geo/cube.txt') as string
 
 const CAMERA_SPEED = 1;
 
@@ -31,8 +32,32 @@ const main = () => {
 
   const camera: Entity = new Entity()
 
-  const cameraComponent: Camera = new Camera(45, canvas.width / canvas.height)
+  const cameraComponent: Camera = new Camera(60, canvas.width / canvas.height)
   camera.addComponent(cameraComponent)
+
+  const debugMaterial: Material = new UnlitMaterial([0.0, 0.5, 0.5]) as Material
+  //debugMaterial.wireframe = true
+
+  const root: Entity = new Entity()
+
+  /*
+  const box: Geometry = new Geometry()
+  box.loadFromObj(boxObj)
+  root.addComponent(box)
+  root.addComponent(debugMaterial)
+  */
+
+  for(let posIndex = 0; posIndex < cameraComponent.frustrum.positions.length; posIndex += 4) {  
+    const frustrumPlane = new Entity()
+
+    const positions = cameraComponent.frustrum.positions.slice(posIndex, posIndex + 4)
+    const farPlaneGeometry: Geometry = new Quad(positions, true, false) as Geometry
+
+    frustrumPlane.addComponent(farPlaneGeometry)
+    frustrumPlane.addComponent(debugMaterial)
+
+    root.getComponent(Transform).addChild(frustrumPlane)
+  }
 
   const dragonGeometry: Geometry = new Geometry()
   dragonGeometry.loadFromObj(dragonObj)
@@ -55,11 +80,15 @@ const main = () => {
   dragon2.addComponent(dragonMaterial)
   dragon2.addComponent(dragon2BoundingSphere)
 
-  dragon1.getComponent(Transform).setPosition([0.0, 0.0, -4.0])
+  dragon1.getComponent(Transform).setPosition([0.0, 0.0, -2.0])
 
   dragon2.getComponent(Transform).setScale([0.25, 0.25, 0.25])
-  dragon2.getComponent(Transform).setPosition([-1.0, 0.0, 0.0])
+  dragon2.getComponent(Transform).setPosition([-3.0, 0.0, 0.0])
 
+  dragon1.getComponent(Transform).addChild(dragon2)
+  root.getComponent(Transform).addChild(dragon1)
+
+  /*
   const planeMaterial: Material = new UnlitMaterial([0.0, 1.0, 1.0]) as Material
   planeMaterial.wireframe = true
 
@@ -73,7 +102,7 @@ const main = () => {
   farPlane.addComponent(planeMaterial)
 
   dragon1.getComponent(Transform).addChild(farPlane);
-  dragon1.getComponent(Transform).addChild(dragon2)
+  */
 
   /*
 
@@ -121,6 +150,9 @@ const main = () => {
     const cameraTransform = camera.getComponent(Transform)
     const newCameraPostion: vec3 = vec3.create()
     vec3.scaleAndAdd(newCameraPostion, cameraTransform.position, inputDir, CAMERA_SPEED * Time.deltaTime)
+
+    //console.log("camera position =", newCameraPostion.toString())
+
     cameraTransform.setPosition(newCameraPostion)
 
     const dragon1Transform = dragon1.getComponent(Transform)
@@ -129,7 +161,7 @@ const main = () => {
     const dragon2Transform = dragon2.getComponent(Transform)
     dragon2Transform.setRotation([dragon2Transform.rotation[0] + Math.PI * 0.2 * Time.deltaTime, 0.0, 0.0])
 
-    renderer.renderScene(dragon1, camera)
+    renderer.renderScene(root, camera)
 
     // ToDo(Eric) Wrap this in Debug static class
     fpsCounter.textContent = `${Math.ceil(1 / Time.deltaTime)} FPS`

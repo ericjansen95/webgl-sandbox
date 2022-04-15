@@ -1,3 +1,4 @@
+import { vec3 } from "gl-matrix"
 import { Plane, createPlane } from "./plane"
 
 export type Frustrum = {
@@ -7,6 +8,7 @@ export type Frustrum = {
   left: Plane,
   far: Plane,
   near: Plane
+  positions: Array<vec3>,
 }
 
 export default function createFrustrum(): Frustrum {
@@ -16,6 +18,7 @@ export default function createFrustrum(): Frustrum {
     right: createPlane(),
     left: createPlane(),
     far: createPlane(),
-    near: createPlane()
+    near: createPlane(),
+    positions: Array<vec3>(),
   }
 }

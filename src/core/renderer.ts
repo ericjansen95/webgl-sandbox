@@ -98,16 +98,21 @@ export default class Renderer {
 
   renderEntity = (entity: Entity, camera: Entity) => {
     const geometry: Geometry | null = entity.getComponent(Geometry)
+
+    if(!geometry?.visible) return;
+
+    if(geometry.cull) {
+      const cameraComponent: Camera | null = camera.getComponent(Camera)
+      const entityPosition: vec3 = entity.getComponent(Transform).getPosition()
+  
+      const isInFrustum: boolean = cameraComponent.isPointInFrustrum(entityPosition)
+
+      if(!isInFrustum) return
+    }
+
     const material: Material | null = entity.getComponent(Material)
 
-    /*
-    const cameraComponent: Camera | null = camera.getComponent(Camera)
-    const entityPosition: vec3 = entity.getComponent(Transform).getPosition()
-
-    const isInFrustum: boolean = cameraComponent.isPointInFrustrum(entityPosition)
-    */
-
-    if(!geometry.visible || !this.bindGeometry(geometry) || !material) return
+    if(!material || !this.bindGeometry(geometry)) return
 
     this.drawCalls++
 
