@@ -34,7 +34,7 @@ const main = () => {
 
 
   const dragonGeometry: Geometry = new Geometry()
-  dragonGeometry.load(dragonObj)
+  dragonGeometry.loadFromObj(dragonObj)
 
   const dragonMaterial: Material = new LambertMaterial([1.0, 1.0, 1.0]) as Material
 
@@ -47,6 +47,7 @@ const main = () => {
   dragon.addComponent(dragonMaterial)
   dragon.addComponent(dragonAabb)
 
+  /*
   const dragon2: Entity = new Entity()
   dragon2.addComponent(dragonGeometry)
   dragon2.addComponent(dragonMaterial)
@@ -62,6 +63,8 @@ const main = () => {
   dragon2.getComponent(Transform).setPosition([-1.0, 0.0, 0.0])
 
   dragon.getComponent(Transform).addChild(dragon2)
+  */
+
   /*
 
   // TERRAIN
@@ -114,7 +117,6 @@ const main = () => {
 
     const transform = dragon.getComponent(Transform)
     transform.setRotation([0.0, transform.rotation[1] + Math.PI * 0.1 * Time.deltaTime, 0.0])
-    console.log("dragon y rotation =", transform.rotation[1])
 
     renderer.renderScene(dragon, camera)
 

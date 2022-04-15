@@ -24,14 +24,30 @@ export default class Geometry implements Component {
     this.visible = visible
   }
 
-  load = (obj: string) => {
-    this.vertex = {
+  createVertexObject = () => {
+    return {
       count: 0,
       positions: new Array<number>(),
       normals: new Array<number>(),
       min: vec3.create(),
       max: vec3.create()
     }
+  }
+
+  loadFromBuffer = (positions: Array<number>): boolean => {
+    if(!Array.isArray(positions) || !positions.length || positions.length % 3 !== 0) return false
+
+    this.vertex = this.createVertexObject()
+
+    this.vertex.positions = positions
+    this.vertex.count = this.vertex.positions.length
+    this.vertex.normals = calcNormals(this.vertex.positions)
+
+    return true
+  }
+
+  loadFromObj = (obj: string) => {
+    this.vertex = this.createVertexObject()
 
     const objLines: Array<string> = obj.split('\n')
     const vertexPositions: Array<Array<number>> = []
@@ -49,6 +65,7 @@ export default class Geometry implements Component {
       if(prefix === "v") {
         vertexPositions.push(values)
 
+        // optimize this
         this.vertex.min = [Math.min(values[0], this.vertex.min[0]),
                            Math.min(values[1], this.vertex.min[1]),
                            Math.min(values[2], this.vertex.min[2])]

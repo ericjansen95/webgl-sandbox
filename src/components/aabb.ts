@@ -31,11 +31,79 @@ export default class Aabb implements Component {
     geometry.visible = visible
   }
 
+  createBoxBuffer = (min: vec3, max: vec3): Array<number> => {
+    const positions: Array<number> = new Array<number>()
+    
+    // order clockwise from view outside
+
+    // front
+
+    positions.push(min[0], min[1], max[2])
+    positions.push(min[0], max[1], max[2])
+    positions.push(max[0], max[1], max[2])
+
+    positions.push(min[0], min[1], max[2])
+    positions.push(max[0], max[1], max[2])
+    positions.push(max[0], min[1], max[2])
+    
+    // left
+
+    positions.push(min[0], min[1], min[2])
+    positions.push(min[0], max[1], min[2])
+    positions.push(min[0], max[1], max[2])
+
+    positions.push(min[0], min[1], min[2])
+    positions.push(min[0], max[1], max[2])
+    positions.push(min[0], min[1], max[2])
+
+    // back
+
+    positions.push(max[0], min[1], min[2])
+    positions.push(max[0], max[1], min[2])
+    positions.push(min[0], max[1], min[2])
+
+    positions.push(max[0], min[1], min[2])
+    positions.push(min[0], max[1], min[2])
+    positions.push(min[0], min[1], min[2])
+
+    // right
+
+    positions.push(max[0], min[1], max[2])
+    positions.push(max[0], max[1], max[2])
+    positions.push(max[0], max[1], min[2])
+
+    positions.push(max[0], min[1], max[2])
+    positions.push(max[0], max[1], min[2])
+    positions.push(max[0], min[1], min[2])
+    
+    // top
+
+    positions.push(min[0], max[1], max[2])
+    positions.push(min[0], max[1], min[2])
+    positions.push(max[0], max[1], min[2])
+
+    positions.push(min[0], max[1], max[2])
+    positions.push(max[0], max[1], min[2])
+    positions.push(max[0], max[1], max[2])
+
+    // bottom
+
+    positions.push(min[0], min[1], min[2])
+    positions.push(min[0], min[1], max[2])
+    positions.push(max[0], min[1], max[2])
+
+    positions.push(min[0], min[1], min[2])
+    positions.push(max[0], min[1], max[2])
+    positions.push(max[0], min[1], min[2])
+
+    return positions
+  }
+
   createBox = (): boolean => {
     if(!this.visible || this.box || !this.self) return false;
 
     const boxGeometry: Geometry = new Geometry()
-    boxGeometry.load(boxObj)
+    boxGeometry.loadFromBuffer(this.createBoxBuffer(this.min, this.max));
 
     const boxMaterial: Material = new UnlitMaterial([1.0, 0.0, 1.0]) as Material
     boxMaterial.wireframe = true
@@ -43,13 +111,6 @@ export default class Aabb implements Component {
     this.box = new Entity()
     this.box.addComponent(boxGeometry)
     this.box.addComponent(boxMaterial)
-
-    // ToDo(Eric) Offset box verts instead of scaling the matrix
-    const xScale: number = this.max[0] - this.min[0]
-    const yScale: number = this.max[1] - this.min[1]
-    const zScale: number = this.max[2] - this.min[2]
-
-    this.box.getComponent(Transform).setScale([xScale, yScale, zScale])
 
     this.self.getComponent(Transform).addChild(this.box)
 
