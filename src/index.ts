@@ -12,7 +12,8 @@ import Material from './material';
 import Terrain from './components/terrain';
 import { Component } from './components/component';
 import Transform from './components/transform';
-import Aabb from './components/aabb';
+import BoundingBox from './components/boundingBox';
+import BoundingSphere from './components/boundingSphere';
 
 const dragonObj: string = require('/public/res/geo/dragon.txt') as string
 
@@ -38,22 +39,23 @@ const main = () => {
 
   const dragonMaterial: Material = new LambertMaterial([1.0, 1.0, 1.0]) as Material
 
-  const dragonAabb: Aabb = new Aabb()
+  //const dragonAabb: BoundingBox = new BoundingBox()
   
-  const dragonAabb2: Aabb = new Aabb()
+  //const dragonAabb2: BoundingBox = new BoundingBox()
+
+  const dragonBoundingSphere: BoundingSphere = new BoundingSphere()
 
   const dragon: Entity = new Entity()
   dragon.addComponent(dragonGeometry)
   dragon.addComponent(dragonMaterial)
-  dragon.addComponent(dragonAabb)
+  //dragon.addComponent(dragonAabb)
+  dragon.addComponent(dragonBoundingSphere)
 
   /*
   const dragon2: Entity = new Entity()
   dragon2.addComponent(dragonGeometry)
   dragon2.addComponent(dragonMaterial)
   dragon2.addComponent(dragonAabb2)
-    
-  dragon2.getComponent(Aabb).setVisible(false)
 
   dragon.getComponent(Transform).setRotation([0.0, Math.PI * 0.5, 0.0])
   dragon.getComponent(Transform).setPosition([-1.0, 0.0, 0.0])

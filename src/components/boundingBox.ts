@@ -6,9 +6,7 @@ import Geometry from "./geometry";
 import UnlitMaterial from "./materials/unlitMaterial";
 import Transform from "./transform";
 
-const boxObj: string = require('/public/res/geo/cube.txt') as string
-
-export default class Aabb implements Component {
+export default class BoundingBox implements Component {
   
   box: Entity | null
 
