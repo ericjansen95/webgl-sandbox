@@ -1,5 +1,5 @@
 import { mat4, vec2, vec3 } from "gl-matrix";
-import Camera from "../camera";
+import Camera from "./camera";
 import Entity from "../entity";
 import Material from "../material";
 import Plane from "../plane";
@@ -81,13 +81,13 @@ export default class Terrain implements Component {
     }
   }
 
-  onUpdate = (self: Entity, camera: Camera) => {
+  onUpdate = (self: Entity, camera: Entity) => {
 
     //console.log(this.chunks.filter(chunk => !chunk.getComponent(Transform)))
     return
 
     const cameraPos: vec3 = vec3.create()
-    mat4.getTranslation(cameraPos, camera.viewMatrix)
+    mat4.getTranslation(cameraPos, camera.getComponent(Transform).worldMatrix)
     // ToDo(Eric) Check why we have to make this transform
     // => this seems wrong
     vec3.multiply(cameraPos, cameraPos, [-1.0, 1.0, -1.0])

@@ -1,5 +1,5 @@
 import { vec3, mat4 } from "gl-matrix"
-import Camera from "./camera"
+import Camera from "./components/camera"
 import Material from "./material"
 import Entity from "./entity"
 import Geometry from "./components/geometry"
@@ -96,7 +96,7 @@ export default class Renderer {
     }
   }
 
-  renderEntity = (entity: Entity, camera: Camera) => {
+  renderEntity = (entity: Entity, camera: Entity) => {
     const geometry: Geometry | null = entity.getComponent(Geometry)
     const material: Material | null = entity.getComponent(Material)
 
@@ -145,8 +145,8 @@ export default class Renderer {
     } 
 
     if(!this.bindMaterial(entity,
-                          camera.viewMatrix,
-                          camera.projectionMatrix,
+                          camera.getComponent(Transform).worldMatrix,
+                          camera.getComponent(Camera).projectionMatrix,
                           vec3.normalize(vec3.create(), [-0.75, 0.5, 0.0]))) return
 
     {
@@ -156,15 +156,16 @@ export default class Renderer {
     }
   }
 
-  renderScene = (root: Entity, camera: Camera) => {  
+  renderScene = (root: Entity, camera: Entity) => {  
     GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
 
     this.drawCalls = 0
 
+    camera.getComponent(Transform).onUpdate()
     this.renderChildren(root, camera)
   }
 
-  renderChildren = (self: Entity, camera: Camera) => {
+  renderChildren = (self: Entity, camera: Entity) => {
 
     //ToDo(Eric) Split update and render loop => how to handle worldMatrix for update?
     self.components.forEach(curComponent => {

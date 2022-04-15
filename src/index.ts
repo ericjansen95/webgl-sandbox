@@ -1,5 +1,5 @@
 import { mat4, vec3 } from 'gl-matrix';
-import Camera from './camera';
+import Camera from './components/camera';
 import Entity from './entity';
 import Geometry from './components/geometry';
 import Input from './input';
@@ -31,7 +31,10 @@ const main = () => {
 
   const renderer = new Renderer(canvas)
 
-  const camera: Camera = new Camera(45, canvas.width / canvas.height)
+  const camera: Entity = new Entity()
+
+  const cameraComponent: Camera = new Camera(45, canvas.width / canvas.height)
+  camera.addComponent(cameraComponent)
 
   const dragonGeometry: Geometry = new Geometry()
   dragonGeometry.loadFromObj(dragonObj)
@@ -106,12 +109,10 @@ const main = () => {
                 Input.isKeyDown('q') ? 1.0 : Input.isKeyDown('e') ? -1.0 : 0.0,
                 Input.isKeyDown('w') ? 1.0 : Input.isKeyDown('s') ? -1.0 : 0.0]           
 
-    // move camera
-    mat4.translate(camera.viewMatrix,
-                   camera.viewMatrix,
-                   vec3.scale(vec3.create(), 
-                              inputDir, 
-                              CAMERA_SPEED * Time.deltaTime))
+    const cameraTransform = camera.getComponent(Transform)
+    const newCameraPostion: vec3 = vec3.create()
+    vec3.scaleAndAdd(newCameraPostion, cameraTransform.position, inputDir, CAMERA_SPEED * Time.deltaTime)
+    cameraTransform.setPosition(newCameraPostion)
 
     const dragon1Transform = dragon1.getComponent(Transform)
     dragon1Transform.setRotation([0.0, dragon1Transform.rotation[1] + Math.PI * 0.1 * Time.deltaTime, 0.0])
