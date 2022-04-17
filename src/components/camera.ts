@@ -1,15 +1,12 @@
 
 import { mat4, vec3 } from 'gl-matrix';
 import { Component } from './component';
-import createFrustrum, { Frustrum } from '../util/math/frustrum'
+import createFrustrum, { Frustrum, PlaneIndex } from '../util/math/frustrum'
 import Entity from '../core/entity';
 import Transform from './transform';
 import { createPlaneFromPoints } from '../util/math/plane';
-import Quad from './geometry/quad';
-import Geometry from './geometry/geometry';
-import UnlitMaterial from './materials/unlitMaterial';
-import Material from './material';
 import BoundingSphere from './boundingSphere';
+import Material from './material';
 
 const DEFAULT_Z_NEAR: number = 0.05
 const DEFAULT_Z_FAR: number = 5.0
@@ -17,12 +14,6 @@ const DEFAULT_Z_FAR: number = 5.0
 const CAMERA_FORWARD: vec3 = [0.0, 0.0, -1.0]
 const CAMERA_UP: vec3 = [0.0, 1.0, 0.0]
 const CAMERA_SIDE: vec3 = [1.0, 0.0, 0.0]
-
-/*
-  - viewFrustrumPlanes = Array<Plane>
-  - distanceTo(plane, point)
-  - transform view frustrum planes based on viewMatrix
-*/
 
 export default class Camera implements Component {
   self: Entity
@@ -60,7 +51,7 @@ export default class Camera implements Component {
     const boundingSphere: BoundingSphere = entity.getComponent(BoundingSphere)
     let radius: number = 0.0
 
-    if(!boundingSphere)
+    if(boundingSphere)
       radius = boundingSphere.radius
 
     const entityPosition: vec3 = mat4.getTranslation(vec3.create(), entity.getComponent(Transform).worldMatrix)
@@ -68,17 +59,17 @@ export default class Camera implements Component {
     let dotProduct: number = 0.0
     let distance: number = 0.0
 
-    for(const [planeName, plane] of Object.entries(this.frustrum)) {
-      if(planeName === "positions") continue
-
-      // @ts-ignore
+    for(const plane of this.frustrum.planes) {
       dotProduct = vec3.dot(entityPosition, plane.normal)
-      // @ts-ignore
       distance = dotProduct + plane.distance - radius
 
-      if(distance <= 0.0)
+      if(distance <= 0.0) {
+        entity.getComponent(Transform).children[0].getComponent(Material).color = [0.678, 0.847, 0.9]
         return false
+      }
     }
+
+    entity.getComponent(Transform).children[0].getComponent(Material).color = [1.0, 0.628, 0.478]
 
     /*
     console.log("dot product =", dotProduct)
@@ -149,19 +140,19 @@ export default class Camera implements Component {
 
     // PLANE CONSTRUCTION
 
-    this.frustrum.near = createPlaneFromPoints(nearBottomLeft, nearTopLeft, nearTopRight)
-    this.frustrum.far = createPlaneFromPoints(farBottomRight, farTopRight, farTopLeft)
-    this.frustrum.left = createPlaneFromPoints(farBottomLeft, farTopLeft, nearTopLeft)
-    this.frustrum.right = createPlaneFromPoints(nearBottomRight, nearTopRight, farTopRight)
-    this.frustrum.top = createPlaneFromPoints(nearTopLeft, farTopLeft, farTopRight)
-    this.frustrum.bottom = createPlaneFromPoints(farBottomLeft, nearBottomLeft, nearBottomRight)
+    this.frustrum.planes[PlaneIndex.NEAR] = createPlaneFromPoints(nearBottomLeft, nearTopLeft, nearTopRight)
+    this.frustrum.planes[PlaneIndex.FAR] = createPlaneFromPoints(farBottomRight, farTopRight, farTopLeft)
+    this.frustrum.planes[PlaneIndex.LEFT] = createPlaneFromPoints(farBottomLeft, farTopLeft, nearTopLeft)
+    this.frustrum.planes[PlaneIndex.RIGHT] = createPlaneFromPoints(nearBottomRight, nearTopRight, farTopRight)
+    this.frustrum.planes[PlaneIndex.TOP] = createPlaneFromPoints(nearTopLeft, farTopLeft, farTopRight)
+    this.frustrum.planes[PlaneIndex.BOTTOM] = createPlaneFromPoints(farBottomLeft, nearBottomLeft, nearBottomRight)
 
-    console.log("near =", this.frustrum.near.normal.toString(), this.frustrum.near.distance)
-    console.log("far =", this.frustrum.far.normal.toString(), this.frustrum.far.distance)
-    console.log("left =", this.frustrum.left.normal.toString(), this.frustrum.left.distance) 
-    console.log("right =", this.frustrum.right.normal.toString(), this.frustrum.right.distance)
-    console.log("top =", this.frustrum.top.normal.toString(), this.frustrum.top.distance) 
-    console.log("bottom =", this.frustrum.bottom.normal.toString(), this.frustrum.bottom.distance)
+    console.log("near =", this.frustrum.planes[PlaneIndex.NEAR].normal.toString(), this.frustrum.planes[PlaneIndex.NEAR].distance)
+    console.log("far =", this.frustrum.planes[PlaneIndex.FAR].normal.toString(), this.frustrum.planes[PlaneIndex.FAR].distance)
+    console.log("left =", this.frustrum.planes[PlaneIndex.LEFT].normal.toString(), this.frustrum.planes[PlaneIndex.LEFT].distance) 
+    console.log("right =", this.frustrum.planes[PlaneIndex.RIGHT].normal.toString(), this.frustrum.planes[PlaneIndex.RIGHT].distance)
+    console.log("top =", this.frustrum.planes[PlaneIndex.TOP].normal.toString(), this.frustrum.planes[PlaneIndex.TOP].distance) 
+    console.log("bottom =", this.frustrum.planes[PlaneIndex.BOTTOM].normal.toString(), this.frustrum.planes[PlaneIndex.BOTTOM].distance)
     
     this.frustrum.positions.push(nearBottomLeft, nearTopLeft, nearTopRight, nearBottomRight)
     this.frustrum.positions.push(farBottomLeft, farTopLeft, farTopRight, farBottomRight)

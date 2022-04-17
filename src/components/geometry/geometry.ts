@@ -19,12 +19,14 @@ export default class Geometry implements Component {
 
   visible: boolean
   cull: boolean
+  boundingVolume: boolean
 
-  constructor(visible: boolean = true, cull: boolean = true) {
+  constructor(visible: boolean = true, cull: boolean = true, boundingVolume: boolean = true) {
     this.vertex = null
     this.buffer = null
     this.visible = visible
     this.cull = cull
+    this.boundingVolume = boundingVolume
   }
 
   createVertexObject = () => {
@@ -89,7 +91,9 @@ export default class Geometry implements Component {
   }
 
   onAdd = (self: Entity) => {
-    const boundingSphere: BoundingSphere = new BoundingSphere()
+    if(!this.boundingVolume) return
+    
+    const boundingSphere: BoundingSphere = new BoundingSphere(true)
     self.addComponent(boundingSphere)
   }
 }

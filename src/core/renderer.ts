@@ -12,6 +12,7 @@ export let GL: WebGL2RenderingContext;
 export default class Renderer {
   clearColor: vec3
   drawCalls: number
+  cullCount: number
 
   constructor(canvas: HTMLCanvasElement) {
     // ToDo(Eric) Use webgl2 here instead of webgl 1.0
@@ -103,7 +104,10 @@ export default class Renderer {
 
     if(geometry.cull) {
       const cameraComponent: Camera | null = camera.getComponent(Camera)
-      if(!cameraComponent.isEntityInFrustrum(entity)) return
+      if(!cameraComponent.isEntityInFrustrum(entity)) {
+        this.cullCount++
+        return
+      }
     }
 
     const material: Material | null = entity.getComponent(Material)
@@ -168,6 +172,7 @@ export default class Renderer {
     GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
 
     this.drawCalls = 0
+    this.cullCount = 0
 
     camera.getComponent(Transform).onUpdate()
     //camera.getComponent(Camera).onUpdate()

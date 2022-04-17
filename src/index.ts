@@ -9,41 +9,40 @@ import Renderer from './core/renderer';
 import Time from './core/time';
 import Material from './components/material';
 import Transform from './components/transform';
-import BoundingSphere from './components/boundingSphere';
 import Quad from './components/geometry/quad';
 import UnlitMaterial from './components/materials/unlitMaterial';
 
-const dragonObj: string = require('/public/res/geo/dragon.txt') as string
+const teapotObj: string = require('/public/res/geo/teapot.txt') as string
+const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
 
 const CAMERA_SPEED = 1;
 
 // pipeline for gl draw lines
 // cleanup frustrum code
-// test bounding sphere
-// add bounding sphere by default for geometry
 // line vis for frustrum and bounding sphere / box
+
 // add ui for culled object count
+
 // update frustrum with camera
 // camera fly controls
 
 const main = () => {
   
   const canvas: HTMLCanvasElement = document.getElementById('glCanvas') as HTMLCanvasElement
-
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
 
   const fpsCounter: HTMLParagraphElement = document.getElementById('fpsCounter') as HTMLParagraphElement
   const drawCounter: HTMLParagraphElement = document.getElementById('drawCounter') as HTMLParagraphElement
+  const cullCounter: HTMLParagraphElement = document.getElementById('cullCounter') as HTMLParagraphElement
 
   const renderer = new Renderer(canvas)
 
   const camera: Entity = new Entity()
-
   const cameraComponent: Camera = new Camera(60, canvas.width / canvas.height)
   camera.addComponent(cameraComponent)
 
-  const debugMaterial: Material = new UnlitMaterial([0.0, 0.5, 0.5]) as Material
+  const debugMaterial: Material = new UnlitMaterial([0.5, 0.0, 0.5]) as Material
   debugMaterial.wireframe = true
 
   const sceneRoot: Entity = new Entity()
@@ -52,36 +51,38 @@ const main = () => {
     const frustrumPlane = new Entity()
 
     const positions = cameraComponent.frustrum.positions.slice(posIndex, posIndex + 4)
-    const farPlaneGeometry: Geometry = new Quad(positions, true, false) as Geometry
+    const planeGeometry: Geometry = new Quad(positions, true, false) as Geometry
 
-    frustrumPlane.addComponent(farPlaneGeometry)
+    frustrumPlane.addComponent(planeGeometry)
     frustrumPlane.addComponent(debugMaterial)
 
     sceneRoot.getComponent(Transform).addChild(frustrumPlane)
   }
 
-  const dragonGeometry: Geometry = new Geometry()
-  dragonGeometry.loadFromObj(dragonObj)
+  const teapotGeometry: Geometry = new Geometry()
+  teapotGeometry.loadFromObj(teapotObj)
 
-  const dragonMaterial: Material = new LambertMaterial([1.0, 1.0, 1.0]) as Material
+  const bunnyGeometry: Geometry = new Geometry()
+  bunnyGeometry.loadFromObj(bunnyObj)
 
-  const dragon1: Entity = new Entity()
+  const lambertMaterial: Material = new LambertMaterial([1.0, 1.0, 1.0]) as Material
 
-  dragon1.addComponent(dragonGeometry)
-  dragon1.addComponent(dragonMaterial)
+  const teapot: Entity = new Entity()
+  teapot.addComponent(teapotGeometry)
+  teapot.addComponent(lambertMaterial)
 
-  const dragon2: Entity = new Entity()
+  teapot.getComponent(Transform).setPosition([0.0, 0.0, -2.0])
 
-  dragon2.addComponent(dragonGeometry)
-  dragon2.addComponent(dragonMaterial)
+  const bunny: Entity = new Entity()
+  bunny.addComponent(bunnyGeometry)
+  bunny.addComponent(lambertMaterial)
 
-  dragon1.getComponent(Transform).setPosition([0.0, 0.0, -2.0])
+  bunny.getComponent(Transform).setScale([0.25, 0.25, 0.25])
+  bunny.getComponent(Transform).setPosition([-3.0, 0.0, 0.0])
 
-  dragon2.getComponent(Transform).setScale([0.25, 0.25, 0.25])
-  dragon2.getComponent(Transform).setPosition([-3.0, 0.0, 0.0])
-
-  dragon1.getComponent(Transform).addChild(dragon2)
-  sceneRoot.getComponent(Transform).addChild(dragon1)
+  // assemble scene hierachy
+  teapot.getComponent(Transform).addChild(bunny)
+  sceneRoot.getComponent(Transform).addChild(teapot)
 
   /*
   const planeMaterial: Material = new UnlitMaterial([0.0, 1.0, 1.0]) as Material
@@ -150,11 +151,11 @@ const main = () => {
 
     cameraTransform.setPosition(newCameraPostion)
 
-    const dragon1Transform = dragon1.getComponent(Transform)
-    dragon1Transform.setRotation([0.0, dragon1Transform.rotation[1] + Math.PI * 0.1 * Time.deltaTime, 0.0])
+    const teapotTransform = teapot.getComponent(Transform)
+    teapotTransform.setRotation([0.0, teapotTransform.rotation[1] + Math.PI * 0.1 * Time.deltaTime, 0.0])
 
-    const dragon2Transform = dragon2.getComponent(Transform)
-    dragon2Transform.setRotation([dragon2Transform.rotation[0] + Math.PI * 0.2 * Time.deltaTime, 0.0, 0.0])
+    const bunnyTransform = bunny.getComponent(Transform)
+    bunnyTransform.setRotation([bunnyTransform.rotation[0] + Math.PI * 0.2 * Time.deltaTime, 0.0, 0.0])
 
     renderer.renderScene(sceneRoot, camera)
 
@@ -162,7 +163,8 @@ const main = () => {
     fpsCounter.textContent = `${Math.ceil(1 / Time.deltaTime)} FPS`
 
     // ToDo(Eric) Wrap this in Debug static class
-    drawCounter.textContent = `${renderer.drawCalls} Draw Calls >:[`
+    drawCounter.textContent = `${renderer.drawCalls} Draw Calls`
+    cullCounter.textContent = `${renderer.cullCount} Culled Entities`
 
     requestAnimationFrame(update)
   }
