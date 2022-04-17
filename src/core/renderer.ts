@@ -116,56 +116,62 @@ export default class Renderer {
 
     this.drawCalls++
 
-    {
-      const numComponents: number = 3
-      const type: number = GL.FLOAT
-      const normalize: boolean = false
-      const stride: number = 0
-      const offset: number = 0
-  
-      GL.bindBuffer(GL.ARRAY_BUFFER, geometry.buffer.position)
-      GL.vertexAttribPointer(
-        material.attributeLocations.get('aVertexPosition'),
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset)
-      GL.enableVertexAttribArray(
-        material.attributeLocations.get('aVertexPosition')
-      )
-    }   
-    
-    {
-      const numComponents: number = 3
-      const type: number = GL.FLOAT
-      const normalize: boolean = false
-      const stride: number = 0
-      const offset: number = 0
-  
-      GL.bindBuffer(GL.ARRAY_BUFFER, geometry.buffer.normal)
-      GL.vertexAttribPointer(
-        material.attributeLocations.get('aVertexNormal'),
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset)
-      GL.enableVertexAttribArray(
-        material.attributeLocations.get('aVertexNormal')
-      )
-    } 
+    const numComponents: number = 3
+    const type: number = GL.FLOAT
+    const normalize: boolean = false
+    const stride: number = 0
+    const offset: number = 0
+
+    // POSITION
+
+    GL.bindBuffer(GL.ARRAY_BUFFER, geometry.buffer.position)
+    GL.vertexAttribPointer(
+      material.attributeLocations.get('aVertexPosition'),
+      numComponents,
+      type,
+      normalize,
+      stride,
+      offset)
+    GL.enableVertexAttribArray(
+      material.attributeLocations.get('aVertexPosition')
+    )
+ 
+    // NORMAL
+
+    GL.bindBuffer(GL.ARRAY_BUFFER, geometry.buffer.normal)
+    GL.vertexAttribPointer(
+      material.attributeLocations.get('aVertexNormal'),
+      numComponents,
+      type,
+      normalize,
+      stride,
+      offset)
+    GL.enableVertexAttribArray(
+      material.attributeLocations.get('aVertexNormal')
+    ) 
 
     if(!this.bindMaterial(entity,
                           camera.getComponent(Transform).worldMatrix,
                           camera.getComponent(Camera).projectionMatrix,
                           vec3.normalize(vec3.create(), [-0.75, 0.5, 0.0]))) return
 
-    {
-      const offset: number = 0
-      const mode: number = material.wireframe ? GL.LINE_LOOP : GL.TRIANGLES
-      GL.drawArrays(mode, offset, geometry.vertex.count / 3.0)
+    let mode: number | null = null
+    let count: number | null = null
+    
+    switch(geometry.type) {
+      case "LINE":
+        mode = GL.LINES
+        count = geometry.vertex.count / 2.0
+        break
+      case "TRIANGLE":
+        mode = GL.TRIANGLES
+        count = geometry.vertex.count / 3.0
+        break
+      default:
+        throw new Error("renderer::renderEntity(): Invalid geometry type!")
     }
+
+    GL.drawArrays(mode, offset, count)
   }
 
   renderScene = (root: Entity, camera: Entity) => {  

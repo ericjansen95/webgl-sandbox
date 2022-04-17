@@ -51,7 +51,7 @@ const main = () => {
     const frustrumPlane = new Entity()
 
     const positions = cameraComponent.frustrum.positions.slice(posIndex, posIndex + 4)
-    const planeGeometry: Geometry = new Quad(positions, true, false) as Geometry
+    const planeGeometry: Geometry = new Quad(positions, true, false, false) as Geometry
 
     frustrumPlane.addComponent(planeGeometry)
     frustrumPlane.addComponent(debugMaterial)

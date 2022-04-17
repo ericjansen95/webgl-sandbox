@@ -3,6 +3,8 @@ import Entity from "../../core/entity"
 import BoundingSphere from "../boundingSphere"
 import { Component } from "../component"
 
+export type GeometryType = "TRIANGLE" | "LINE"
+
 export default class Geometry implements Component {
   vertex: {
     count: number
@@ -17,13 +19,16 @@ export default class Geometry implements Component {
     normal: WebGLBuffer
   } | null
 
+  type: GeometryType
   visible: boolean
+
   cull: boolean
   boundingVolume: boolean
 
-  constructor(visible: boolean = true, cull: boolean = true, boundingVolume: boolean = true) {
+  constructor(type: GeometryType = "TRIANGLE", visible: boolean = true, cull: boolean = true, boundingVolume: boolean = true) {
     this.vertex = null
     this.buffer = null
+    this.type = type
     this.visible = visible
     this.cull = cull
     this.boundingVolume = boundingVolume
@@ -40,7 +45,7 @@ export default class Geometry implements Component {
   }
 
   loadFromBuffer = (positions: Array<number>): boolean => {
-    if(!Array.isArray(positions) || !positions.length || positions.length % 3 !== 0) return false
+    if(!Array.isArray(positions) || !positions.length) return false
 
     this.vertex = this.createVertexObject()
 

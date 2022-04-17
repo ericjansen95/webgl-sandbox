@@ -34,12 +34,11 @@ export default class BoundingSphere implements Component {
     const positions: Array<number> = new Array<number>()
     
     const UNIT_CIRCUMFERENCE = 2 * Math.PI
-    const SECTIONS = 12
+    const SECTIONS = 32
     const step = UNIT_CIRCUMFERENCE / SECTIONS
 
+    // tmp => offset entity transform?
     const yOffset = (this.max[1] + this.min[1]) * 0.5
-
-    const origin: Array<number> = new Array<number>(0.0, yOffset, 0.0); 
 
     for(let radiant = 0.0; radiant < UNIT_CIRCUMFERENCE; radiant += step) {
       const pos1 = Math.cos(radiant) * radius
@@ -47,11 +46,9 @@ export default class BoundingSphere implements Component {
       const pos3 = Math.cos(radiant + step) * radius
       const pos4 = Math.sin(radiant + step) * radius
 
-      positions.push(...origin)
       positions.push(pos1, pos2 + yOffset, 0.0)
       positions.push(pos3, pos4 + yOffset, 0.0)
 
-      positions.push(...origin)
       positions.push(0.0, pos1 + yOffset, pos2)
       positions.push(0.0, pos3 + yOffset, pos4)
     }
@@ -62,7 +59,7 @@ export default class BoundingSphere implements Component {
   createSphere = (): boolean => {
     if(!this.visible || this.sphere || !this.self) return false;
 
-    const sphereGeometry: Geometry = new Geometry(true, false, false)
+    const sphereGeometry: Geometry = new Geometry("LINE", true, false, false)
     sphereGeometry.loadFromBuffer(this.createSphereBuffer(this.radius));
 
     const sphereMaterial: Material = new UnlitMaterial([1.0, 1.0, 1.0]) as Material
