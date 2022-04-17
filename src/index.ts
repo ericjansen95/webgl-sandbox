@@ -39,7 +39,7 @@ const main = () => {
   const renderer = new Renderer(canvas)
 
   const camera: Entity = new Entity()
-  const cameraComponent: Camera = new Camera(60, canvas.width / canvas.height)
+  const cameraComponent: Camera = new Camera(40, canvas.width / canvas.height)
   camera.addComponent(cameraComponent)
 
   const debugMaterial: Material = new UnlitMaterial([0.5, 0.0, 0.5]) as Material

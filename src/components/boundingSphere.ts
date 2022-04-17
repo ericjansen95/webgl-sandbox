@@ -51,6 +51,9 @@ export default class BoundingSphere implements Component {
 
       positions.push(0.0, pos1 + yOffset, pos2)
       positions.push(0.0, pos3 + yOffset, pos4)
+
+      positions.push(pos1, yOffset, pos2)
+      positions.push(pos3, yOffset, pos4)
     }
 
     return positions
