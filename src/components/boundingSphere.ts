@@ -17,7 +17,7 @@ export default class BoundingSphere implements Component {
   self: Entity | null
   visible: boolean
   
-  constructor(visible: boolean = true) {
+  constructor(visible: boolean = false) {
     this.visible = visible
   }
 

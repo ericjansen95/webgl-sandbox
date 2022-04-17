@@ -56,15 +56,23 @@ export default class Camera implements Component {
   isPointInFrustrum = (point: vec3): boolean => {
     if(!point || !this.frustrum) return false
 
+    let dotProduct: number = 0.0
+    let distance: number = 0.0
+
     for(const [planeName, plane] of Object.entries(this.frustrum)) {
       if(planeName === "positions") continue
 
       // @ts-ignore
-      const distance: number = vec3.dot(point, plane.normal) + plane.distance
+      dotProduct = vec3.dot(point, plane.normal)
+      // @ts-ignore
+      distance = dotProduct + plane.distance
 
-      if(distance <= 0.0) 
+      if(distance > 0.0)
         return false
     }
+
+    console.log("dot product =", dotProduct)
+    console.log("distance =", distance)
       
     return true
   }
@@ -125,19 +133,19 @@ export default class Camera implements Component {
 
     // PLANE CONSTRUCTION
 
-    this.frustrum.near = createPlaneFromPoints(nearTopLeft, nearTopRight, nearBottomRight)
+    this.frustrum.near = createPlaneFromPoints(nearBottomLeft, nearBottomRight, nearTopRight)
     console.log("near =", this.frustrum.near.normal.toString(), this.frustrum.near.distance)
-    this.frustrum.far = createPlaneFromPoints(farTopRight, farTopLeft, farBottomRight)
+    this.frustrum.far = createPlaneFromPoints(farBottomRight, farBottomLeft, farTopLeft)
     console.log("far =", this.frustrum.far.normal.toString(), this.frustrum.far.distance)
 
-    this.frustrum.left = createPlaneFromPoints(nearTopLeft, nearBottomLeft, farBottomLeft)
+    this.frustrum.left = createPlaneFromPoints(farBottomLeft, nearBottomLeft, nearTopLeft)
     console.log("left =", this.frustrum.left.normal.toString(), this.frustrum.left.distance)    
-    this.frustrum.right = createPlaneFromPoints(nearBottomRight, nearTopRight, farBottomRight)
+    this.frustrum.right = createPlaneFromPoints(nearBottomRight, farBottomRight, farTopRight)
     console.log("right =", this.frustrum.right.normal.toString(), this.frustrum.right.distance)
 
-    this.frustrum.top = createPlaneFromPoints(nearTopRight, nearTopLeft, farTopLeft)
+    this.frustrum.top = createPlaneFromPoints(nearTopLeft, nearTopRight, farTopRight)
     console.log("top =", this.frustrum.top.normal.toString(), this.frustrum.top.distance)    
-    this.frustrum.bottom = createPlaneFromPoints(nearBottomLeft, nearBottomRight, farBottomRight)
+    this.frustrum.bottom = createPlaneFromPoints(farBottomLeft, farBottomRight, nearBottomLeft)
     console.log("bottom =", this.frustrum.bottom.normal.toString(), this.frustrum.bottom.distance)
     
     this.frustrum.positions.push(nearBottomLeft, nearTopLeft, nearTopRight, nearBottomRight)

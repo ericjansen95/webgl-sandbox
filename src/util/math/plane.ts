@@ -16,7 +16,8 @@ export function createPlaneFromPoints(p1: vec3, p2: vec3, p3: vec3): Plane {
   vec3.cross(normal, p1p2, p1p3)
   vec3.normalize(normal, normal)
 
-  const distance: number = vec3.len(vec3.sub(vec3.create(), p3, p1))
+  // ToDo: Search for expliation
+  const distance: number = -1.0 * vec3.dot(normal, p2)
 
   return {
     distance,

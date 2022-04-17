@@ -14,7 +14,6 @@ import Quad from './components/geometry/quad';
 import UnlitMaterial from './components/materials/unlitMaterial';
 
 const dragonObj: string = require('/public/res/geo/dragon.txt') as string
-const boxObj: string = require('/public/res/geo/cube.txt') as string
 
 const CAMERA_SPEED = 1;
 
@@ -36,7 +35,7 @@ const main = () => {
   camera.addComponent(cameraComponent)
 
   const debugMaterial: Material = new UnlitMaterial([0.0, 0.5, 0.5]) as Material
-  debugMaterial.wireframe = true
+  //debugMaterial.wireframe = true
 
   const sceneRoot: Entity = new Entity()
 
@@ -52,7 +51,7 @@ const main = () => {
     sceneRoot.getComponent(Transform).addChild(frustrumPlane)
   }
 
-  const dragonGeometry: Geometry = new Geometry(true, false)
+  const dragonGeometry: Geometry = new Geometry()
   dragonGeometry.loadFromObj(dragonObj)
 
   const dragonMaterial: Material = new LambertMaterial([1.0, 1.0, 1.0]) as Material
@@ -67,7 +66,7 @@ const main = () => {
 
   const dragon2: Entity = new Entity()
 
-  const dragon2BoundingSphere: BoundingSphere = new BoundingSphere()
+  const dragon2BoundingSphere: BoundingSphere = new BoundingSphere(true)
 
   dragon2.addComponent(dragonGeometry)
   dragon2.addComponent(dragonMaterial)
