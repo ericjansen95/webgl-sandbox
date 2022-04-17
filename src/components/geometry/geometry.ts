@@ -1,7 +1,8 @@
 import { vec3, vec4 } from "gl-matrix"
+import Entity from "../../core/entity"
+import BoundingSphere from "../boundingSphere"
 import { Component } from "../component"
 
-// @ts-expect-error
 export default class Geometry implements Component {
   vertex: {
     count: number
@@ -85,6 +86,11 @@ export default class Geometry implements Component {
 
     this.vertex.count = this.vertex.positions.length
     this.vertex.normals = calcNormals(this.vertex.positions)
+  }
+
+  onAdd = (self: Entity) => {
+    const boundingSphere: BoundingSphere = new BoundingSphere()
+    self.addComponent(boundingSphere)
   }
 }
 

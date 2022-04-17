@@ -67,19 +67,13 @@ const main = () => {
 
   const dragon1: Entity = new Entity()
 
-  const dragonBoundingSphere: BoundingSphere = new BoundingSphere()
-
   dragon1.addComponent(dragonGeometry)
   dragon1.addComponent(dragonMaterial)
-  dragon1.addComponent(dragonBoundingSphere)
 
   const dragon2: Entity = new Entity()
 
-  const dragon2BoundingSphere: BoundingSphere = new BoundingSphere(true)
-
   dragon2.addComponent(dragonGeometry)
   dragon2.addComponent(dragonMaterial)
-  dragon2.addComponent(dragon2BoundingSphere)
 
   dragon1.getComponent(Transform).setPosition([0.0, 0.0, -2.0])
 

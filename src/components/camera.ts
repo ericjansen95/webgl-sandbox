@@ -9,6 +9,7 @@ import Quad from './geometry/quad';
 import Geometry from './geometry/geometry';
 import UnlitMaterial from './materials/unlitMaterial';
 import Material from './material';
+import BoundingSphere from './boundingSphere';
 
 const DEFAULT_Z_NEAR: number = 0.05
 const DEFAULT_Z_FAR: number = 5.0
@@ -53,8 +54,16 @@ export default class Camera implements Component {
     this.updateFrustrum()
   }
 
-  isPointInFrustrum = (point: vec3): boolean => {
-    if(!point || !this.frustrum) return false
+  isEntityInFrustrum = (entity: Entity): boolean => {
+    if(!this.frustrum) return false
+
+    const boundingSphere: BoundingSphere = entity.getComponent(BoundingSphere)
+    let radius: number = 0.0
+
+    if(!boundingSphere)
+      radius = boundingSphere.radius
+
+    const entityPosition: vec3 = mat4.getTranslation(vec3.create(), entity.getComponent(Transform).worldMatrix)
 
     let dotProduct: number = 0.0
     let distance: number = 0.0
@@ -63,9 +72,9 @@ export default class Camera implements Component {
       if(planeName === "positions") continue
 
       // @ts-ignore
-      dotProduct = vec3.dot(point, plane.normal)
+      dotProduct = vec3.dot(entityPosition, plane.normal)
       // @ts-ignore
-      distance = dotProduct + plane.distance
+      distance = dotProduct + plane.distance - radius
 
       if(distance <= 0.0)
         return false

@@ -103,11 +103,7 @@ export default class Renderer {
 
     if(geometry.cull) {
       const cameraComponent: Camera | null = camera.getComponent(Camera)
-      const entityPosition: vec3 = entity.getComponent(Transform).getPosition()
-  
-      const isInFrustum: boolean = cameraComponent.isPointInFrustrum(entityPosition)
-
-      if(!isInFrustum) return
+      if(!cameraComponent.isEntityInFrustrum(entity)) return
     }
 
     const material: Material | null = entity.getComponent(Material)
@@ -174,6 +170,7 @@ export default class Renderer {
     this.drawCalls = 0
 
     camera.getComponent(Transform).onUpdate()
+    //camera.getComponent(Camera).onUpdate()
     this.renderChildren(root, camera)
   }
 
