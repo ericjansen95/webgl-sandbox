@@ -17,6 +17,15 @@ const dragonObj: string = require('/public/res/geo/dragon.txt') as string
 
 const CAMERA_SPEED = 1;
 
+// pipeline for gl draw lines
+// cleanup frustrum code
+// test bounding sphere
+// add bounding sphere by default for geometry
+// line vis for frustrum and bounding sphere / box
+// add ui for culled object count
+// update frustrum with camera
+// camera fly controls
+
 const main = () => {
   
   const canvas: HTMLCanvasElement = document.getElementById('glCanvas') as HTMLCanvasElement
@@ -35,7 +44,7 @@ const main = () => {
   camera.addComponent(cameraComponent)
 
   const debugMaterial: Material = new UnlitMaterial([0.0, 0.5, 0.5]) as Material
-  //debugMaterial.wireframe = true
+  debugMaterial.wireframe = true
 
   const sceneRoot: Entity = new Entity()
 

@@ -67,13 +67,15 @@ export default class Camera implements Component {
       // @ts-ignore
       distance = dotProduct + plane.distance
 
-      if(distance > 0.0)
+      if(distance <= 0.0)
         return false
     }
 
+    /*
     console.log("dot product =", dotProduct)
     console.log("distance =", distance)
-      
+    */
+
     return true
   }
 
@@ -85,75 +87,77 @@ export default class Camera implements Component {
     // NEAR PLANE CONSTRUCTION
 
     const hNear: number = -2.0 * Math.tan(this.fov * 0.5) * DEFAULT_Z_NEAR
-    console.log("height near =", hNear)
     const wNear: number = hNear * this.aspect
+
+    console.log("height near =", hNear)
     console.log("width near =", wNear)
 
     const nearUpOffset: vec3 = vec3.scale(vec3.create(), CAMERA_UP, hNear * 0.5)
-    console.log("near up offset =", nearUpOffset.toString())
     const nearSideOffset: vec3 = vec3.scale(vec3.create(), CAMERA_SIDE, wNear * 0.5)
-    console.log("near side offset =", nearSideOffset.toString())
 
     const nearCenter: vec3 = vec3.scaleAndAdd(vec3.create(), position, CAMERA_FORWARD, DEFAULT_Z_NEAR)
+
+    console.log("near up offset =", nearUpOffset.toString())
+    console.log("near side offset =", nearSideOffset.toString())
     console.log("near center =", nearCenter.toString())    
 
-    const nearTopLeft: vec3 = vec3.add(vec3.create(), nearCenter, vec3.sub(vec3.create(), nearUpOffset, nearSideOffset))
-    console.log("near top left =", nearTopLeft.toString())
-    const nearTopRight: vec3 = vec3.add(vec3.create(), nearCenter, vec3.add(vec3.create(), nearUpOffset, nearSideOffset))
-    console.log("near top right =", nearTopRight.toString())
-    const nearBottomRight: vec3 = vec3.sub(vec3.create(), nearCenter, vec3.sub(vec3.create(), nearUpOffset, nearSideOffset))
-    console.log("near bottom right =", nearBottomRight.toString())
     const nearBottomLeft: vec3 = vec3.sub(vec3.create(), nearCenter, vec3.add(vec3.create(), nearUpOffset, nearSideOffset))
+    const nearTopLeft: vec3 = vec3.add(vec3.create(), nearCenter, vec3.sub(vec3.create(), nearUpOffset, nearSideOffset))
+    const nearTopRight: vec3 = vec3.add(vec3.create(), nearCenter, vec3.add(vec3.create(), nearUpOffset, nearSideOffset))
+    const nearBottomRight: vec3 = vec3.sub(vec3.create(), nearCenter, vec3.sub(vec3.create(), nearUpOffset, nearSideOffset))
+
     console.log("near bottom left =", nearBottomLeft.toString())
+    console.log("near top left =", nearTopLeft.toString())
+    console.log("near top right =", nearTopRight.toString())
+    console.log("near bottom right =", nearBottomRight.toString())
 
     // FAR PLANE CONSTRUCTION
 
     const hFar: number = -2.0 * Math.tan(this.fov * 0.5) * DEFAULT_Z_FAR
-    console.log("height far =", hFar)
     const wFar: number = hFar * this.aspect
+
+    console.log("height far =", hFar)
     console.log("width far =", wFar)
 
     const farUpOffset: vec3 = vec3.scale(vec3.create(), CAMERA_UP, hFar * 0.5)
-    console.log("far up offset =", farUpOffset.toString())
     const farSideOffset: vec3 = vec3.scale(vec3.create(), CAMERA_SIDE, wFar * 0.5)
-    console.log("far side offset =", farSideOffset.toString())
 
     const farCenter: vec3 = vec3.scaleAndAdd(vec3.create(), position, CAMERA_FORWARD, DEFAULT_Z_FAR)
+
+    console.log("far up offset =", farUpOffset.toString())
+    console.log("far side offset =", farSideOffset.toString())
     console.log("far center =", farCenter.toString())
 
-    // Info: this was switched
-    const farTopLeft: vec3 = vec3.add(vec3.create(), farCenter, vec3.sub(vec3.create(), farUpOffset, farSideOffset))
-    console.log("far top left =", farTopLeft.toString())
-    const farTopRight: vec3 = vec3.add(vec3.create(), farCenter, vec3.add(vec3.create(), farUpOffset, farSideOffset))
-    console.log("far top right =", farTopRight.toString())
-    const farBottomRight: vec3 = vec3.sub(vec3.create(), farCenter, vec3.sub(vec3.create(), farUpOffset, farSideOffset))
-    console.log("far bottom right =", farBottomRight.toString())
     const farBottomLeft: vec3 = vec3.sub(vec3.create(), farCenter, vec3.add(vec3.create(), farUpOffset, farSideOffset))
+    const farTopLeft: vec3 = vec3.add(vec3.create(), farCenter, vec3.sub(vec3.create(), farUpOffset, farSideOffset))
+    const farTopRight: vec3 = vec3.add(vec3.create(), farCenter, vec3.add(vec3.create(), farUpOffset, farSideOffset))
+    const farBottomRight: vec3 = vec3.sub(vec3.create(), farCenter, vec3.sub(vec3.create(), farUpOffset, farSideOffset))
+
     console.log("far bottom left =", farBottomLeft.toString())
+    console.log("far top left =", farTopLeft.toString())
+    console.log("far top right =", farTopRight.toString())
+    console.log("far bottom right =", farBottomRight.toString())
 
     // PLANE CONSTRUCTION
 
-    this.frustrum.near = createPlaneFromPoints(nearBottomLeft, nearBottomRight, nearTopRight)
+    this.frustrum.near = createPlaneFromPoints(nearBottomLeft, nearTopLeft, nearTopRight)
+    this.frustrum.far = createPlaneFromPoints(farBottomRight, farTopRight, farTopLeft)
+    this.frustrum.left = createPlaneFromPoints(farBottomLeft, farTopLeft, nearTopLeft)
+    this.frustrum.right = createPlaneFromPoints(nearBottomRight, nearTopRight, farTopRight)
+    this.frustrum.top = createPlaneFromPoints(nearTopLeft, farTopLeft, farTopRight)
+    this.frustrum.bottom = createPlaneFromPoints(farBottomLeft, nearBottomLeft, nearBottomRight)
+
     console.log("near =", this.frustrum.near.normal.toString(), this.frustrum.near.distance)
-    this.frustrum.far = createPlaneFromPoints(farBottomRight, farBottomLeft, farTopLeft)
     console.log("far =", this.frustrum.far.normal.toString(), this.frustrum.far.distance)
-
-    this.frustrum.left = createPlaneFromPoints(farBottomLeft, nearBottomLeft, nearTopLeft)
-    console.log("left =", this.frustrum.left.normal.toString(), this.frustrum.left.distance)    
-    this.frustrum.right = createPlaneFromPoints(nearBottomRight, farBottomRight, farTopRight)
+    console.log("left =", this.frustrum.left.normal.toString(), this.frustrum.left.distance) 
     console.log("right =", this.frustrum.right.normal.toString(), this.frustrum.right.distance)
-
-    this.frustrum.top = createPlaneFromPoints(nearTopLeft, nearTopRight, farTopRight)
-    console.log("top =", this.frustrum.top.normal.toString(), this.frustrum.top.distance)    
-    this.frustrum.bottom = createPlaneFromPoints(farBottomLeft, farBottomRight, nearBottomLeft)
+    console.log("top =", this.frustrum.top.normal.toString(), this.frustrum.top.distance) 
     console.log("bottom =", this.frustrum.bottom.normal.toString(), this.frustrum.bottom.distance)
     
     this.frustrum.positions.push(nearBottomLeft, nearTopLeft, nearTopRight, nearBottomRight)
     this.frustrum.positions.push(farBottomLeft, farTopLeft, farTopRight, farBottomRight)
-
     this.frustrum.positions.push(farBottomLeft, farTopLeft, nearTopLeft, nearBottomLeft)
     this.frustrum.positions.push(nearBottomRight, nearTopRight, farTopRight, farBottomRight)
-
     this.frustrum.positions.push(nearTopLeft, farTopLeft, farTopRight, nearTopRight)
     this.frustrum.positions.push(farBottomLeft, farBottomRight, nearBottomRight, nearBottomLeft)
 
