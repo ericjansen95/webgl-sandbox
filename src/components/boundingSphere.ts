@@ -60,7 +60,7 @@ export default class BoundingSphere implements Component {
   }
 
   createSphere = (): boolean => {
-    if(!this.visible || this.sphere || !this.self) return false;
+    if(!this.visible || this.sphere || !this.self) return false
 
     const sphereGeometry: Geometry = new Geometry("LINE", true, false, false)
     sphereGeometry.loadFromBuffer(this.createSphereBuffer(this.radius));

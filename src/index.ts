@@ -126,7 +126,7 @@ const main = () => {
   */
 
   // register input events
-  Input.init(document)
+  Input.init()
   Time.init(Date.now())
   Console.init(document)
   //Console.setVisible(true) 

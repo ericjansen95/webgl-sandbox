@@ -80,21 +80,21 @@ export default class Renderer {
     switch(material.type) {
       case "LAMBERT": {
         material.bind(lightDir)
-        return true
+        break
       }
       case "TERRAIN": {
         material.bind(lightDir, 0, transform.modelMatrix)
-        return true
+        break
       }
       case "UNLIT": {
         material.bind()
-        return true
+        break
       }
-      default: {
-        console.error("Renderer::bindMaterial(): Invalid or unimplemented material type!")
-        return false
-      }
+      default:
+        throw new Error("Renderer::bindMaterial(): Invalid or unimplemented material type!")
     }
+
+    return true
   }
 
   renderEntity = (entity: Entity, camera: Entity) => {
