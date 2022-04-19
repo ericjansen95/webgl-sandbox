@@ -27,6 +27,7 @@ export default class Transform implements Component {
     this.dirty = true
     this.autoUpdate = true
 
+    this.modelMatrix = mat4.create()
     this.worldMatrix = mat4.create()
 
     this.parent = null

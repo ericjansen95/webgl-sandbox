@@ -4,6 +4,7 @@ import Material from "../components/material"
 import Entity from "./entity"
 import Geometry from "../components/geometry/geometry"
 import Transform from "../components/transform"
+import FlyControls from "../components/controls/flyControls"
 
 const DEFAULT_CLEAR_COLOR_LUMINANCE = 0.25
 
@@ -180,8 +181,9 @@ export default class Renderer {
     this.drawCalls = 0
     this.cullCount = 0
 
-    camera.getComponent(Transform).onUpdate()
-    //camera.getComponent(Camera).onUpdate()
+    camera.getComponent(FlyControls).onUpdate(camera, camera)
+    camera.getComponent(Transform).onUpdate(camera, camera)
+
     this.renderChildren(root, camera)
   }
 

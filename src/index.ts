@@ -11,6 +11,7 @@ import Material from './components/material';
 import Transform from './components/transform';
 import Quad from './components/geometry/quad';
 import UnlitMaterial from './components/materials/unlitMaterial';
+import FlyControls from './components/controls/flyControls';
 
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
@@ -39,7 +40,9 @@ const main = () => {
   const renderer = new Renderer(canvas)
 
   const camera: Entity = new Entity()
-  const cameraComponent: Camera = new Camera(40, canvas.width / canvas.height)
+  const cameraFlyControls: FlyControls = new FlyControls()
+  camera.addComponent(cameraFlyControls)
+  const cameraComponent: Camera = new Camera(65, canvas.width / canvas.height)
   camera.addComponent(cameraComponent)
 
   const debugMaterial: Material = new UnlitMaterial([0.5, 0.0, 0.5]) as Material
@@ -131,31 +134,14 @@ const main = () => {
   Console.init(document)
   //Console.setVisible(true) 
 
-  // ToDo(Eric) Move this into global input system which allows keybinds               
-  let inputDir: vec3 = vec3.create()
-
   const update = curTime => {
     Time.tick(curTime)
-
-    // ToDo(Eric) Handle multi key down event
-    // ToDo(Eric) Handle single shot get key down vs is key pressed
-    inputDir = [Input.isKeyDown('a') ? 1.0 : Input.isKeyDown('d') ? -1.0 : 0.0,
-                Input.isKeyDown('q') ? 1.0 : Input.isKeyDown('e') ? -1.0 : 0.0,
-                Input.isKeyDown('w') ? 1.0 : Input.isKeyDown('s') ? -1.0 : 0.0]           
-
-    const cameraTransform = camera.getComponent(Transform)
-    const newCameraPostion: vec3 = vec3.create()
-    vec3.scaleAndAdd(newCameraPostion, cameraTransform.position, inputDir, CAMERA_SPEED * Time.deltaTime)
-
-    //console.log("camera position =", newCameraPostion.toString())
-
-    cameraTransform.setPosition(newCameraPostion)
 
     const teapotTransform = teapot.getComponent(Transform)
     teapotTransform.setRotation([0.0, teapotTransform.rotation[1] + Math.PI * 0.1 * Time.deltaTime, 0.0])
 
     const bunnyTransform = bunny.getComponent(Transform)
-    bunnyTransform.setRotation([bunnyTransform.rotation[0] + Math.PI * 0.2 * Time.deltaTime, 0.0, 0.0])
+    bunnyTransform.setRotation([bunnyTransform.rotation[0] + Math.PI * 0.2 * Time.deltaTime, bunnyTransform.rotation[1] + Math.PI * 0.2 * Time.deltaTime, 0.0])
 
     renderer.renderScene(sceneRoot, camera)
 

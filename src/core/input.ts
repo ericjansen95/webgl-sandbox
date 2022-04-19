@@ -25,8 +25,15 @@ export default class Input {
       this.keyState.set(event.key, true)
     }
 
+    document.body.style.cursor = 'none'
+
     // handle this manually in game loop to keep synch?
     document.onmousemove = this.updateMouseState
+    
+    document.onmouseup = () => this.mouseState.deltaPosition.fill(0.0)
+
+    document.onmouseenter = (event) => this.mouseState.position = vec2.fromValues(event.offsetX, event.offsetY)
+    document.onmouseleave = () => this.mouseState.deltaPosition.fill(0.0)
 
     this.locked = false
   }
