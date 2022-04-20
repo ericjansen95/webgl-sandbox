@@ -1,6 +1,6 @@
-import { vec2, vec3 } from "gl-matrix"
+import { vec2 } from "gl-matrix"
 
-const WINDOW_SIZE: vec2 = [window.innerWidth, window.innerHeight]
+const WINDOW_SIZE: vec2 = vec2.fromValues(window.innerWidth, window.innerHeight)
 
 export default class Input {
   static keyState: Map<string, boolean>
@@ -25,7 +25,7 @@ export default class Input {
       this.keyState.set(event.key, true)
     }
 
-    document.body.style.cursor = 'none'
+    //document.body.style.cursor = 'none'
 
     // handle this manually in game loop to keep synch?
     document.onmousemove = this.updateMouseState

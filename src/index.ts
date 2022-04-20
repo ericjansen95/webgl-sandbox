@@ -12,6 +12,7 @@ import Transform from './components/transform';
 import Quad from './components/geometry/quad';
 import UnlitMaterial from './components/materials/unlitMaterial';
 import FlyControls from './components/controls/flyControls';
+import Grid from './components/geometry/grid';
 
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
@@ -40,15 +41,30 @@ const main = () => {
   const renderer = new Renderer(canvas)
 
   const camera: Entity = new Entity()
+  camera.getComponent(Transform).setPosition([0.0, 1.0, 4.0])
+  
   const cameraFlyControls: FlyControls = new FlyControls()
   camera.addComponent(cameraFlyControls)
   const cameraComponent: Camera = new Camera(65, canvas.width / canvas.height)
   camera.addComponent(cameraComponent)
 
-  const debugMaterial: Material = new UnlitMaterial([0.5, 0.0, 0.5]) as Material
+  const debugMaterial: Material = new UnlitMaterial([0.0, 0.75, 0.75]) as Material
   debugMaterial.wireframe = true
 
   const sceneRoot: Entity = new Entity()
+
+  const grid: Entity = new Entity()
+  grid.getComponent(Transform).setScale([20.0, 20.0, 20.0])
+  grid.getComponent(Transform).setPosition([-5.0, 0.0, -5.0])
+
+  const gridGeometry: Geometry = new Grid(10)
+  const gridMaterial: Material = new UnlitMaterial([0.75, 0.75, 0.75]) as Material
+  gridMaterial.wireframe = true
+
+  grid.addComponent(gridMaterial)
+  grid.addComponent(gridGeometry)
+
+  sceneRoot.getComponent(Transform).addChild(grid)
 
   for(let posIndex = 0; posIndex < cameraComponent.frustrum.positions.length; posIndex += 4) {  
     const frustrumPlane = new Entity()
@@ -74,14 +90,14 @@ const main = () => {
   teapot.addComponent(teapotGeometry)
   teapot.addComponent(lambertMaterial)
 
-  teapot.getComponent(Transform).setPosition([0.0, 0.0, -2.0])
+  teapot.getComponent(Transform).setPosition([0.0, 0.5, 0.0])
 
   const bunny: Entity = new Entity()
   bunny.addComponent(bunnyGeometry)
   bunny.addComponent(lambertMaterial)
 
   bunny.getComponent(Transform).setScale([0.25, 0.25, 0.25])
-  bunny.getComponent(Transform).setPosition([-3.0, 0.0, 0.0])
+  bunny.getComponent(Transform).setPosition([-6.0, 0.0, 0.0])
 
   // assemble scene hierachy
   teapot.getComponent(Transform).addChild(bunny)
