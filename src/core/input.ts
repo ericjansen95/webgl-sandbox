@@ -27,24 +27,29 @@ export default class Input {
 
     //document.body.style.cursor = 'none'
 
+    document.onmouseenter = (event) => this.mouseState.position = vec2.fromValues(event.offsetX, event.offsetY)
+
     // handle this manually in game loop to keep synch?
     document.onmousemove = this.updateMouseState
     
-    document.onmouseup = () => this.mouseState.deltaPosition.fill(0.0)
-
-    document.onmouseenter = (event) => this.mouseState.position = vec2.fromValues(event.offsetX, event.offsetY)
     document.onmouseleave = () => this.mouseState.deltaPosition.fill(0.0)
 
     this.locked = false
   }
 
+  static mouseMoveTimeout: NodeJS.Timeout
+
   static updateMouseState = (event) => {
+    if(this.mouseMoveTimeout) clearTimeout(this.mouseMoveTimeout)
+
     const mousePosition: vec2 = [event.offsetX, event.offsetY]
 
     vec2.sub(this.mouseState.deltaPosition, mousePosition, this.mouseState.position)
     vec2.div(this.mouseState.deltaPosition, this.mouseState.deltaPosition, WINDOW_SIZE)
 
     this.mouseState.position = mousePosition
+
+    this.mouseMoveTimeout = setTimeout(() => this.mouseState.deltaPosition.fill(0.0), 67)
   }
 
   static isKeyDown = (keyName: string) => {

@@ -31,8 +31,8 @@ export default class FlyControls implements Component {
     this.side = vec3.fromValues(1.0, 0.0, 0.0)
     this.up = vec3.fromValues(0.0, 1.0, 0.0)
 
-    this.rotateSpeed = 10000.0
-    this.translateSpeed = 10.0
+    this.rotateSpeed = 25000.0
+    this.translateSpeed = 14.0
     this.inputDirection = vec3.create()
 
     this.center = this.forward
