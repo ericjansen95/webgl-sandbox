@@ -85,10 +85,10 @@ export default class FlyControls implements Component {
 
     this.curPosition = this.newPosition
 
-    self.getComponent(Transform).worldMatrix = this.worldMatrix
+    self.getComponent("Transform").worldMatrix = this.worldMatrix
   }
 
   onAdd = (self: Entity) => {
-    this.curPosition = self.getComponent(Transform).position
+    this.curPosition = self.getComponent("Transform").position
   }
 }

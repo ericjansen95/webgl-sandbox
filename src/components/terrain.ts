@@ -70,8 +70,8 @@ export default class Terrain implements Component {
 
         const chunk: Entity = new Entity()
 
-        chunk.getComponent(Transform).setPosition(chunkPos)
-        chunk.getComponent(Transform).setScale(chunkScale)
+        chunk.getComponent("Transform").setPosition(chunkPos)
+        chunk.getComponent("Transform").setScale(chunkScale)
 
         chunk.addComponent(this.lowGeometry)
         chunk.addComponent(this.lowMaterial)
@@ -87,7 +87,7 @@ export default class Terrain implements Component {
     return
 
     const cameraPos: vec3 = vec3.create()
-    mat4.getTranslation(cameraPos, camera.getComponent(Transform).worldMatrix)
+    mat4.getTranslation(cameraPos, camera.getComponent("Transform").worldMatrix)
     // ToDo(Eric) Check why we have to make this transform
     // => this seems wrong
     vec3.multiply(cameraPos, cameraPos, [-1.0, 1.0, -1.0])
@@ -99,7 +99,7 @@ export default class Terrain implements Component {
       const chunk: Entity = this.chunks[chunkIndex]
 
       const chunkPos: vec3 = vec3.create()
-      mat4.getTranslation(chunkPos, chunk.getComponent(Transform).worldMatrix)
+      mat4.getTranslation(chunkPos, chunk.getComponent("Transform").worldMatrix)
       
       // ToDo(Eric) Transform bb check in 0-1 range on both axis
       const chunkCornerLowerLeft: vec2 = [chunkPos[0] - TERRAIN_CHUNK_SIZE + this.size, chunkPos[2] + TERRAIN_CHUNK_SIZE + this.size]      
@@ -149,7 +149,7 @@ export default class Terrain implements Component {
   }
 
   onAdd = (self: Entity) => {
-    this.chunks.forEach(chunk => self.getComponent(Transform).addChild(chunk))
-    self.getComponent(Transform).setScale([this.size, 1.0, this.size])
+    this.chunks.forEach(chunk => self.getComponent("Transform").addChild(chunk))
+    self.getComponent("Transform").setScale([this.size, 1.0, this.size])
   }
 }

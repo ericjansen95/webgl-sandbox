@@ -1,5 +1,8 @@
+import Entity from "../core/entity"
+
 export interface Component {
-  onUpdate?: Function
-  onAdd?: Function
-  onRemove?: Function
+  // remove self and add delta time?
+  onUpdate?: (self: Entity, camera: Entity) => void
+  onAdd?: (self: Entity) => void
+  onRemove?: () => void
 }

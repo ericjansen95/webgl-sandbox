@@ -26,7 +26,7 @@ export default class BoundingSphere implements Component {
 
     this.createSphere()
 
-    const geometry = this.sphere.getComponent(Geometry)
+    const geometry = this.sphere.getComponent("Geometry")
     geometry.visible = visible
   }
 
@@ -72,7 +72,7 @@ export default class BoundingSphere implements Component {
     this.sphere.addComponent(sphereGeometry)
     this.sphere.addComponent(sphereMaterial)
 
-    this.self.getComponent(Transform).addChild(this.sphere)
+    this.self.getComponent("Transform").addChild(this.sphere)
 
     return true
   }
@@ -80,7 +80,7 @@ export default class BoundingSphere implements Component {
   onAdd = (self: Entity) => {
     this.self = self
 
-    const geometry: Geometry = self.getComponent(Geometry)
+    const geometry: Geometry = self.getComponent("Geometry")
 
     this.min = geometry.vertex.min
     this.max = geometry.vertex.max

@@ -48,13 +48,13 @@ export default class Camera implements Component {
   isEntityInFrustrum = (entity: Entity): boolean => {
     if(!this.frustrum) return false
 
-    const boundingSphere: BoundingSphere = entity.getComponent(BoundingSphere)
+    const boundingSphere: BoundingSphere = entity.getComponent("BoundingSphere")
     let radius: number = 0.0
 
     if(boundingSphere)
       radius = boundingSphere.radius
 
-    const entityPosition: vec3 = mat4.getTranslation(vec3.create(), entity.getComponent(Transform).worldMatrix)
+    const entityPosition: vec3 = mat4.getTranslation(vec3.create(), entity.getComponent("Transform").worldMatrix)
 
     let dotProduct: number = 0.0
     let distance: number = 0.0
@@ -64,12 +64,12 @@ export default class Camera implements Component {
       distance = dotProduct + plane.distance - radius
 
       if(distance <= 0.0) {
-        entity.getComponent(Transform).children[0].getComponent(Material).color = [0.678, 0.847, 0.9]
+        entity.getComponent("Transform").children[0].getComponent("Material").color = [0.678, 0.847, 0.9]
         return false
       }
     }
 
-    entity.getComponent(Transform).children[0].getComponent(Material).color = [1.0, 0.628, 0.478]
+    entity.getComponent("Transform").children[0].getComponent("Material").color = [1.0, 0.628, 0.478]
 
     /*
     console.log("dot product =", dotProduct)
@@ -80,7 +80,7 @@ export default class Camera implements Component {
   }
 
   updateFrustrum = () => {
-    const position = this.self.getComponent(Transform).position
+    const position = this.self.getComponent("Transform").position
 
     // see: http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-extracting-the-planes/
 

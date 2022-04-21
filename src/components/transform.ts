@@ -54,7 +54,7 @@ export default class Transform implements Component {
   }
 
   addChild = (entity: Entity) => {
-    entity.getComponent(Transform).parent = this
+    entity.getComponent("Transform").parent = this
     this.children.push(entity)
   }
 

@@ -53,8 +53,8 @@ export default class Renderer {
   }
 
   bindMaterial = (entity: Entity, viewMatrix: mat4, projectionMatrix: mat4, lightDir: vec3): boolean => {
-    const transform: Transform = entity.getComponent(Transform) as Transform
-    const material: Material = entity.getComponent(Material) as Material
+    const transform: Transform = entity.getComponent("Transform") as Transform
+    const material: Material = entity.getComponent("Material") as Material
   
     if(!transform || !material) return false
 
@@ -99,19 +99,19 @@ export default class Renderer {
   }
 
   renderEntity = (entity: Entity, camera: Entity) => {
-    const geometry: Geometry | null = entity.getComponent(Geometry)
+    const geometry: Geometry | null = entity.getComponent("Geometry")
 
     if(!geometry?.visible) return;
 
     if(geometry.cull) {
-      const cameraComponent: Camera | null = camera.getComponent(Camera)
+      const cameraComponent: Camera | null = camera.getComponent("Camera")
       if(!cameraComponent.isEntityInFrustrum(entity)) {
         this.cullCount++
         return
       }
     }
 
-    const material: Material | null = entity.getComponent(Material)
+    const material: Material | null = entity.getComponent("Material")
 
     if(!material || !this.bindGeometry(geometry)) return
 
@@ -152,8 +152,8 @@ export default class Renderer {
     ) 
 
     if(!this.bindMaterial(entity,
-                          camera.getComponent(Transform).worldMatrix,
-                          camera.getComponent(Camera).projectionMatrix,
+                          camera.getComponent("Transform").worldMatrix,
+                          camera.getComponent("Camera").projectionMatrix,
                           vec3.normalize(vec3.create(), [-0.75, 0.5, 0.0]))) return
 
     let mode: number | null = null
@@ -181,8 +181,9 @@ export default class Renderer {
     this.drawCalls = 0
     this.cullCount = 0
 
-    camera.getComponent(FlyControls).onUpdate(camera, camera)
-    camera.getComponent(Transform).onUpdate(camera, camera)
+    camera.getComponent("FlyControls").onUpdate(camera, camera)
+    camera.getComponent("Transform").onUpdate(camera, camera)
+    //camera.getComponent("Camera").onUpdate(camera, camera)
 
     this.renderChildren(root, camera)
   }
@@ -197,7 +198,7 @@ export default class Renderer {
 
     this.renderEntity(self, camera)              
 
-    self.getComponent(Transform).children.forEach(child => {
+    self.getComponent("Transform").children.forEach(child => {
       this.renderChildren(child, camera)
     })
   }

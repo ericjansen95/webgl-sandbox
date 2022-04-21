@@ -1,57 +1,57 @@
 import { Component } from "../components/component";
 import Transform from "../components/transform";
 
+// object.constructor.name
+// Object.getPrototypeOf(instance.constructor).name
+
+// TMP => find proper way to do this by class type without instance?
+type ComponentName = "Transform" | "Material" | "Camera" | "Geometry" | "BoundingSphere" | "FlyControls"
+
+const getComponentName = <Type>(component: Type): ComponentName => {
+  let componentName: ComponentName = component.constructor.name as ComponentName
+  const parentName = Object.getPrototypeOf(component.constructor).name
+
+  if(parentName.length > 0) componentName = parentName
+
+  return componentName
+}
+
 export default class Entity {
-  components: Array<Component>
+  components: Map<ComponentName, Component>
 
   constructor() {
-    this.components = new Array<Component>()
+    this.components = new Map<ComponentName, Component>()
 
-    this.addComponent(new Transform())
+    this.addComponent<Transform>(new Transform())
   }
 
-  addComponent = (component: any) => {
-    this.components.push(component)
+  addComponent = <Type>(component: Type): Type | null => {
+    const componentName: ComponentName = getComponentName(component)
 
-    // ToDo(Eric) Handle callbacks in map?
-    // Make callback argument type save
-    if(component.onAdd)
-      component.onAdd(this)
-  }
+    if(this.components.has(componentName)) return null
 
-  removeComponent = (interfaceType: any) => {
-    this.components.forEach(curComponent => {
-      // ToDo(Eric) Handle multipe components with same type
-      // ToDo(Eric) Handle internal component cleanup
-      // @ts-expect-error
-      if(curComponent instanceof interfaceType || curComponent.prototype instanceof interfaceType) {
-        this.components.splice(this.components.indexOf(curComponent), 1);
+    this.components.set(componentName, component as Component)
 
-        if(curComponent.onRemove)
-          curComponent.onRemove(this)
-      }
-    })
-  }
-
-  getComponent = (interfaceType: any): any | null => {
-    /*
-
-    ToDo(Eric) Error handling => invalid type / instance of interface
-
-    if(interfaceType as Component) return null
-
-    console.log(interfaceType as Component)
-    */
-
-    let component: any | null = null
-
-    this.components.forEach(curComponent => {
-      // ToDo(Eric) Handle multipe component returns if type matches
-      // @ts-expect-error
-      if(curComponent instanceof interfaceType || curComponent.prototype instanceof interfaceType)
-        component = curComponent
-    })
+    // @ts-expect-error
+    if(component.onAdd) component.onAdd(this)
 
     return component
+  }
+
+  removeComponent = (componentName: ComponentName): boolean => {
+    if(!componentName || !this.components.has(componentName)) return false
+ 
+    const component = this.components.get(componentName)
+    if(component.onRemove) component.onRemove()
+
+    this.components.delete(componentName)
+
+    return true
+  }
+
+  getComponent = (componentName: ComponentName): any | null => {
+    if(!componentName || !this.components.has(componentName)) return null
+ 
+    return this.components.get(componentName)
   }
 }

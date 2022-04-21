@@ -25,7 +25,7 @@ export default class BoundingBox implements Component {
 
     this.createBox()
 
-    const geometry = this.box.getComponent(Geometry)
+    const geometry = this.box.getComponent("Geometry")
     geometry.visible = visible
   }
 
@@ -100,17 +100,11 @@ export default class BoundingBox implements Component {
   createBox = (): boolean => {
     if(!this.visible || this.box || !this.self) return false;
 
-    const boxGeometry: Geometry = new Geometry()
-    boxGeometry.loadFromBuffer(this.createBoxBuffer(this.min, this.max));
-
-    const boxMaterial: Material = new UnlitMaterial([1.0, 0.0, 1.0]) as Material
-    boxMaterial.wireframe = true
-
     this.box = new Entity()
-    this.box.addComponent(boxGeometry)
-    this.box.addComponent(boxMaterial)
+    this.box.addComponent(new Geometry()).loadFromBuffer(this.createBoxBuffer(this.min, this.max))
+    this.box.addComponent(new UnlitMaterial([1.0, 0.0, 1.0])).wireframe = true
 
-    this.self.getComponent(Transform).addChild(this.box)
+    this.self.getComponent("Transform").addChild(this.box)
 
     return true
   }
@@ -118,7 +112,7 @@ export default class BoundingBox implements Component {
   onAdd = (self: Entity) => {
     this.self = self
 
-    const geometry = self.getComponent(Geometry)
+    const geometry = self.getComponent("Geometry")
 
     this.min = geometry.vertex.min
     this.max = geometry.vertex.max
