@@ -1,22 +1,24 @@
 
-import { mat4, vec3 } from 'gl-matrix';
+import { mat4, quat, vec3 } from 'gl-matrix';
 import { Component } from './component';
 import createFrustrum, { Frustrum, PlaneIndex } from '../util/math/frustrum'
 import Entity from '../core/entity';
-import Transform from './transform';
 import { createPlaneFromPoints } from '../util/math/plane';
 import BoundingSphere from './boundingSphere';
-import Material from './material';
+import Transform from './transform';
 
 const DEFAULT_Z_NEAR: number = 0.05
 const DEFAULT_Z_FAR: number = 25.0
 
-const CAMERA_FORWARD: vec3 = [0.0, 0.0, -1.0]
-const CAMERA_UP: vec3 = [0.0, 1.0, 0.0]
-const CAMERA_SIDE: vec3 = [1.0, 0.0, 0.0]
+const VECTOR_FORWARD: vec3 = vec3.fromValues(0.0, 0.0, -1.0)
+const VECTOR_UP: vec3 = vec3.fromValues(0.0, 1.0, 0.0)
 
 export default class Camera implements Component {
   self: Entity
+
+  forward: vec3
+  up: vec3
+  side: vec3
 
   projectionMatrix: mat4
   frustrum: Frustrum
@@ -27,6 +29,10 @@ export default class Camera implements Component {
   constructor(fov: number, aspect: number) {
     this.projectionMatrix = mat4.create()
     this.frustrum = createFrustrum()
+
+    this.forward = vec3.fromValues(0.0, 0.0, -1.0)
+    this.up = vec3.fromValues(0.0, 1.0, 0.0)
+    this.side = vec3.fromValues(1.0, 0.0, 0.0)
 
     this.fov = fov
     this.aspect = aspect
@@ -61,7 +67,7 @@ export default class Camera implements Component {
 
     for(const plane of this.frustrum.planes) {
       dotProduct = vec3.dot(entityPosition, plane.normal)
-      distance = dotProduct + plane.distance - radius
+      distance = dotProduct + plane.distance + radius
 
       if(distance <= 0.0) {
         entity.getComponent("Transform").children[0].getComponent("Material").color = [0.678, 0.847, 0.9]
@@ -89,54 +95,66 @@ export default class Camera implements Component {
     const hNear: number = -2.0 * Math.tan(this.fov * 0.5) * DEFAULT_Z_NEAR
     const wNear: number = hNear * this.aspect
 
+    /*
     console.log("height near =", hNear)
     console.log("width near =", wNear)
+    */
 
-    const nearUpOffset: vec3 = vec3.scale(vec3.create(), CAMERA_UP, hNear * 0.5)
-    const nearSideOffset: vec3 = vec3.scale(vec3.create(), CAMERA_SIDE, wNear * 0.5)
+    const nearUpOffset: vec3 = vec3.scale(vec3.create(), this.up, hNear * 0.5)
+    const nearSideOffset: vec3 = vec3.scale(vec3.create(), this.side, wNear * 0.5)
 
-    const nearCenter: vec3 = vec3.scaleAndAdd(vec3.create(), position, CAMERA_FORWARD, DEFAULT_Z_NEAR)
+    const nearCenter: vec3 = vec3.scaleAndAdd(vec3.create(), position, this.forward, DEFAULT_Z_NEAR)
 
+    /*
     console.log("near up offset =", nearUpOffset.toString())
     console.log("near side offset =", nearSideOffset.toString())
     console.log("near center =", nearCenter.toString())    
+    */
 
     const nearBottomLeft: vec3 = vec3.sub(vec3.create(), nearCenter, vec3.add(vec3.create(), nearUpOffset, nearSideOffset))
     const nearTopLeft: vec3 = vec3.add(vec3.create(), nearCenter, vec3.sub(vec3.create(), nearUpOffset, nearSideOffset))
     const nearTopRight: vec3 = vec3.add(vec3.create(), nearCenter, vec3.add(vec3.create(), nearUpOffset, nearSideOffset))
     const nearBottomRight: vec3 = vec3.sub(vec3.create(), nearCenter, vec3.sub(vec3.create(), nearUpOffset, nearSideOffset))
 
+    /*
     console.log("near bottom left =", nearBottomLeft.toString())
     console.log("near top left =", nearTopLeft.toString())
     console.log("near top right =", nearTopRight.toString())
     console.log("near bottom right =", nearBottomRight.toString())
+    */
 
     // FAR PLANE CONSTRUCTION
 
     const hFar: number = -2.0 * Math.tan(this.fov * 0.5) * DEFAULT_Z_FAR
     const wFar: number = hFar * this.aspect
 
+    /*
     console.log("height far =", hFar)
     console.log("width far =", wFar)
+    */
 
-    const farUpOffset: vec3 = vec3.scale(vec3.create(), CAMERA_UP, hFar * 0.5)
-    const farSideOffset: vec3 = vec3.scale(vec3.create(), CAMERA_SIDE, wFar * 0.5)
+    const farUpOffset: vec3 = vec3.scale(vec3.create(), this.up, hFar * 0.5)
+    const farSideOffset: vec3 = vec3.scale(vec3.create(), this.side, wFar * 0.5)
 
-    const farCenter: vec3 = vec3.scaleAndAdd(vec3.create(), position, CAMERA_FORWARD, DEFAULT_Z_FAR)
+    const farCenter: vec3 = vec3.scaleAndAdd(vec3.create(), position, this.forward, DEFAULT_Z_FAR)
 
+    /*
     console.log("far up offset =", farUpOffset.toString())
     console.log("far side offset =", farSideOffset.toString())
     console.log("far center =", farCenter.toString())
+    */
 
     const farBottomLeft: vec3 = vec3.sub(vec3.create(), farCenter, vec3.add(vec3.create(), farUpOffset, farSideOffset))
     const farTopLeft: vec3 = vec3.add(vec3.create(), farCenter, vec3.sub(vec3.create(), farUpOffset, farSideOffset))
     const farTopRight: vec3 = vec3.add(vec3.create(), farCenter, vec3.add(vec3.create(), farUpOffset, farSideOffset))
     const farBottomRight: vec3 = vec3.sub(vec3.create(), farCenter, vec3.sub(vec3.create(), farUpOffset, farSideOffset))
 
+    /*
     console.log("far bottom left =", farBottomLeft.toString())
     console.log("far top left =", farTopLeft.toString())
     console.log("far top right =", farTopRight.toString())
     console.log("far bottom right =", farBottomRight.toString())
+    */
 
     // PLANE CONSTRUCTION
 
@@ -147,13 +165,15 @@ export default class Camera implements Component {
     this.frustrum.planes[PlaneIndex.TOP] = createPlaneFromPoints(nearTopLeft, farTopLeft, farTopRight)
     this.frustrum.planes[PlaneIndex.BOTTOM] = createPlaneFromPoints(farBottomLeft, nearBottomLeft, nearBottomRight)
 
+    /*
     console.log("near =", this.frustrum.planes[PlaneIndex.NEAR].normal.toString(), this.frustrum.planes[PlaneIndex.NEAR].distance)
     console.log("far =", this.frustrum.planes[PlaneIndex.FAR].normal.toString(), this.frustrum.planes[PlaneIndex.FAR].distance)
     console.log("left =", this.frustrum.planes[PlaneIndex.LEFT].normal.toString(), this.frustrum.planes[PlaneIndex.LEFT].distance) 
     console.log("right =", this.frustrum.planes[PlaneIndex.RIGHT].normal.toString(), this.frustrum.planes[PlaneIndex.RIGHT].distance)
     console.log("top =", this.frustrum.planes[PlaneIndex.TOP].normal.toString(), this.frustrum.planes[PlaneIndex.TOP].distance) 
     console.log("bottom =", this.frustrum.planes[PlaneIndex.BOTTOM].normal.toString(), this.frustrum.planes[PlaneIndex.BOTTOM].distance)
-    
+    */
+
     this.frustrum.positions.push(nearBottomLeft, nearTopLeft, nearTopRight, nearBottomRight)
     this.frustrum.positions.push(farBottomLeft, farTopLeft, farTopRight, farBottomRight)
     this.frustrum.positions.push(farBottomLeft, farTopLeft, nearTopLeft, nearBottomLeft)
@@ -169,6 +189,16 @@ export default class Camera implements Component {
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
+    const worldMatrix = (self.getComponent("Transform") as Transform).worldMatrix
+    const rotation: quat = mat4.getRotation(quat.create(), worldMatrix)
+    quat.invert(rotation, rotation)
+
+    vec3.transformQuat(this.forward, VECTOR_FORWARD, rotation)
+
+    vec3.normalize(this.forward, this.forward)
+    vec3.cross(this.side, VECTOR_UP, this.forward)
+    vec3.cross(this.up, this.side, this.forward)
+
     this.updateFrustrum()
   }
 }

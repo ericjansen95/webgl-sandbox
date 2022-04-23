@@ -183,7 +183,7 @@ export default class Renderer {
 
     camera.getComponent("FlyControls").onUpdate(camera, camera)
     camera.getComponent("Transform").onUpdate(camera, camera)
-    //camera.getComponent("Camera").onUpdate(camera, camera)
+    camera.getComponent("Camera").onUpdate(camera, camera)
 
     this.renderChildren(root, camera)
   }

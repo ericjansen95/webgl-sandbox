@@ -68,7 +68,7 @@ const main = () => {
     frustrumPlane.addComponent(new Quad(positions, true, false, false))
     frustrumPlane.addComponent(debugMaterial)
 
-    sceneRoot.getComponent("Transform").addChild(frustrumPlane)
+    camera.getComponent("Transform").addChild(frustrumPlane)
   }
 
   const lambertMaterial: Material = new LambertMaterial([1.0, 1.0, 1.0]) as Material
@@ -88,7 +88,7 @@ const main = () => {
   
   bunny.addComponent(lambertMaterial)
 
-  bunny.getComponent("Transform").setScale([0.25, 0.25, 0.25])
+  //bunny.getComponent("Transform").setScale([0.25, 0.25, 0.25])
   bunny.getComponent("Transform").setPosition([-6.0, 0.0, 0.0])
 
   // assemble scene hierachy
