@@ -19,7 +19,7 @@ const TERRAIN_HEIGHTMAP_URI: string = "/res/tex/antarticaHeightmap.png"
 const TERRAIN_CHUNK_LOW_SUBDEVISIONS: number = 1
 const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 64
 
-const TERRAIN_CHUNK_SIZE = 1
+const TERRAIN_CHUNK_SIZE: number = 1.0
 
 export default class Terrain implements Component {
   size: number
@@ -38,14 +38,13 @@ export default class Terrain implements Component {
   constructor(size: number = 10) {
     this.size = size
 
-    this.height = 0.01 // this.size * 0.0075
+    this.height = 0.25 // this.size * 0.0075
 
     this.activeChunkIndex = null
     this.chunks = new Array<Entity>()
 
     // this.lowMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height) as Material
     this.lowMaterial = new UnlitMaterial([1.0, 0.0, 1.0]) as Material
-    this.lowMaterial.wireframe = true
     this.lowGeometry = new Plane(TERRAIN_CHUNK_LOW_SUBDEVISIONS) as Geometry
 
     this.highMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height) as Material
@@ -55,30 +54,35 @@ export default class Terrain implements Component {
 
     console.log("chunk count =", chunkCount)
 
-    const step: number = 1.0 / chunkCount
+    const step: number = TERRAIN_CHUNK_SIZE / this.size
 
     console.log("step =", step)
 
-    const chunkScale: vec3 = [step * 0.5, 1.0, step * 0.5]
+    const chunkScale: vec3 = [step, 1.0, step]
 
     console.log("chunk scale =", chunkScale)
 
     // ToDo(Eric) Figure out how to do this in one loop!
-    for(let xPos = 0.0; xPos < 1.0; xPos += step) {
-      for(let zPos = 0.0; zPos < 1.0; zPos += step) {
-        const chunkPos: vec3 = [xPos, 0.0, zPos]
+    for(let xPos = 0.0; xPos <= 1.0 - step; xPos += step) {
+      for(let zPos = 0.0; zPos <= 1.0 - step; zPos += step) {
+        const chunkPos: vec3 = vec3.fromValues(xPos, 0.0, zPos)
+
+        //console.log("chunk position =", chunkPos.toString())
 
         const chunk: Entity = new Entity()
 
         chunk.getComponent("Transform").setPosition(chunkPos)
         chunk.getComponent("Transform").setScale(chunkScale)
 
-        chunk.addComponent(this.lowGeometry)
-        chunk.addComponent(this.lowMaterial)
+        chunk.addComponent(this.highGeometry)
+        //chunk.addComponent(new UnlitMaterial([Math.random(), Math.random(), Math.random()]))
+        chunk.addComponent(this.highMaterial)
 
         this.chunks.push(chunk)
       }
     }
+
+    console.log("chunk count =", this.chunks.length)
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
@@ -102,8 +106,8 @@ export default class Terrain implements Component {
       mat4.getTranslation(chunkPos, chunk.getComponent("Transform").worldMatrix)
       
       // ToDo(Eric) Transform bb check in 0-1 range on both axis
-      const chunkCornerLowerLeft: vec2 = [chunkPos[0] - TERRAIN_CHUNK_SIZE + this.size, chunkPos[2] + TERRAIN_CHUNK_SIZE + this.size]      
-      const chunkCornerUpperRight: vec2 = [chunkPos[0] + TERRAIN_CHUNK_SIZE + this.size, chunkPos[2] - TERRAIN_CHUNK_SIZE + this.size]
+      const chunkCornerLowerLeft: vec2 = [chunkPos[0] - 1.0 + this.size, chunkPos[2] + 1.0 + this.size]      
+      const chunkCornerUpperRight: vec2 = [chunkPos[0] + 1.0 + this.size, chunkPos[2] - 1.0 + this.size]
 
       // ToDo(Eric) Create method on bb class to handle checks
       if(cameraPos[0] >= chunkCornerLowerLeft[0] && 
@@ -151,5 +155,6 @@ export default class Terrain implements Component {
   onAdd = (self: Entity) => {
     this.chunks.forEach(chunk => self.getComponent("Transform").addChild(chunk))
     self.getComponent("Transform").setScale([this.size, 1.0, this.size])
+    self.getComponent("Transform").setPosition([this.size * -0.5, 0.0, this.size * -1.5])
   }
 }

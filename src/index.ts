@@ -13,6 +13,7 @@ import Quad from './components/geometry/quad';
 import UnlitMaterial from './components/materials/unlitMaterial';
 import FlyControls from './components/controls/flyControls';
 import Grid from './components/geometry/grid';
+import Terrain from './components/terrain';
 
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
@@ -55,7 +56,7 @@ const main = () => {
   grid.getComponent("Transform").setScale([20.0, 20.0, 20.0])
   grid.getComponent("Transform").setPosition([-5.0, 0.0, -5.0])
 
-  grid.addComponent(new Grid(10))
+  grid.addComponent(new Grid(20))
   grid.addComponent(new UnlitMaterial([0.75, 0.75, 0.75])).wireframe = true
 
   sceneRoot.getComponent("Transform").addChild(grid)
@@ -95,29 +96,12 @@ const main = () => {
   teapot.getComponent("Transform").addChild(bunny)
   sceneRoot.getComponent("Transform").addChild(teapot)
 
-  /*
-  const planeMaterial: Material = new UnlitMaterial([0.0, 1.0, 1.0]) as Material
-  planeMaterial.wireframe = true
-
-  const farPlane = new Entity()
-
-  farPlane.getComponent("Transform").setPosition([1.0, 0.0, 0.0])
-  farPlane.getComponent("Transform").setRotation([0.0, Math.PI * 0.5, 0.0])
-
-  const farPlaneGeometry: Geometry = new Quad([[-0.5, -0.5, 0.0], [-0.5, 0.5, 0.0], [0.5, 0.5, 0.0], [0.5, -0.5, 0.0]]) as Geometry
-  farPlane.addComponent(farPlaneGeometry)
-  farPlane.addComponent(planeMaterial)
-
-  dragon1.getComponent("Transform").addChild(farPlane);
-  */
-
-  /*
-
-  // TERRAIN
   const terrain: Entity = new Entity()
-  const terrainComponent: Component = new Terrain() as Component
-  terrain.addComponent(terrainComponent)
+  terrain.addComponent(new Terrain())
 
+  sceneRoot.getComponent("Transform").addChild(terrain)
+
+  /*
   // WATER
   const water: Entity = new Entity()
   const waterGeometry: Geometry = new Plane(8) as Geometry

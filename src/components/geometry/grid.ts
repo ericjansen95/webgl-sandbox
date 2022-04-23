@@ -15,7 +15,7 @@ export default class Grid extends Geometry {
 
     const step: number = 0.5 / subdivisions
 
-    for(let pos = 0.0; pos <= 0.5; pos += step) {
+    for(let pos = 0.0; pos <= 0.5 + step; pos += step) {
       this.vertex.positions.push(pos, 0.0, 0.0)
       this.vertex.positions.push(pos, 0.0, 0.5)
 
