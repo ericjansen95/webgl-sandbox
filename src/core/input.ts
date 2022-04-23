@@ -18,11 +18,11 @@ export default class Input {
     }
 
     document.onkeyup = (event) => {
-      this.keyState.set(event.key, false)
+      this.keyState.set(event.key.toLowerCase(), false)
     }
   
     document.onkeydown = (event) => {
-      this.keyState.set(event.key, true)
+      this.keyState.set(event.key.toLowerCase(), true)
     }
 
     //document.body.style.cursor = 'none'

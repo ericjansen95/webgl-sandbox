@@ -72,9 +72,12 @@ export default class FlyControls implements Component {
 
     this.newPosition = this.curPosition
 
-    vec3.scaleAndAdd(this.newPosition, this.newPosition, this.side, this.inputDirection[0] * this.translateSpeed * Time.deltaTime)
-    vec3.scaleAndAdd(this.newPosition, this.newPosition, this.up, this.inputDirection[1] * this.translateSpeed * Time.deltaTime)
-    vec3.scaleAndAdd(this.newPosition, this.newPosition, this.forward, this.inputDirection[2] * this.translateSpeed * Time.deltaTime)
+    let translateSpeed: number = this.translateSpeed * Time.deltaTime
+    translateSpeed *= Input.isKeyDown('shift') ? 2.5 : 1.0
+
+    vec3.scaleAndAdd(this.newPosition, this.newPosition, this.side, this.inputDirection[0] * translateSpeed)
+    vec3.scaleAndAdd(this.newPosition, this.newPosition, this.up, this.inputDirection[1] * translateSpeed)
+    vec3.scaleAndAdd(this.newPosition, this.newPosition, this.forward, this.inputDirection[2] * translateSpeed)
  
     this.worldMatrix = mat4.create()
 
