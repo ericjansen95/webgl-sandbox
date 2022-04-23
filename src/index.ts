@@ -44,7 +44,7 @@ const main = () => {
   camera.getComponent("Transform").setPosition([0.0, 1.0, 4.0])
 
   camera.addComponent(new FlyControls())
-  const cameraComponent = camera.addComponent(new Camera(65, canvas.width / canvas.height))
+  const cameraComponent = camera.addComponent(new Camera(Math.PI * 0.5, canvas.width / canvas.height))
 
   const debugMaterial: Material = new UnlitMaterial([0.0, 0.75, 0.75]) as Material
   debugMaterial.wireframe = true
