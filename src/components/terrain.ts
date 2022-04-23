@@ -16,7 +16,7 @@ const TERRAIN_HEIGHTMAP_URI: string = "/res/tex/antarticaHeightmap.png"
 
 // high subdevisions ~= heightmap resolution / (terrain size / chunk size)
 // 64 ~= 41 = 2048 / (10000 / 200)
-const TERRAIN_CHUNK_LOW_SUBDEVISIONS: number = 1
+const TERRAIN_CHUNK_LOW_SUBDEVISIONS: number = 32
 const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 128
 
 const TERRAIN_CHUNK_SIZE: number = 200.0
@@ -38,51 +38,38 @@ export default class Terrain implements Component {
   constructor(size: number = 1000) {
     this.size = size
 
-    this.height = 16.0 // this.size * 0.0075
+    this.height = 16.0
 
     this.activeChunkIndex = null
     this.chunks = new Array<Entity>()
 
-    // this.lowMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height) as Material
     this.lowMaterial = new UnlitMaterial([1.0, 0.0, 1.0]) as Material
     this.lowGeometry = new Plane(TERRAIN_CHUNK_LOW_SUBDEVISIONS) as Geometry
 
     this.highMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, this.height) as Material
     this.highGeometry = new Plane(TERRAIN_CHUNK_HIGH_SUBDEVISIONS) as Geometry
 
-    const chunkCount: number = this.size / TERRAIN_CHUNK_SIZE
-
-    console.log("chunk count =", chunkCount)
-
     const step: number = TERRAIN_CHUNK_SIZE / this.size
-
-    console.log("step =", step)
-
     const chunkScale: vec3 = [step, 1.0, step]
+    let chunkPos: vec3 = vec3.create()
 
-    console.log("chunk scale =", chunkScale)
-
-    // ToDo(Eric) Figure out how to do this in one loop!
     for(let xPos = 0.0; xPos <= 1.0 - step; xPos += step) {
       for(let zPos = 0.0; zPos <= 1.0 - step; zPos += step) {
-        const chunkPos: vec3 = vec3.fromValues(xPos, 0.0, zPos)
-
-        //console.log("chunk position =", chunkPos.toString())
-
+        chunkPos = vec3.fromValues(xPos, 0.0, zPos)
         const chunk: Entity = new Entity()
 
         chunk.getComponent("Transform").setPosition(chunkPos)
         chunk.getComponent("Transform").setScale(chunkScale)
 
         chunk.addComponent(this.highGeometry)
-        //chunk.addComponent(new UnlitMaterial([Math.random(), Math.random(), Math.random()]))
         chunk.addComponent(this.highMaterial)
-
+        /*
+        const randomLuma: number = Math.random()
+        chunk.addComponent(new UnlitMaterial([randomLuma, randomLuma, randomLuma]))
+        */
         this.chunks.push(chunk)
       }
     }
-
-    console.log("chunk count =", this.chunks.length)
   }
 
   onUpdate = (self: Entity, camera: Entity) => {

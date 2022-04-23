@@ -38,62 +38,46 @@ export default class BoundingBox implements Component {
 
     positions.push(min[0], min[1], max[2])
     positions.push(min[0], max[1], max[2])
+    
+    positions.push(min[0], max[1], max[2])
     positions.push(max[0], max[1], max[2])
 
-    positions.push(min[0], min[1], max[2])
     positions.push(max[0], max[1], max[2])
     positions.push(max[0], min[1], max[2])
-    
-    // left
 
-    positions.push(min[0], min[1], min[2])
-    positions.push(min[0], max[1], min[2])
-    positions.push(min[0], max[1], max[2])
-
-    positions.push(min[0], min[1], min[2])
-    positions.push(min[0], max[1], max[2])
+    positions.push(max[0], min[1], max[2])
     positions.push(min[0], min[1], max[2])
 
     // back
 
     positions.push(max[0], min[1], min[2])
     positions.push(max[0], max[1], min[2])
+
+    positions.push(max[0], max[1], min[2])  
     positions.push(min[0], max[1], min[2])
 
-    positions.push(max[0], min[1], min[2])
-    positions.push(min[0], max[1], min[2])
+    positions.push(min[0], max[1], min[2])   
     positions.push(min[0], min[1], min[2])
 
-    // right
-
-    positions.push(max[0], min[1], max[2])
-    positions.push(max[0], max[1], max[2])
-    positions.push(max[0], max[1], min[2])
-
-    positions.push(max[0], min[1], max[2])
-    positions.push(max[0], max[1], min[2])
+    positions.push(min[0], min[1], min[2])
     positions.push(max[0], min[1], min[2])
-    
-    // top
 
-    positions.push(min[0], max[1], max[2])
+    // left
+
     positions.push(min[0], max[1], min[2])
-    positions.push(max[0], max[1], min[2])
-
     positions.push(min[0], max[1], max[2])
-    positions.push(max[0], max[1], min[2])
-    positions.push(max[0], max[1], max[2])
-
-    // bottom
 
     positions.push(min[0], min[1], min[2])
     positions.push(min[0], min[1], max[2])
-    positions.push(max[0], min[1], max[2])
 
-    positions.push(min[0], min[1], min[2])
-    positions.push(max[0], min[1], max[2])
+    // right
+
+    positions.push(max[0], max[1], min[2])
+    positions.push(max[0], max[1], max[2])
+
     positions.push(max[0], min[1], min[2])
-
+    positions.push(max[0], min[1], max[2])
+   
     return positions
   }
 
@@ -101,8 +85,12 @@ export default class BoundingBox implements Component {
     if(!this.visible || this.box || !this.self) return false;
 
     this.box = new Entity()
-    this.box.addComponent(new Geometry()).loadFromBuffer(this.createBoxBuffer(this.min, this.max))
-    this.box.addComponent(new UnlitMaterial([1.0, 0.0, 1.0])).wireframe = true
+
+    const boxGeometry = new Geometry("LINE", true, false, false)
+    boxGeometry.loadFromBuffer(this.createBoxBuffer(this.min, this.max))
+
+    this.box.addComponent(boxGeometry)
+    this.box.addComponent(new UnlitMaterial([1.0, 0.0, 1.0]))
 
     this.self.getComponent("Transform").addChild(this.box)
 

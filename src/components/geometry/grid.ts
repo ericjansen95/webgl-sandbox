@@ -13,14 +13,14 @@ export default class Grid extends Geometry {
       max: vec3.create()
     }
 
-    const step: number = 0.5 / subdivisions
+    const step: number = 1.0 / subdivisions
 
-    for(let pos = 0.0; pos <= 0.5 + step; pos += step) {
+    for(let pos = 0.0; pos < 1.0; pos += step) {
       this.vertex.positions.push(pos, 0.0, 0.0)
-      this.vertex.positions.push(pos, 0.0, 0.5)
+      this.vertex.positions.push(pos, 0.0, 1.0)
 
       this.vertex.positions.push(0.0, 0.0, pos)
-      this.vertex.positions.push(0.5, 0.0, pos)
+      this.vertex.positions.push(1.0, 0.0, pos)
     }
 
     this.vertex.normals = calcNormals(this.vertex.positions, true)

@@ -1,4 +1,3 @@
-import { vec3 } from 'gl-matrix';
 import Camera from './components/camera';
 import Entity from './core/entity';
 import Geometry from './components/geometry/geometry';
@@ -8,7 +7,6 @@ import Console from './core/console';
 import Renderer from './core/renderer';
 import Time from './core/time';
 import Material from './components/material';
-import Transform from './components/transform';
 import Quad from './components/geometry/quad';
 import UnlitMaterial from './components/materials/unlitMaterial';
 import FlyControls from './components/controls/flyControls';
@@ -18,17 +16,6 @@ import Plane from './components/geometry/plane';
 
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
-
-const CAMERA_SPEED = 1;
-
-// pipeline for gl draw lines
-// cleanup frustrum code
-// line vis for frustrum and bounding sphere / box
-
-// add ui for culled object count
-
-// update frustrum with camera
-// camera fly controls
 
 const main = () => {
   
@@ -49,19 +36,21 @@ const main = () => {
   const cameraComponent = camera.addComponent(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
   const debugMaterial: Material = new UnlitMaterial([0.0, 0.75, 0.75]) as Material
-  debugMaterial.wireframe = true
 
   const sceneRoot: Entity = new Entity()
 
   const grid: Entity = new Entity()
-  grid.getComponent("Transform").setScale([20.0, 20.0, 20.0])
+  grid.getComponent("Transform").setScale([10.0, 10.0, 10.0])
   grid.getComponent("Transform").setPosition([-5.0, 0.0, -5.0])
 
-  grid.addComponent(new Grid(20))
-  grid.addComponent(new UnlitMaterial([0.75, 0.75, 0.75])).wireframe = true
+  grid.addComponent(new Grid(10))
+  grid.addComponent(new UnlitMaterial([0.75, 0.75, 0.75]))
 
   sceneRoot.getComponent("Transform").addChild(grid)
 
+  // debug vis for camera frustrum
+
+  /*
   for(let posIndex = 0; posIndex < cameraComponent.frustrum.positions.length; posIndex += 4) {  
     const frustrumPlane = new Entity()
 
@@ -72,6 +61,7 @@ const main = () => {
 
     camera.getComponent("Transform").addChild(frustrumPlane)
   }
+  */
 
   const lambertMaterial: Material = new LambertMaterial([1.0, 1.0, 1.0]) as Material
 
@@ -102,7 +92,9 @@ const main = () => {
 
   sceneRoot.getComponent("Transform").addChild(terrain)
 
-  // WATER
+  // water
+
+  /*
   const water: Entity = new Entity()
   water.addComponent(new Plane(8))
   water.addComponent(new LambertMaterial([0.831, 0.945, 0.976]))
@@ -111,7 +103,8 @@ const main = () => {
   water.getComponent("Transform").setPosition([-1000.0, -0.1, -1000.0])
 
   sceneRoot.getComponent("Transform").addChild(water)
-
+  */
+ 
   // register input events
   Input.init()
   Time.init(Date.now())

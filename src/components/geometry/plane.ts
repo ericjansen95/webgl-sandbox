@@ -1,4 +1,6 @@
 import { vec3 } from "gl-matrix";
+import entity from "../../core/entity";
+import BoundingBox from "../boundingBox";
 import Geometry, { calcNormals } from "./geometry";
 
 export default class Plane extends Geometry {
@@ -6,7 +8,7 @@ export default class Plane extends Geometry {
     super("TRIANGLE", true, false, false)
 
     this.vertex = {
-      count: 3 * 3 * 2 * subdivisions * subdivisions,
+      count: null,
       positions: new Array<number>(),
       normals: new Array<number>(),
       min: vec3.create(),
@@ -27,6 +29,33 @@ export default class Plane extends Geometry {
       }
     }
 
+    this.vertex.count = this.vertex.positions.length
+
+    let position: number[] = []
+
+    for(let posIndex = 0; posIndex < this.vertex.count; posIndex += 3) {
+      position = [this.vertex.positions[posIndex], this.vertex.positions[posIndex + 1], this.vertex.positions[posIndex + 2]]
+
+      this.vertex.min = [Math.min(position[0], this.vertex.min[0]),
+                        Math.min(position[1], this.vertex.min[1]),
+                        Math.min(position[2], this.vertex.min[2])]
+
+      this.vertex.max = [Math.max(position[0], this.vertex.max[0]),
+                        Math.max(position[1], this.vertex.max[1]),
+                        Math.max(position[2], this.vertex.max[2])] 
+    }
+
+    // TMP
+    this.vertex.min[1] = -100
+    this.vertex.max[1] = 100
+
     this.vertex.normals = calcNormals(this.vertex.positions, true)
+  }
+
+  onAdd = (self: entity) => { 
+    const boundingBox: BoundingBox = new BoundingBox(true)
+    self.addComponent(boundingBox)
+
+    //this.cull = true
   }
 }
