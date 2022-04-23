@@ -8,7 +8,7 @@ import BoundingSphere from './boundingSphere';
 import Transform from './transform';
 
 const DEFAULT_Z_NEAR: number = 0.05
-const DEFAULT_Z_FAR: number = 25.0
+const DEFAULT_Z_FAR: number = 100.0
 
 const VECTOR_FORWARD: vec3 = vec3.fromValues(0.0, 0.0, -1.0)
 const VECTOR_UP: vec3 = vec3.fromValues(0.0, 1.0, 0.0)
@@ -46,7 +46,7 @@ export default class Camera implements Component {
                      this.fov, 
                      this.aspect, 
                      DEFAULT_Z_NEAR, 
-                     DEFAULT_Z_FAR * 4)
+                     DEFAULT_Z_FAR)
 
     this.updateFrustrum()
   }
