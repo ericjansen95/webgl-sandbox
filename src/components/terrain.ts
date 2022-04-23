@@ -17,9 +17,9 @@ const TERRAIN_HEIGHTMAP_URI: string = "/res/tex/antarticaHeightmap.png"
 // high subdevisions ~= heightmap resolution / (terrain size / chunk size)
 // 64 ~= 41 = 2048 / (10000 / 200)
 const TERRAIN_CHUNK_LOW_SUBDEVISIONS: number = 1
-const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 64
+const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 128
 
-const TERRAIN_CHUNK_SIZE: number = 1.0
+const TERRAIN_CHUNK_SIZE: number = 200.0
 
 export default class Terrain implements Component {
   size: number
@@ -35,10 +35,10 @@ export default class Terrain implements Component {
   chunks: Array<Entity>
 
   // size is in units / m
-  constructor(size: number = 10) {
+  constructor(size: number = 1000) {
     this.size = size
 
-    this.height = 0.25 // this.size * 0.0075
+    this.height = 16.0 // this.size * 0.0075
 
     this.activeChunkIndex = null
     this.chunks = new Array<Entity>()
@@ -86,12 +86,8 @@ export default class Terrain implements Component {
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
-
-    //console.log(this.chunks.filter(chunk => !chunk.getComponent(Transform)))
-    return
-
-    const cameraPos: vec3 = vec3.create()
-    mat4.getTranslation(cameraPos, camera.getComponent("Transform").worldMatrix)
+    return;
+    const cameraPos: vec3 = (camera.getComponent("Transform") as Transform).getPosition()
     // ToDo(Eric) Check why we have to make this transform
     // => this seems wrong
     vec3.multiply(cameraPos, cameraPos, [-1.0, 1.0, -1.0])
@@ -131,30 +127,28 @@ export default class Terrain implements Component {
           // ToDo(Eric) Find a real solution
           // this is trash!
           try { 
-            this.chunks[chunkIndex - 1].components[0] = this.highGeometry as Component
-            this.chunks[chunkIndex - 1].components[1] = this.highMaterial as Component
+            this.chunks[chunkIndex - 1].components[1] = this.highGeometry as Component
+            //this.chunks[chunkIndex - 1].components[1] = this.highMaterial as Component
           } catch {}
           try { 
             this.chunks[chunkIndex].components[0] = this.highGeometry as Component
-            this.chunks[chunkIndex].components[1] = this.highMaterial as Component
+            //this.chunks[chunkIndex].components[1] = this.highMaterial as Component
           } catch {}
           try { 
             this.chunks[chunkIndex + 1].components[0] = this.highGeometry as Component
-            this.chunks[chunkIndex + 1].components[1] = this.highMaterial as Component
+            //this.chunks[chunkIndex + 1].components[1] = this.highMaterial as Component
           } catch {}
         }
       }
     }
 
-    /*
     this.chunks.forEach(chunk => {chunk.components[0] = this.lowGeometry as Component })
     this.activeChunkIndex = null
-    */
   }
 
   onAdd = (self: Entity) => {
     this.chunks.forEach(chunk => self.getComponent("Transform").addChild(chunk))
     self.getComponent("Transform").setScale([this.size, 1.0, this.size])
-    self.getComponent("Transform").setPosition([this.size * -0.5, 0.0, this.size * -1.5])
+    self.getComponent("Transform").setPosition([this.size * -0.5, 0.0, this.size * -0.95])
   }
 }

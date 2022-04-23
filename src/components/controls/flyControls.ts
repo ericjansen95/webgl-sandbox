@@ -73,7 +73,7 @@ export default class FlyControls implements Component {
     this.newPosition = this.curPosition
 
     let translateSpeed: number = this.translateSpeed * Time.deltaTime
-    translateSpeed *= Input.isKeyDown('shift') ? 2.5 : 1.0
+    translateSpeed *= Input.isKeyDown('shift') ? 6.0 : 1.0
 
     vec3.scaleAndAdd(this.newPosition, this.newPosition, this.side, this.inputDirection[0] * translateSpeed)
     vec3.scaleAndAdd(this.newPosition, this.newPosition, this.up, this.inputDirection[1] * translateSpeed)

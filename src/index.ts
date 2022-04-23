@@ -14,6 +14,7 @@ import UnlitMaterial from './components/materials/unlitMaterial';
 import FlyControls from './components/controls/flyControls';
 import Grid from './components/geometry/grid';
 import Terrain from './components/terrain';
+import Plane from './components/geometry/plane';
 
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
@@ -101,24 +102,15 @@ const main = () => {
 
   sceneRoot.getComponent("Transform").addChild(terrain)
 
-  /*
   // WATER
   const water: Entity = new Entity()
-  const waterGeometry: Geometry = new Plane(8) as Geometry
-  water.addComponent(waterGeometry)
-  const waterMaterial: Material = new LambertMaterial([0.831, 0.945, 0.976]) as Material
-  water.addComponent(waterMaterial)
+  water.addComponent(new Plane(8))
+  water.addComponent(new LambertMaterial([0.831, 0.945, 0.976]))
 
-  mat4.translate(water.modelMatrix,
-                 water.modelMatrix,
-                 [0.0, 20.0, 0.0])
+  water.getComponent("Transform").setScale([2000, 1.0, 2000])
+  water.getComponent("Transform").setPosition([-1000.0, -0.1, -1000.0])
 
-  mat4.scale(water.modelMatrix,
-             water.modelMatrix,
-             [100.0, 1.0, 100.0])
-
-  terrain.children.push(water)
-  */
+  sceneRoot.getComponent("Transform").addChild(water)
 
   // register input events
   Input.init()
