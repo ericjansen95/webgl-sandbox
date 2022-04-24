@@ -13,10 +13,14 @@ export default class BoundingBox implements Component {
   min: vec3 
   max: vec3
 
+  corners: Array<vec3>
+
   self: Entity | null
   visible: boolean
   
   constructor(visible: boolean = true) {
+    this.visible = visible
+    this.corners = new Array<vec3>()
     this.visible = visible
   }
 
@@ -104,6 +108,15 @@ export default class BoundingBox implements Component {
 
     this.min = geometry.vertex.min
     this.max = geometry.vertex.max
+
+    this.corners.push([this.min[0], this.min[1], this.min[2]])
+    this.corners.push([this.max[0], this.min[1], this.min[2]])
+    this.corners.push([this.min[0], this.max[1], this.min[2]])
+    this.corners.push([this.min[0], this.min[1], this.max[2]])
+    this.corners.push([this.max[0], this.max[1], this.min[2]])
+    this.corners.push([this.min[0], this.max[1], this.max[2]])
+    this.corners.push([this.max[0], this.min[1], this.max[2]])
+    this.corners.push([this.max[0], this.max[1], this.max[2]])
 
     this.createBox()
   }

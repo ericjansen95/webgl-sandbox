@@ -5,7 +5,7 @@ import Geometry, { calcNormals } from "./geometry";
 
 export default class Plane extends Geometry {
   constructor(subdivisions: number = 1) {
-    super("TRIANGLE", true, false, false)
+    super("TRIANGLE", true, true, false)
 
     this.vertex = {
       count: null,
@@ -55,7 +55,5 @@ export default class Plane extends Geometry {
   onAdd = (self: entity) => { 
     const boundingBox: BoundingBox = new BoundingBox(true)
     self.addComponent(boundingBox)
-
-    //this.cull = true
   }
 }

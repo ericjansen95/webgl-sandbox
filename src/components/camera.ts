@@ -6,6 +6,8 @@ import Entity from '../core/entity';
 import { createPlaneFromPoints } from '../util/math/plane';
 import BoundingSphere from './boundingSphere';
 import Transform from './transform';
+import BoundingBox from './boundingBox';
+import { Plane } from '../util/math/plane';
 
 const DEFAULT_Z_NEAR: number = 0.05
 const DEFAULT_Z_FAR: number = 10000.0
@@ -51,38 +53,73 @@ export default class Camera implements Component {
     this.updateFrustrum()
   }
 
+  isPoinInFrustrum = (point: vec3): boolean => {
+    for(const plane of this.frustrum.planes)
+      if(!this.isPointInFront(plane, point)) return false
+
+    return true
+  }
+
+  isPointInFront = (plane: Plane, point: vec3, radius: number = 0.0) => {
+    if(vec3.dot(point, plane.normal) + plane.distance + radius < 0.0) return false
+
+    return true
+  }
+
+  isSphereInFrustrum = (point: vec3, radius: number): boolean => {
+    for(const plane of this.frustrum.planes)
+      if(!this.isPointInFront(plane, point, radius)) return false
+
+    return true
+  }
+
+  isBoxInFrustrum = (corners: Array<vec3>, worldMatrix: mat4): boolean => {
+    // ToDo(Eric) Cache this in geometry / bounding box component after transform was diry
+    let points: Array<vec3> = new Array<vec3>()
+    corners.forEach(corner => {
+      points.push(vec3.transformMat4(vec3.create(), corner, worldMatrix))
+    })
+
+    for(const plane of this.frustrum.planes) {
+
+      let inPointCount: number = 0
+      let outPointCount: number = 0
+
+      for(let pointIndex: number = 0; pointIndex < 8 && (inPointCount == 0 || outPointCount == 0); pointIndex++)
+        this.isPointInFront(plane, points[pointIndex]) ? inPointCount++ : outPointCount++
+        
+      if(!inPointCount) return false
+    }
+    
+    return true
+  }
+
   isEntityInFrustrum = (entity: Entity): boolean => {
     if(!this.frustrum) return false
 
-    const boundingSphere: BoundingSphere = entity.getComponent("BoundingSphere")
-    let radius: number = 0.0
+    let isInFrustrum: boolean | null = null
 
-    if(boundingSphere)
-      radius = boundingSphere.radius
+    const point: vec3 = (entity.getComponent("Transform") as Transform).getPosition()
 
-    const entityPosition: vec3 = mat4.getTranslation(vec3.create(), entity.getComponent("Transform").worldMatrix)
-
-    let dotProduct: number = 0.0
-    let distance: number = 0.0
-
-    for(const plane of this.frustrum.planes) {
-      dotProduct = vec3.dot(entityPosition, plane.normal)
-      distance = dotProduct + plane.distance + radius
-
-      if(distance <= 0.0) {
-        entity.getComponent("Transform").children[0].getComponent("Material").color = [0.678, 0.847, 0.9]
-        return false
-      }
+    const boundingSphere = entity.getComponent("BoundingSphere") as BoundingSphere
+    if(boundingSphere) {
+      const scale: vec3 = (entity.getComponent("Transform") as Transform).getScale()
+      const radiusScalar: number = Math.max(scale[0], Math.max(scale[1], scale[2])) 
+      isInFrustrum = this.isSphereInFrustrum(point, boundingSphere.radius * radiusScalar)
     }
 
-    entity.getComponent("Transform").children[0].getComponent("Material").color = [1.0, 0.628, 0.478]
+    const boundingBox = entity.getComponent("BoundingBox") as BoundingBox
+    if(boundingBox) {
+      const worldMatrix: mat4 = (entity.getComponent("Transform") as Transform).worldMatrix
+      isInFrustrum = this.isBoxInFrustrum(boundingBox.corners, worldMatrix)
+    }
 
-    /*
-    console.log("dot product =", dotProduct)
-    console.log("distance =", distance)
-    */
+    if(isInFrustrum === null) isInFrustrum = this.isPoinInFrustrum(point)
 
-    return true
+    // TMP debug change color of bounding volume
+    entity.getComponent("Transform").children[0].getComponent("Material").color = isInFrustrum ? [1.0, 0.628, 0.478] : [0.678, 0.847, 0.9]
+
+    return isInFrustrum
   }
 
   updateFrustrum = () => {

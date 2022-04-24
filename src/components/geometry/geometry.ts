@@ -23,15 +23,15 @@ export default class Geometry implements Component {
   visible: boolean
 
   cull: boolean
-  boundingVolume: boolean
+  boundingSphere: boolean
 
-  constructor(type: GeometryType = "TRIANGLE", visible: boolean = true, cull: boolean = true, boundingVolume: boolean = true) {
+  constructor(type: GeometryType = "TRIANGLE", visible: boolean = true, cull: boolean = true, boundingSphere: boolean = true) {
     this.vertex = null
     this.buffer = null
     this.type = type
     this.visible = visible
     this.cull = cull
-    this.boundingVolume = boundingVolume
+    this.boundingSphere = boundingSphere
   }
 
   createVertexObject = () => {
@@ -96,7 +96,7 @@ export default class Geometry implements Component {
   }
 
   onAdd = (self: Entity) => {
-    if(!this.boundingVolume) return
+    if(!this.boundingSphere) return
     
     const boundingSphere: BoundingSphere = new BoundingSphere(true)
     self.addComponent(boundingSphere)

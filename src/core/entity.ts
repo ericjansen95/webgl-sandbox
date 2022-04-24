@@ -5,7 +5,7 @@ import Transform from "../components/transform";
 // Object.getPrototypeOf(instance.constructor).name
 
 // TMP => find proper way to do this by class type without instance?
-type ComponentName = "Transform" | "Material" | "Camera" | "Geometry" | "BoundingSphere" | "FlyControls"
+type ComponentName = "Transform" | "Material" | "Camera" | "Geometry" | "BoundingSphere" | "BoundingBox" | "FlyControls"
 
 const getComponentName = <Type>(component: Type): ComponentName => {
   let componentName: ComponentName = component.constructor.name as ComponentName
