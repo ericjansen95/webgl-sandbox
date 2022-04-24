@@ -138,7 +138,10 @@ export default class Debug {
   }
 
   static executeCommand = (value) => {
-    if(!this.commands.has(value)) console.error(`Console::executeCommand(): No command found with name = ${value}`)
+    if(!this.commands.has(value)) {
+      console.error(`Console::executeCommand(): No command found with name = ${value}`)
+      return;
+    }
 
     console.log(`Console::executeCommand(): Executing command with name = ${value}`)
     this.commands.get(value)()
