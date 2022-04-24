@@ -136,6 +136,6 @@ export default class Terrain implements Component {
   onAdd = (self: Entity) => {
     this.chunks.forEach(chunk => self.getComponent("Transform").addChild(chunk))
     self.getComponent("Transform").setScale([this.size, 1.0, this.size])
-    self.getComponent("Transform").setPosition([this.size * -0.5, 0.0, this.size * -0.95])
+    self.getComponent("Transform").setPosition([this.size * -0.5, -100, this.size * -1.0])
   }
 }

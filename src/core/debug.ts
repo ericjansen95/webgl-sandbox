@@ -102,6 +102,7 @@ export default class Debug {
   static registerConsoleCommands = () => {
     this.commands.set("ds", this.toggleDebugStats)
     this.commands.set("bv", this.toggleBoundingVolumes)
+    this.commands.set("help", this.getCommandList)
   }
 
   static toggleDebugStats = () => {
@@ -132,6 +133,10 @@ export default class Debug {
     return "Toggled bounding volumes."
   }
 
+  static getCommandList = () => {
+    return `Available commands: ${Array.from(this.commands.keys()).join(', ')}`
+  }
+
   private static debugStats: HTMLDivElement
   private static fpsCounter: HTMLParagraphElement 
   private static drawCounter: HTMLParagraphElement
@@ -157,7 +162,8 @@ export default class Debug {
 
   static executeCommand = (value) => {
     if(!this.commands.has(value)) {
-      this.log(`No command found for = ${value}`)
+      this.log("Invalid command!")
+      this.executeCommand("help")
       return;
     }
 

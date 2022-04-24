@@ -15,6 +15,22 @@ import Terrain from './components/terrain';
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
 
+/*
+
+  - scene skybox
+  - fix terrain border => save normals in texture
+  - fix light rotation
+  - reduce matrix multipications => cache bounding volume data
+  - create bounding volume base class
+  - update terrain lod
+  - fix camera position => look at matrix
+
+  - first person controller => get terrain height
+  - animation => skinning matrix
+  - networking => websocket / socket io go
+
+*/
+
 const main = () => {
   
   const canvas: HTMLCanvasElement = document.getElementById('glCanvas') as HTMLCanvasElement
