@@ -19,8 +19,10 @@ export default class Renderer {
     // ToDo(Eric) Use webgl2 here instead of webgl 1.0
     GL = canvas.getContext('webgl') as WebGL2RenderingContext
 
-    this.clearColor = vec3.create()
-    this.clearColor.fill(DEFAULT_CLEAR_COLOR_LUMINANCE)
+    //this.clearColor = vec3.create()
+    //this.clearColor.fill(DEFAULT_CLEAR_COLOR_LUMINANCE)
+
+    this.clearColor = vec3.fromValues(0.549, 0.745, 0.839)
 
     if(!GL) {
       console.error('Failed to initialize WebGL!') 

@@ -16,8 +16,8 @@ const TERRAIN_HEIGHTMAP_URI: string = "/res/map/heightmap.png"
 
 // high subdevisions ~= heightmap resolution / (terrain size / chunk size)
 // 64 ~= 41 = 2048 / (10000 / 200)
-const TERRAIN_CHUNK_LOW_SUBDEVISIONS: number = 32
-const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 128
+const TERRAIN_CHUNK_LOW_SUBDEVISIONS: number = 64
+const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 256
 
 const TERRAIN_CHUNK_SIZE: number = 100.0
 
