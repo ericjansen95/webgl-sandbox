@@ -3,10 +3,10 @@ export default class Time {
   static deltaTime: number
   private static prevTime: number
 
-  static init = (startTime: number) => {
-    this.startTime = startTime
+  static init = () => {
+    this.startTime = Date.now()
     this.deltaTime = 0.0
-    this.prevTime = startTime
+    this.prevTime = this.startTime
   }
 
   static tick = (curTime: number) => {

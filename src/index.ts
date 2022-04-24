@@ -101,8 +101,8 @@ const main = () => {
  
   // register input events
   Input.init()
-  Time.init(Date.now())
-  Debug.init()
+  Time.init()
+  Debug.init(sceneRoot)
 
   const update = curTime => {
     Time.tick(curTime)

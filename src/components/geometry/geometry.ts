@@ -98,7 +98,7 @@ export default class Geometry implements Component {
   onAdd = (self: Entity) => {
     if(!this.boundingSphere) return
     
-    const boundingSphere: BoundingSphere = new BoundingSphere(true)
+    const boundingSphere: BoundingSphere = new BoundingSphere()
     self.addComponent(boundingSphere)
   }
 }

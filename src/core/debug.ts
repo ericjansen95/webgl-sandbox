@@ -1,3 +1,8 @@
+import BoundingBox from "../components/boundingBox"
+import BoundingSphere from "../components/boundingSphere"
+import { Component } from "../components/component"
+import Transform from "../components/transform"
+import Entity from "./entity"
 import Input from "./input"
 import Time from "./time"
 
@@ -15,9 +20,11 @@ export default class Debug {
   private static visible: boolean
 
   private static root: HTMLDivElement
+  private static sceneRoot: Entity
 
-  static init = () => {
+  static init = (sceneRoot: Entity) => {
     this.visible = false
+    this.sceneRoot = sceneRoot
 
     this.root = document.createElement('div')
     this.root.style.cssText = 'position: absolute; font-family: monospace; font-size: 10px; height: 100%; width: 100%; top: 0px; left: 0px; background: rgba(0.0, 0.0, 0.0, 0.0); z-index: 0; display: flex; flex-direction: column;'
@@ -80,11 +87,32 @@ export default class Debug {
 
   static registerConsoleCommands = () => {
     this.commands.set("ds", this.toggleDebugStats)
+    this.commands.set("bv", this.toggleBoundingVolumes)
   }
 
   static toggleDebugStats = () => {
     this.debugStats.style.visibility = this.debugStats.style.visibility === "hidden" ? "" : "hidden"
   } 
+
+  static toggleBoundingVolumes = () => {
+    const toggleBoundingVolume = (parent: Entity) => {
+      let boundingVolume: Component | null
+
+      // ToDo(Eric): create entity traverse function
+      // ToDo(Eric): let bounding volumes inherit from centeral class or interface
+
+      boundingVolume = parent.getComponent("BoundingSphere")
+      if(boundingVolume) (boundingVolume as BoundingSphere).setVisible(!(boundingVolume as BoundingSphere).visible)
+      else {
+        boundingVolume = parent.getComponent("BoundingBox")
+        if(boundingVolume) (boundingVolume as BoundingBox).setVisible(!(boundingVolume as BoundingBox).visible)
+      }
+
+      (parent.getComponent("Transform") as Transform).children.forEach(child => toggleBoundingVolume(child))
+    }
+
+    toggleBoundingVolume(this.sceneRoot)
+  }
 
   private static debugStats: HTMLDivElement
   private static fpsCounter: HTMLParagraphElement 
