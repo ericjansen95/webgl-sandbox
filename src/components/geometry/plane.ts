@@ -46,14 +46,14 @@ export default class Plane extends Geometry {
     }
 
     // TMP
-    this.vertex.min[1] = -100
-    this.vertex.max[1] = 100
+    this.vertex.min[1] = 0
+    this.vertex.max[1] = 150
 
     this.vertex.normals = calcNormals(this.vertex.positions, true)
   }
 
   onAdd = (self: entity) => { 
-    const boundingBox: BoundingBox = new BoundingBox(true)
+    const boundingBox: BoundingBox = new BoundingBox()
     self.addComponent(boundingBox)
   }
 }

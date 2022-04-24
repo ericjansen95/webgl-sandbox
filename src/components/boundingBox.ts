@@ -18,7 +18,7 @@ export default class BoundingBox implements Component {
   self: Entity | null
   visible: boolean
   
-  constructor(visible: boolean = true) {
+  constructor(visible: boolean = false) {
     this.visible = visible
     this.corners = new Array<vec3>()
     this.visible = visible

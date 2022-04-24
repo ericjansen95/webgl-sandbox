@@ -9,7 +9,7 @@ import TerrainMaterial from "./materials/terrainMaterial";
 import UnlitMaterial from "./materials/unlitMaterial";
 import Transform from "./transform";
 
-const TERRAIN_HEIGHTMAP_URI: string = "/res/tex/antarticaHeightmap.png"
+const TERRAIN_HEIGHTMAP_URI: string = "/res/map/heightmap.png"
 
 // these settings are also related to the heightmap resolution
 // going to high with a low heightmap makes not much sense
@@ -19,7 +19,7 @@ const TERRAIN_HEIGHTMAP_URI: string = "/res/tex/antarticaHeightmap.png"
 const TERRAIN_CHUNK_LOW_SUBDEVISIONS: number = 32
 const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 128
 
-const TERRAIN_CHUNK_SIZE: number = 200.0
+const TERRAIN_CHUNK_SIZE: number = 100.0
 
 export default class Terrain implements Component {
   size: number
@@ -38,7 +38,7 @@ export default class Terrain implements Component {
   constructor(size: number = 1000) {
     this.size = size
 
-    this.height = 16.0
+    this.height = 150.0
 
     this.activeChunkIndex = null
     this.chunks = new Array<Entity>()
