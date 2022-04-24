@@ -8,6 +8,7 @@ import BoundingSphere from './boundingSphere';
 import Transform from './transform';
 import BoundingBox from './boundingBox';
 import { Plane } from '../util/math/plane';
+import UnlitMaterial from './materials/unlitMaterial';
 
 const DEFAULT_Z_NEAR: number = 0.05
 const DEFAULT_Z_FAR: number = 10000.0
@@ -115,9 +116,6 @@ export default class Camera implements Component {
     }
 
     if(isInFrustrum === null) isInFrustrum = this.isPoinInFrustrum(point)
-
-    // TMP debug change color of bounding volume
-    entity.getComponent("Transform").children[0].getComponent("Material").color = isInFrustrum ? [1.0, 0.628, 0.478] : [0.678, 0.847, 0.9]
 
     return isInFrustrum
   }

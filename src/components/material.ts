@@ -8,8 +8,6 @@ export default class Material implements Component {
   type: MaterialType
   program: WebGLProgram
 
-  wireframe: boolean
-
   attributeLocations: Map<string, number>
   uniformLocations: Map<string, WebGLUniformLocation>
 

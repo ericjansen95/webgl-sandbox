@@ -65,12 +65,9 @@ export default class BoundingSphere implements Component {
     const sphereGeometry: Geometry = new Geometry("LINE", true, false, false)
     sphereGeometry.loadFromBuffer(this.createSphereBuffer(this.radius));
 
-    const sphereMaterial: Material = new UnlitMaterial([1.0, 1.0, 1.0]) as Material
-    sphereMaterial.wireframe = true
-
     this.sphere = new Entity()
     this.sphere.addComponent(sphereGeometry)
-    this.sphere.addComponent(sphereMaterial)
+    this.sphere.addComponent(new UnlitMaterial([1.0, 0.0, 1.0]))
 
     this.self.getComponent("Transform").addChild(this.sphere)
 
