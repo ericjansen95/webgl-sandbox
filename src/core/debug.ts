@@ -40,6 +40,7 @@ export default class Debug {
   private static consoleWrapper: HTMLDivElement
   private static consolePrompt: HTMLParagraphElement
   private static consoleInput: HTMLInputElement
+  private static consoleOutputList: HTMLUListElement
 
   private static commands: Map<CommandName, CommandCallback>
 
@@ -75,6 +76,10 @@ export default class Debug {
     this.consoleInput.onkeypress = (event) => event.keyCode !== 94
     this.consoleWrapper.appendChild(this.consoleInput)
 
+    this.consoleOutputList = document.createElement('ul')
+    this.consoleOutputList.style.cssText = 'color: white; font-family: monospace; font-size: 10px; list-style-type: none; margin: 10px 8px 0px 0px; padding-left: 24px; overflow:hidden; overflow-y:scroll; display: flex; flex-direction: column-reverse;'; 
+    this.console.appendChild(this.consoleOutputList)
+
     window.onkeydown = (event) => {
       switch (event.key.toLowerCase()) {
         case "dead": {
@@ -85,6 +90,15 @@ export default class Debug {
     }
   }
 
+  static log = (message: string) => {
+    const consoleOutputItem: HTMLLIElement = document.createElement('li')
+
+    consoleOutputItem.style.cssText = 'margin: 0px 0px 6px 0px; color: lightgray;'
+    consoleOutputItem.innerHTML = `${new Date().toLocaleTimeString()}: ${message}`
+
+    this.consoleOutputList.insertBefore(consoleOutputItem, this.consoleOutputList.firstChild)
+  }
+
   static registerConsoleCommands = () => {
     this.commands.set("ds", this.toggleDebugStats)
     this.commands.set("bv", this.toggleBoundingVolumes)
@@ -92,6 +106,8 @@ export default class Debug {
 
   static toggleDebugStats = () => {
     this.debugStats.style.visibility = this.debugStats.style.visibility === "hidden" ? "" : "hidden"
+
+    return "Toggled debug stats."
   } 
 
   static toggleBoundingVolumes = () => {
@@ -112,6 +128,8 @@ export default class Debug {
     }
 
     toggleBoundingVolume(this.sceneRoot)
+
+    return "Toggled bounding volumes."
   }
 
   private static debugStats: HTMLDivElement
@@ -139,12 +157,11 @@ export default class Debug {
 
   static executeCommand = (value) => {
     if(!this.commands.has(value)) {
-      console.error(`Console::executeCommand(): No command found with name = ${value}`)
+      this.log(`No command found for = ${value}`)
       return;
     }
 
-    console.log(`Console::executeCommand(): Executing command with name = ${value}`)
-    this.commands.get(value)()
+    this.log(this.commands.get(value)())
   }
 
   static update = (debugState: DebugState) => {
