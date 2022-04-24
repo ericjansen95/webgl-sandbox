@@ -53,7 +53,7 @@ export default class Plane extends Geometry {
   }
 
   onAdd = (self: entity) => { 
-    const boundingBox: BoundingBox = new BoundingBox()
+    const boundingBox: BoundingBox = new BoundingBox(true)
     self.addComponent(boundingBox)
   }
 }

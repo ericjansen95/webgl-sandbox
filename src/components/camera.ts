@@ -117,7 +117,7 @@ export default class Camera implements Component {
     if(isInFrustrum === null) isInFrustrum = this.isPoinInFrustrum(point)
 
     // TMP debug change color of bounding volume
-    //entity.getComponent("Transform").children[0].getComponent("Material").color = isInFrustrum ? [1.0, 0.628, 0.478] : [0.678, 0.847, 0.9]
+    entity.getComponent("Transform").children[0].getComponent("Material").color = isInFrustrum ? [1.0, 0.628, 0.478] : [0.678, 0.847, 0.9]
 
     return isInFrustrum
   }

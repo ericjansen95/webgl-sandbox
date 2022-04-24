@@ -40,6 +40,8 @@ export default class Input {
   static mouseMoveTimeout: NodeJS.Timeout
 
   static updateMouseState = (event) => {
+    if(this.locked) return
+
     if(this.mouseMoveTimeout) clearTimeout(this.mouseMoveTimeout)
 
     const mousePosition: vec2 = [event.offsetX, event.offsetY]

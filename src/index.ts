@@ -3,16 +3,14 @@ import Entity from './core/entity';
 import Geometry from './components/geometry/geometry';
 import Input from './core/input';
 import LambertMaterial from './components/materials/lambertMaterial';
-import Console from './core/console';
+import Debug from './core/debug';
 import Renderer from './core/renderer';
 import Time from './core/time';
 import Material from './components/material';
-import Quad from './components/geometry/quad';
 import UnlitMaterial from './components/materials/unlitMaterial';
 import FlyControls from './components/controls/flyControls';
 import Grid from './components/geometry/grid';
 import Terrain from './components/terrain';
-import Plane from './components/geometry/plane';
 
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
@@ -22,10 +20,6 @@ const main = () => {
   const canvas: HTMLCanvasElement = document.getElementById('glCanvas') as HTMLCanvasElement
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
-
-  const fpsCounter: HTMLParagraphElement = document.getElementById('fpsCounter') as HTMLParagraphElement
-  const drawCounter: HTMLParagraphElement = document.getElementById('drawCounter') as HTMLParagraphElement
-  const cullCounter: HTMLParagraphElement = document.getElementById('cullCounter') as HTMLParagraphElement
 
   const renderer = new Renderer(canvas)
 
@@ -108,8 +102,7 @@ const main = () => {
   // register input events
   Input.init()
   Time.init(Date.now())
-  Console.init(document)
-  //Console.setVisible(true) 
+  Debug.init()
 
   const update = curTime => {
     Time.tick(curTime)
@@ -122,12 +115,7 @@ const main = () => {
 
     renderer.renderScene(sceneRoot, camera)
 
-    // ToDo(Eric) Wrap this in Debug static class
-    fpsCounter.textContent = `${Math.ceil(1 / Time.deltaTime)} FPS`
-
-    // ToDo(Eric) Wrap this in Debug static class
-    drawCounter.textContent = `${renderer.drawCalls} Draw Calls`
-    cullCounter.textContent = `${renderer.cullCount} Culled Entities`
+    Debug.update({renderer: {drawCalls: renderer.drawCalls, cullCount: renderer.cullCount}})
 
     requestAnimationFrame(update)
   }
