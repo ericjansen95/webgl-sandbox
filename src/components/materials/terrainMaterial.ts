@@ -33,6 +33,9 @@ export default class TerrainMaterial extends Material {
     this.heightmap = GL.createTexture();
     GL.bindTexture(GL.TEXTURE_2D, this.heightmap);
 
+    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
+    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
+    
     // ToDo(Eric) Manage texture level / position!
     GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, 1, 1, 0, GL.RGBA, GL.UNSIGNED_BYTE,
                             new Uint8Array([0, 0, 255, 255]));
@@ -43,7 +46,6 @@ export default class TerrainMaterial extends Material {
     image.addEventListener('load', () => {
       GL.bindTexture(GL.TEXTURE_2D, this.heightmap);
       GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, image);
-      GL.generateMipmap(GL.TEXTURE_2D);
     });
   }
 

@@ -9,7 +9,7 @@ import TerrainMaterial from "./materials/terrainMaterial";
 import UnlitMaterial from "./materials/unlitMaterial";
 import Transform from "./transform";
 
-const TERRAIN_HEIGHTMAP_URI: string = "/res/map/heightmapCompressed.png"
+const TERRAIN_HEIGHTMAP_URI: string = "/res/map/heightmap.png"
 
 // these settings are also related to the heightmap resolution
 // going to high with a low heightmap makes not much sense
