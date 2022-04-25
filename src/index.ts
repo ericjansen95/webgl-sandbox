@@ -14,6 +14,7 @@ import Terrain from './components/terrain';
 
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
+const humanObj: string = require('/public/res/geo/human.txt') as string
 
 /*
 
@@ -43,9 +44,7 @@ const main = () => {
   camera.getComponent("Transform").setPosition([0.0, 1.0, 4.0])
 
   camera.addComponent(new FlyControls())
-  const cameraComponent = camera.addComponent(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
-
-  const debugMaterial: Material = new UnlitMaterial([0.0, 0.75, 0.75]) as Material
+  camera.addComponent(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
   const sceneRoot: Entity = new Entity()
 
@@ -75,6 +74,16 @@ const main = () => {
 
   const lambertMaterial: Material = new LambertMaterial([1.0, 1.0, 1.0]) as Material
 
+  const human: Entity = new Entity()
+  const humanGeometry = new Geometry()
+  humanGeometry.loadFromObj(humanObj)
+  human.addComponent(humanGeometry)
+  human.addComponent(lambertMaterial)
+
+  human.getComponent("Transform").setPosition([0.0, 0.0, -2.5])
+
+  sceneRoot.getComponent("Transform").addChild(human)
+
   const teapot: Entity = new Entity()
   const teapotGeometry: Geometry = new Geometry()
   teapotGeometry.loadFromObj(teapotObj)
@@ -90,8 +99,8 @@ const main = () => {
   
   bunny.addComponent(lambertMaterial)
 
-  //bunny.getComponent("Transform").setScale([0.25, 0.25, 0.25])
-  bunny.getComponent("Transform").setPosition([-6.0, 0.0, 0.0])
+  bunny.getComponent("Transform").setScale([0.5, 0.5, 0.5])
+  bunny.getComponent("Transform").setPosition([-5.0, 0.0, 0.0])
 
   // assemble scene hierachy
   teapot.getComponent("Transform").addChild(bunny)
