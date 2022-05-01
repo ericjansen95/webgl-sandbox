@@ -77,6 +77,8 @@ export default class Camera implements Component {
   isBoxInFrustrum = (corners: Array<vec3>, worldMatrix: mat4): boolean => {
     // ToDo(Eric) Cache this in geometry / bounding box component after transform was diry
     let points: Array<vec3> = new Array<vec3>()
+
+    // ToDo: Cache this!
     corners.forEach(corner => {
       points.push(vec3.transformMat4(vec3.create(), corner, worldMatrix))
     })
@@ -102,9 +104,12 @@ export default class Camera implements Component {
 
     const point: vec3 = (entity.getComponent("Transform") as Transform).getPosition()
 
+    // ToDo: Abstract bounding volumes with base class and type to improve component query and code flow
+
     const boundingSphere = entity.getComponent("BoundingSphere") as BoundingSphere
     if(boundingSphere) {
       const scale: vec3 = (entity.getComponent("Transform") as Transform).getScale()
+      // ToDo: Chache this!
       const radiusScalar: number = Math.max(scale[0], Math.max(scale[1], scale[2])) 
       isInFrustrum = this.isSphereInFrustrum(point, boundingSphere.radius * radiusScalar)
     }
@@ -121,7 +126,9 @@ export default class Camera implements Component {
   }
 
   updateFrustrum = () => {
-    const position = this.self.getComponent("Transform").position
+    // ToDo: Optimize this!
+
+    const position = this.self.getComponent("Transform").getPosition()
 
     // see: http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-extracting-the-planes/
 
@@ -228,8 +235,6 @@ export default class Camera implements Component {
     const rotation: quat = mat4.getRotation(quat.create(), worldMatrix)
 
     vec3.transformQuat(this.forward, VECTOR_FORWARD, rotation)
-    vec3.normalize(this.forward, this.forward)
-
     vec3.cross(this.side, VECTOR_UP, this.forward)
     vec3.cross(this.up, this.side, this.forward)
 
