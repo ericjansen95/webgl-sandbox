@@ -68,10 +68,11 @@ export default class Renderer {
       transform.worldMatrix
     )
 
+    // ToDo: Cache inverted view matrix in camera?
     GL.uniformMatrix4fv(
       material.uniformLocations.get('uViewMatrix'),
       false,
-      viewMatrix
+      mat4.invert(mat4.create(), viewMatrix)
     )
 
     GL.uniformMatrix4fv(

@@ -226,11 +226,10 @@ export default class Camera implements Component {
   onUpdate = (self: Entity, camera: Entity) => {
     const worldMatrix = (self.getComponent("Transform") as Transform).worldMatrix
     const rotation: quat = mat4.getRotation(quat.create(), worldMatrix)
-    quat.invert(rotation, rotation)
 
     vec3.transformQuat(this.forward, VECTOR_FORWARD, rotation)
-
     vec3.normalize(this.forward, this.forward)
+
     vec3.cross(this.side, VECTOR_UP, this.forward)
     vec3.cross(this.up, this.side, this.forward)
 

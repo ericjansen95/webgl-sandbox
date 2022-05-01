@@ -1,97 +1,72 @@
-import { vec3, vec2, mat4 } from "gl-matrix"
+import { vec3, vec2, mat4, quat } from "gl-matrix"
 import Entity from "../../core/entity"
 import { Component } from "../component"
 import Input from "../../core/input"
-import degreeToRadians from "../../util/math/radians"
-import Transform from "../transform"
 import Time from "../../core/time"
 
 const VECTOR_UP: vec3 = vec3.fromValues(0.0, -1.0, 0.0)
 
+const MAX_YAW_ANGEL: number = Math.PI * 0.45
+const ROTATE_SPEED: number = 150.0
+const TRANSLATE_SPEED: number = 14.0
+
 export default class FlyControls implements Component {
-  forward: vec3
-  side: vec3
-  up: vec3
-
-  center: vec3
-
-  rotateSpeed: number
-  translateSpeed: number
-  inputDirection: vec3
-
-  yaw: number
-  pitch: number
-
-  worldMatrix: mat4
-  curPosition: vec3
-  newPosition: vec3
+  angleRotation: vec2
+  position: vec3
 
   constructor() {
-    this.forward = vec3.fromValues(0.0, 0.0, -1.0)
-    this.side = vec3.fromValues(1.0, 0.0, 0.0)
-    this.up = vec3.fromValues(0.0, 1.0, 0.0)
-
-    this.rotateSpeed = 25000.0
-    this.translateSpeed = 14.0
-    this.inputDirection = vec3.create()
-
-    this.center = this.forward
-
-    this.yaw = -90.0
-    this.pitch = 0.0
-
-    this.curPosition = vec3.create()
-    this.newPosition = vec3.create()
+    this.angleRotation = vec2.create()
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
-    const deltaMousePosition: vec2 = Input.mouseState.deltaPosition
+    // ROTATION
 
-    this.yaw += deltaMousePosition[0] * this.rotateSpeed * Time.deltaTime
-    this.pitch -= deltaMousePosition[1] * this.rotateSpeed * Time.deltaTime
+    // x: yaw, y: pitch
+    const deltaMousePosition = vec2.clone(Input.mouseState.deltaPosition)
+    vec2.scale(deltaMousePosition, deltaMousePosition, -1.0)
+    const rotateSpeed = ROTATE_SPEED * Time.deltaTime;
 
-    if(this.pitch > 89.0)
-        this.pitch = 89.0
-    if(this.pitch < -89.0)
-        this.pitch = -89.0;
+    vec2.add(this.angleRotation, this.angleRotation, vec2.scale(deltaMousePosition, deltaMousePosition, rotateSpeed))
 
-    const yawInRadians: number = degreeToRadians(this.yaw)
-    const pitchInRadians: number = degreeToRadians(this.pitch) 
+    if(this.angleRotation[1] > MAX_YAW_ANGEL)
+      this.angleRotation[1] = MAX_YAW_ANGEL
+    if(this.angleRotation[1] < -MAX_YAW_ANGEL)
+      this.angleRotation[1] = -MAX_YAW_ANGEL;
 
-    this.forward[0] = Math.cos(yawInRadians) * Math.cos(pitchInRadians)
-    this.forward[1] = Math.sin(pitchInRadians)
-    this.forward[2] = Math.sin(yawInRadians) * Math.cos(pitchInRadians)
+    const rotation = quat.create()
+    quat.rotateY(rotation, rotation, this.angleRotation[0])
+    quat.rotateX(rotation, rotation, this.angleRotation[1])
 
-    vec3.normalize(this.forward, this.forward)
-    vec3.cross(this.side, this.forward, VECTOR_UP)
-    vec3.cross(this.up, this.forward, this.side)
+    // COORDINATE SYSTEM AXES
 
-    this.inputDirection = [Input.isKeyDown('a') ? 1.0 : Input.isKeyDown('d') ? -1.0 : 0.0,
-                            Input.isKeyDown('e') ? 1.0 : Input.isKeyDown('q') ? -1.0 : 0.0,
-                            Input.isKeyDown('w') ? 1.0 : Input.isKeyDown('s') ? -1.0 : 0.0]           
+    const forward = vec3.transformQuat(vec3.create(), vec3.fromValues(0.0, 0.0, -1.0), rotation)
+    const side = vec3.cross(vec3.create(), forward, VECTOR_UP)
+    const up = vec3.cross(vec3.create(), forward, side)
 
-    this.newPosition = this.curPosition
+    // TRANSLATION
 
-    let translateSpeed: number = this.translateSpeed * Time.deltaTime
-    translateSpeed *= Input.isKeyDown('shift') ? 6.0 : 1.0
+    this.position = self.getComponent("Transform").getPosition()
 
-    vec3.scaleAndAdd(this.newPosition, this.newPosition, this.side, this.inputDirection[0] * translateSpeed)
-    vec3.scaleAndAdd(this.newPosition, this.newPosition, this.up, this.inputDirection[1] * translateSpeed)
-    vec3.scaleAndAdd(this.newPosition, this.newPosition, this.forward, this.inputDirection[2] * translateSpeed)
- 
-    this.worldMatrix = mat4.create()
+    const translateSpeed = TRANSLATE_SPEED * Time.deltaTime * (Input.isKeyDown('shift') ? 6.0 : 1.0)
+    const inputDirection: vec3 = [Input.isKeyDown('a') ? 1.0 : Input.isKeyDown('d') ? -1.0 : 0.0,
+                                  Input.isKeyDown('e') ? 1.0 : Input.isKeyDown('q') ? -1.0 : 0.0,
+                                  Input.isKeyDown('w') ? 1.0 : Input.isKeyDown('s') ? -1.0 : 0.0]
 
-    vec3.add(this.center, this.curPosition, this.forward)
+    vec3.scaleAndAdd(this.position, this.position, side, inputDirection[0] * translateSpeed)
+    vec3.scaleAndAdd(this.position, this.position, up, inputDirection[1] * translateSpeed)
+    vec3.scaleAndAdd(this.position, this.position, forward, inputDirection[2] * translateSpeed)
 
-    mat4.translate(this.worldMatrix, this.worldMatrix, this.newPosition)
-    mat4.lookAt(this.worldMatrix, this.curPosition, this.center, this.up)
+    // CONSTRUCT MATRIX
 
-    this.curPosition = this.newPosition
+    const rotationMatrix = mat4.fromQuat(mat4.create(), rotation)
+    const translationMatrix = mat4.fromTranslation(mat4.create(), this.position)
 
-    self.getComponent("Transform").worldMatrix = this.worldMatrix
+    // UPDATE ENTITY TRANSFORM
+
+    self.getComponent("Transform").worldMatrix = mat4.mul(mat4.create(), translationMatrix, rotationMatrix)
   }
 
   onAdd = (self: Entity) => {
-    this.curPosition = self.getComponent("Transform").position
+    this.position = self.getComponent("Transform").position
   }
 }
