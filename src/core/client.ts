@@ -117,8 +117,15 @@ export default class Client {
     }
   }
 
-  addChannel(channelType: ChannelType) {
-    const channel = this.peerConnection.createDataChannel(channelType)
+  addChannel(channelType: ChannelType, reliable: boolean = true) {
+    const channelOptions: RTCDataChannelInit = {
+      ordered: reliable,
+    }
+
+    // https://stackoverflow.com/questions/54292824/webrtc-channel-reliability
+    if(!reliable) channelOptions.maxRetransmits = 0
+
+    const channel = this.peerConnection.createDataChannel(channelType, channelOptions)
     this.channels.set(channelType, channel)
 
     channel.onopen = () => {
@@ -274,7 +281,7 @@ export default class Client {
 
         // onicecandidate is not called before a channel is added
         self.addChannel("TEXT")
-        self.addChannel("GAME")
+        self.addChannel("GAME", false)
     })
   }
 }
