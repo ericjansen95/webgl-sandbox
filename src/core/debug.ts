@@ -2,9 +2,12 @@ import Console from "./console"
 import Time from "./time"
 
 export type DebugState = {
-  renderer: {
+  renderer?: {
     drawCalls: number,
     cullCount: number
+  },
+  client?: {
+    ping: number,
   }
 }
 
@@ -24,17 +27,25 @@ export default class Debug {
   }
 
   static update = (debugState: DebugState) => {
-    const {drawCalls, cullCount} = debugState.renderer
+    if(debugState.renderer) {
+      const {drawCalls, cullCount} = debugState.renderer
 
-    this.fpsCounter.textContent = `${Math.ceil(1 / Time.deltaTime)} FPS`
-    this.drawCounter.textContent = `${drawCalls} Draw Calls`
-    this.cullCounter.textContent = `${cullCount} Culled Entities`
+      this.fpsCounter.textContent = `${Math.ceil(1 / Time.deltaTime)} FPS`
+      this.drawCounter.textContent = `${drawCalls} Draw Calls`
+      this.cullCounter.textContent = `${cullCount} Culled Entities`
+    }
+    if(debugState.client) {
+      const { ping } = debugState.client
+
+      this.pingCounter.textContent = `${ping} ms Ping`
+    }
   }
 
   private static debugStats: HTMLDivElement
   private static fpsCounter: HTMLParagraphElement 
   private static drawCounter: HTMLParagraphElement
   private static cullCounter: HTMLParagraphElement
+  private static pingCounter: HTMLParagraphElement
 
   static createDebugStats = () => {
     this.debugStats = document.createElement('div')
@@ -52,6 +63,10 @@ export default class Debug {
     this.cullCounter = document.createElement('p')
     this.cullCounter.style.cssText = 'margin: 6px; padding: 6px; background-color: black; color: lightblue; width: fit-content;'
     this.debugStats.appendChild(this.cullCounter)
+
+    this.pingCounter = document.createElement('p')
+    this.pingCounter.style.cssText = 'margin: 6px; padding: 6px; background-color: black; color: lemonchiffon; width: fit-content;'
+    this.debugStats.appendChild(this.pingCounter)
   }
 
   static toggleDebugStats(ref: Debug = this): string {

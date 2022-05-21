@@ -86,10 +86,12 @@ export default class Client {
   handleMessage(raw: string): boolean | null {
     const {type, data} = JSON.parse(raw) as NetworkPackage
 
-    if(!type || !data || typeof data !== "string") return null
+    if(!type || !data) return null
 
     switch (type) {
       case "PING": {
+        const ping: number = Math.round(Date.now() - parseInt(data, 10))
+        Debug.update({client: {ping}})
         return true
       }
       case "TEXT": {
