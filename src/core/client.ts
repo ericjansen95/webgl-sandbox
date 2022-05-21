@@ -1,3 +1,4 @@
+import { resolve } from "path";
 import Debug from "./debug";
 
 // ToDo Improve types and add origin id / info?
@@ -16,85 +17,33 @@ type NetworkPackage = PingPackage | TextPackage
 
 export default class Client {
   peerConnection: RTCPeerConnection
-  dataChannel: RTCDataChannel
-  sessionDescription: string
+  channels: Map<string, RTCDataChannel>
 
   constructor() {
-    this.peerConnection = new RTCPeerConnection({
-      iceServers: [
-        {
-          urls: 'stun:stun.l.google.com:19302'
-        }
-      ]
-    })
+    this.channels = new Map<string, RTCDataChannel>()
+    Debug.console.registerCommand({ name: "st", description: "Send text to clients. Example: st 'text'", ref: this, callback: this.sendText, arg: true})
 
-    this.dataChannel = this.peerConnection.createDataChannel('default')
-
-    this.dataChannel.onopen = () => {
-      Debug.console.registerCommand({ name: "st", description: "Send text to clients. Example: st 'text'", ref: this, callback: this.sendText, arg: true})
-
+    const init = async () => {
       try {
-        const data = JSON.stringify({
-          type: "TEXT",
-          data: `Hello from client! ${Math.floor(Math.random() * 1000)}`
-        })
-
-        this.dataChannel.send(data)
+        Debug.info(await this.connect("http://localhost:6969/connect"))
       } catch (error) {
-        Debug.info(`Client::connect(): Failed sending message = ${error}`)
-      }
-    }
-    this.dataChannel.onclose = () => Debug.info('Client(): Disconnected.')
-
-    this.dataChannel.onmessage = e => {this.handleMessage(e.data)}
-    
-    this.peerConnection.onnegotiationneeded = e => 
-      this.peerConnection.createOffer().then(d => 
-        this.peerConnection.setLocalDescription(d)).catch(error => 
-          Debug.error(`Client::constructor(): Failed setting session description = ${error}`
-        )
-      )
-
-    this.peerConnection.onconnectionstatechange = event => {
-      const connectionState = this.peerConnection.connectionState
-
-      switch (connectionState) {
-        case "connected": {
-          Debug.info('Client::constructor(): Connected to server.')
-          break;
-        }
-        case "connecting": {
-          Debug.info('Client::constructor(): Connecting to server ...')
-          break;
-        }
-        default: {
-          Debug.warn('Client::constructor(): Disconnected from server!')
-          break;
-        }
+        Debug.error(error)
       }
     }
 
-    this.peerConnection.onicecandidate = async event => {
-      if (event.candidate === null) {
-        this.sessionDescription = btoa(JSON.stringify(this.peerConnection.localDescription))
-        
-        try {
-          this.connect("http://localhost:6969/connect")
-        } catch (error) {
-          Debug.info(error)
-        }
-      }
-    }
+    init()
   }
 
   sendText(text: string, ref: Client = this) {
-    if(!text) return `Client::sendText(): Failed sending text = invalid input!`
+    if(!text) return `Client::sendText(): Failed sending text = invalid arguments!`
 
     const data = JSON.stringify({
       type: "TEXT",
       data: text
     })
-    ref.dataChannel.send(data)
+
+    const label: string = "default"
+    ref.channels.get(label).send(data)
 
     return `Client::sendText(): Send text = ${text}`
   }
@@ -122,29 +71,138 @@ export default class Client {
     }
   }
 
-  async connect(url: string) {
-    try {
-      if(!url) throw new Error("Client::connect(): Invalid parameters!")
+  addChannel(label: string) {
+    const channel = this.peerConnection.createDataChannel(label)
+    this.channels.set(label, channel)
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({sdp: this.sessionDescription})
-      })
-  
-      const body: {sdp: string} = await response.json()
-      const { sdp } = body
-
-      try {
-        this.peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(sdp))))
-      } catch (error) {
-        throw new Error(`Client::connect(): Failed to set remote session description  = ${error}`)
-      }
-    } catch (error) {
-      throw new Error(`Client::connect(): Failed connecting = ${error}`)
+    channel.onopen = () => {
+      this.handleChannelOpen(label)
     }
+    channel.onclose = () => {
+      this.handleChannelClose(label)
+    }
+    channel.onmessage = e => {
+      this.handleMessage(e.data)
+    }
+  }
+
+  handleChannelOpen(label: string) { 
+    Debug.info(`Client::handleChannelOpen(): Channel ${label} opened.`)
+
+    try {
+      const data = JSON.stringify({
+        type: "TEXT",
+        data: `Hello from client! ${Math.floor(Math.random() * 1000)}`
+      })
+
+      this.channels.get(label).send(data)
+    } catch (error) {
+      Debug.info(`Client::handleChannelOpen(): Failed sending message = ${error}`)
+    }
+  }
+
+  handleChannelClose(label: string) {
+    Debug.warn(`Client::handleChannelClose(): Channel ${label} closed!`)
+    this.channels.delete(label)
+  }
+
+  disconnect() {
+    this.peerConnection.close()
+    this.peerConnection = null
+
+    this.channels.clear()
+
+    Debug.warn('Client::constructor(): Disconnected from server!')
+  }
+
+  connect(url: string): Promise<string> {
+    console.log("connect")
+    return new Promise(async (resolve, reject) => {
+        if(!url) {
+          reject(`Client::connect(): Invalid server url!`)
+          return
+        }  
+
+        const handleConnection = async (localSessionDescription: string) => {
+          try {
+            const response = await fetch(url, {
+              method: 'POST',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({sdp: localSessionDescription})
+            })
+        
+            const body: { sdp: string } = await response.json()
+            const { sdp } = body
+    
+            if(!body.sdp) {
+              reject(`Client::connect(): Failed connecting to server ${url} = invalid remote session description!`)
+              return
+            }  
+    
+            try {
+              this.peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(sdp))))
+              resolve(`Client::connect(): Connecting to server ${url} ...`)
+              return
+            } catch (error) {
+              reject(`Client::connect(): Failed to set remote session description = ${error}!`)
+              return
+            }
+          } catch (error) {
+            reject(`Client::connect(): Failed connecting to server ${url} = ${error}`)
+            return
+          }
+        }
+
+        this.peerConnection = new RTCPeerConnection({
+          iceServers: [
+            {
+              urls: 'stun:stun.l.google.com:19302'
+            }
+          ]
+        })
+    
+        this.peerConnection.onnegotiationneeded = e => 
+          this.peerConnection.createOffer().then(d => 
+            this.peerConnection.setLocalDescription(d)).catch(error => 
+              Debug.error(`Client::connect(): Failed getting local session description = ${error}`
+            )
+          )
+    
+        this.peerConnection.onicecandidate = async event => {
+          if (event.candidate === null) {
+            try {
+              const localSessionDescription = btoa(JSON.stringify(this.peerConnection.localDescription))
+              await handleConnection(localSessionDescription)
+            } catch (error) {
+              reject(error)
+              return
+            }
+          }
+        }
+    
+        this.peerConnection.onconnectionstatechange = async event => {
+          const connectionState = this.peerConnection.connectionState
+    
+          switch (connectionState) {
+            case "connected": {
+              Debug.info('Client::constructor(): Connected to server.')
+              break;
+            }
+            case "connecting": {
+              break;
+            }
+            default: {
+              this.disconnect()
+              break;
+            }
+          }
+        }
+
+        // onicecandidate is not called before a channel is added
+        this.addChannel("default")
+    })
   }
 }
