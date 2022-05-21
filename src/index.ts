@@ -11,6 +11,7 @@ import UnlitMaterial from './components/materials/unlitMaterial';
 import FlyControls from './components/controls/flyControls';
 import Grid from './components/geometry/grid';
 import Terrain from './components/terrain';
+import Client from './core/client';
 
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
@@ -128,6 +129,8 @@ const main = () => {
   Input.init()
   Time.init()
   Debug.init(sceneRoot)
+
+  const client: Client = new Client()
 
   const update = curTime => {
     Time.tick(curTime)
