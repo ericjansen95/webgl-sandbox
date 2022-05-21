@@ -1,7 +1,7 @@
-import { resolve } from "path";
 import Debug from "./debug";
+import { v4 as uuidv4 } from 'uuid';
 
-// ToDo Improve types and add origin id / info?
+type ChannelType = "TEXT" | "GAME"
 
 type PingPackage = {
   type: "PING"
@@ -10,10 +10,28 @@ type PingPackage = {
 
 type TextPackage = {
   type: "TEXT"
-  data: string
+  data: {
+    message: string
+    clientId: string
+  }
 }
 
-type NetworkPackage = PingPackage | TextPackage
+type GameConnectPackage = {
+    type: "CONNECT",
+    data: { 
+      clientId: string 
+    }
+}
+
+type GameDisconnectPackage = {
+  type: "DISCONNECT",
+  data: { 
+    clientId: string 
+  }
+}
+
+type GamePackage = GameConnectPackage | GameDisconnectPackage
+type NetworkPackage = PingPackage | TextPackage | GamePackage
 
 const isValidHttpUrl = (input: string) => {
   let url;
@@ -28,15 +46,17 @@ const isValidHttpUrl = (input: string) => {
 }
 
 export default class Client {
+  clientId: string
   peerConnection: RTCPeerConnection
   channels: Map<string, RTCDataChannel>
 
   constructor() {
+    this.clientId = uuidv4()
     this.channels = new Map<string, RTCDataChannel>()
 
     Debug.console.registerCommand({ name: "st", description: "Send text to clients. Example: st 'text'", ref: this, callback: this.sendText, arg: true})
-    Debug.console.registerCommand({ name: "cs", description: "Connect to server. Example: cs 'url'", ref: this, callback: this.connect, arg: true})
-    Debug.console.registerCommand({ name: "ds", description: "Disconnect from server. Example: ds", ref: this, callback: this.disconnect})
+    Debug.console.registerCommand({ name: "cc", description: "Connect to server. Example: cs 'url'", ref: this, callback: this.connect, arg: true})
+    Debug.console.registerCommand({ name: "dc", description: "Disconnect from server. Example: ds", ref: this, callback: this.disconnect})
 
     const init = async () => {
       try {
@@ -58,8 +78,8 @@ export default class Client {
       data: text
     })
 
-    const label: string = "default"
-    ref.channels.get(label).send(data)
+    const channelType: ChannelType = "TEXT"
+    ref.channels.get(channelType).send(data)
 
     return `Client::sendText(): Send text = ${text}`
   }
@@ -72,6 +92,7 @@ export default class Client {
     switch (type) {
       case "PING": {
         // can this be negativ based on system time differences?
+        // @ts-expect-error
         const ping: number = Math.max(0, Math.ceil(Date.now() - parseInt(data, 10)))
         Debug.update({client: {ping}})
         return true
@@ -87,48 +108,70 @@ export default class Client {
     }
   }
 
-  addChannel(label: string) {
-    const channel = this.peerConnection.createDataChannel(label)
-    this.channels.set(label, channel)
+  addChannel(channelType: ChannelType) {
+    const channel = this.peerConnection.createDataChannel(channelType)
+    this.channels.set(channelType, channel)
 
     channel.onopen = () => {
-      this.handleChannelOpen(label)
+      this.handleChannelOpen(channelType)
     }
     channel.onclose = () => {
-      this.handleChannelClose(label)
+      this.handleChannelClose(channelType)
     }
     channel.onmessage = e => {
       this.handleMessage(e.data)
     }
   }
 
-  handleChannelOpen(label: string) { 
-    Debug.info(`Client::handleChannelOpen(): Channel ${label} opened.`)
+  handleChannelOpen(channelType: ChannelType) { 
+    Debug.info(`Client::handleChannelOpen(): Channel ${channelType} opened.`)
 
-    try {
-      const data = JSON.stringify({
-        type: "TEXT",
-        data: `Hello from client! ${Math.floor(Math.random() * 1000)}`
-      })
+    let data: NetworkPackage = null
 
-      this.channels.get(label).send(data)
-    } catch (error) {
-      Debug.info(`Client::handleChannelOpen(): Failed sending message = ${error}`)
+    switch (channelType) {
+      case "TEXT": {
+        data = {
+          type: "TEXT",
+          data: { 
+            message: `Hello from client!`,
+            clientId: this.clientId
+          }
+        }
+        break;
+      }
+      case "GAME": {
+        data = {
+          type: "CONNECT",
+          data: { 
+            clientId: this.clientId
+          }
+        }
+        break;
+      }
+      default: {
+        Debug.error(`Client::handleChannelOpen(): Invalid channel = ${channelType}`)
+        return
+      }
     }
+
+    if(this.channels?.has(channelType)) this.channels.get(channelType).send(JSON.stringify(data))
+    else Debug.error(`Client::handleChannelOpen(): Failed sending package to channel = ${channelType}`)
   }
 
-  handleChannelClose(label: string) {
-    Debug.warn(`Client::handleChannelClose(): Channel ${label} closed!`)
-    this.channels.delete(label)
+  handleChannelClose(channelType: ChannelType) {
+    Debug.warn(`Client::handleChannelClose(): Channel ${channelType} closed!`)
+    this.channels.delete(channelType)
   }
 
   disconnect(self: Client = this) {
+    if(self.peerConnection?.connectionState !== "connected") return `Client::disconnect(): Client is not connected.`
+
     self.peerConnection.close()
     self.peerConnection = null
 
     self.channels.clear()
 
-    return `Client::constructor(): Disconnected from server!`
+    return `Client::disconnect(): Disconnected from server!`
   }
 
   connect(url: string, self: Client = this): Promise<string> {
@@ -153,7 +196,10 @@ export default class Client {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({sdp: localSessionDescription})
+              body: JSON.stringify({
+                sdp: localSessionDescription,
+                clientId: this.clientId
+              })
             })
         
             const body: { sdp: string } = await response.json()
@@ -173,7 +219,7 @@ export default class Client {
               return
             }
           } catch (error) {
-            reject(`Client::connect(): Failed connecting to server ${url} = ${error}`)
+            reject(`Client::connect(): Server ${url} is not available!`)
             return
           }
         }
@@ -224,7 +270,8 @@ export default class Client {
         }
 
         // onicecandidate is not called before a channel is added
-        self.addChannel("default")
+        self.addChannel("TEXT")
+        self.addChannel("GAME")
     })
   }
 }
