@@ -20,8 +20,6 @@ export default class Client {
   sessionDescription: string
 
   constructor() {
-    Debug.info('Client::constructor(): Connecting to server ...')
-
     this.peerConnection = new RTCPeerConnection({
       iceServers: [
         {
@@ -33,8 +31,6 @@ export default class Client {
     this.dataChannel = this.peerConnection.createDataChannel('default')
 
     this.dataChannel.onopen = () => {
-      Debug.info('Client::constructor(): Connected to server!')
-
       Debug.console.registerCommand({ name: "st", description: "Send text to clients. Example: st 'text'", ref: this, callback: this.sendText, arg: true})
 
       try {
@@ -58,6 +54,26 @@ export default class Client {
           Debug.error(`Client::constructor(): Failed setting session description = ${error}`
         )
       )
+
+    this.peerConnection.onconnectionstatechange = event => {
+      const connectionState = this.peerConnection.connectionState
+
+      switch (connectionState) {
+        case "connected": {
+          Debug.info('Client::constructor(): Connected to server.')
+          break;
+        }
+        case "connecting": {
+          Debug.info('Client::constructor(): Connecting to server ...')
+          break;
+        }
+        default: {
+          Debug.warn('Client::constructor(): Disconnected from server!')
+          break;
+        }
+      }
+    }
+
     this.peerConnection.onicecandidate = async event => {
       if (event.candidate === null) {
         this.sessionDescription = btoa(JSON.stringify(this.peerConnection.localDescription))

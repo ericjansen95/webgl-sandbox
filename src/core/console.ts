@@ -90,7 +90,7 @@ export default class Console {
 
     switch (type) {
       case "WARN":
-        color = "lightyellow"
+        color = "yellow"
         break
       case "ERROR":
         color = "lightsalmon"
