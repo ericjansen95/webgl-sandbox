@@ -69,36 +69,45 @@ export default class Client {
     init()
   }
 
-  sendText(text: string, ref: Client = this) {
+  sendText(message: string, ref: Client = this) {
     if(ref.peerConnection?.connectionState !== "connected") return `Client::sendText(): Failed sending text = client not connected!`
-    if(!text) return `Client::sendText(): Failed sending text = invalid arguments!`
+    if(!message) return `Client::sendText(): Failed sending text = invalid arguments!`
 
     const data = JSON.stringify({
       type: "TEXT",
-      data: text
+      data: {
+        message,
+        clientId: ref.clientId
+      }
     })
 
-    const channelType: ChannelType = "TEXT"
-    ref.channels.get(channelType).send(data)
+    ref.channels.get("TEXT").send(data)
 
-    return `Client::sendText(): Send text = ${text}`
+    return `Client::sendText(): Send text message = '${message}'`
   }
 
   handleMessage(raw: string): boolean | null {
-    const {type, data} = JSON.parse(raw) as NetworkPackage
+    const {type, data} = JSON.parse(raw) as any
 
     if(!type || !data) return null
 
     switch (type) {
       case "PING": {
         // can this be negativ based on system time differences?
-        // @ts-expect-error
         const ping: number = Math.max(0, Math.ceil(Date.now() - parseInt(data, 10)))
         Debug.update({client: {ping}})
         return true
       }
       case "TEXT": {
-        Debug.info(`Client::handleMessage(): Received text = ${data}`)
+        Debug.info(`Client::handleMessage(): Received text = '${data.message}' from '${data.clientId}'.`)
+        return true
+      }
+      case "CONNECT": {
+        Debug.info(`Client::handleMessage(): Remote client with id = '${data.clientId}' connected.`)
+        return true
+      }
+      case "DISCONNECT": {
+        Debug.warn(`Client::handleMessage(): Remote client with id = ${data.clientId} disconnected!`)
         return true
       }
       default: {
@@ -133,20 +142,14 @@ export default class Client {
         data = {
           type: "TEXT",
           data: { 
-            message: `Hello from client!`,
+            message: `Hello :)`,
             clientId: this.clientId
           }
         }
-        break;
+        break
       }
       case "GAME": {
-        data = {
-          type: "CONNECT",
-          data: { 
-            clientId: this.clientId
-          }
-        }
-        break;
+        return
       }
       default: {
         Debug.error(`Client::handleChannelOpen(): Invalid channel = ${channelType}`)
@@ -256,7 +259,7 @@ export default class Client {
     
           switch (connectionState) {
             case "connected": {
-              Debug.info('Client::constructor(): Connected to server.')
+              Debug.info('Client::connect(): Connected to server.')
               break;
             }
             case "connecting": {
