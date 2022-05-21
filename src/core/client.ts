@@ -35,7 +35,7 @@ export default class Client {
     this.dataChannel.onopen = () => {
       Debug.info('Client::constructor(): Connected to server!')
 
-      Debug.console.registerCommand("st", { ref: this, callback: this.sendText, arg: true})
+      Debug.console.registerCommand({ name: "st", description: "Send text to clients. Example: st 'text'", ref: this, callback: this.sendText, arg: true})
 
       try {
         const data = JSON.stringify({
@@ -90,7 +90,8 @@ export default class Client {
 
     switch (type) {
       case "PING": {
-        const ping: number = Math.round(Date.now() - parseInt(data, 10))
+        // can this be negativ based on system time differences?
+        const ping: number = Math.max(0, Math.ceil(Date.now() - parseInt(data, 10)))
         Debug.update({client: {ping}})
         return true
       }

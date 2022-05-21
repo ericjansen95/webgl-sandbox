@@ -39,7 +39,7 @@ export default class Renderer {
     GL.enable(GL.DEPTH_TEST)
     GL.depthFunc(GL.LEQUAL)
 
-    Debug.console.registerCommand("bv", { ref: this, callback: this.toggleBoundingVolumes, arg: false })
+    Debug.console.registerCommand({ name: "bv", description: "Visualize bounding volumes.", ref: this, callback: this.toggleBoundingVolumes, arg: false })
   }
 
   bindGeometry = (geometry: Geometry): boolean => {

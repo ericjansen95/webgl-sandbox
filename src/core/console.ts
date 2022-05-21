@@ -2,7 +2,13 @@ import Input from "./input"
 
 type CommandName = string
 type CommandCallback = Function
-type CommandInfo = { ref: any, callback: CommandCallback, arg: boolean }
+type CommandInfo = { 
+  name: CommandName,
+  description?: string,
+  ref: any, 
+  arg?: boolean,
+  callback: CommandCallback,
+}
 
 export default class Console {
   root: HTMLDivElement
@@ -15,7 +21,12 @@ export default class Console {
     this.root = root
 
     this.init()
-    this.registerCommand("help", { ref: this, callback: this.getCommandList, arg: false})
+    this.registerCommand({
+      name: "help", 
+      ref: this, 
+      callback: this.help, 
+      arg: true,
+    })
   }
 
   private console: HTMLDivElement
@@ -91,12 +102,25 @@ export default class Console {
     this.consoleOutputList.insertBefore(consoleOutputItem, this.consoleOutputList.firstChild)
   }
 
-  registerCommand(name: CommandName, info: CommandInfo) {
-    this.commands.set(name, info)
+  registerCommand(info: CommandInfo) {
+    if(!info.description)
+      info.description = "No description available!"
+    if(!info.arg)
+      info.arg = false  
+
+    this.commands.set(info.name, info)
   }
 
-  getCommandList(ref: Console = this): string {
-    return `Console::getCommandList(): Available commands: ${Array.from(ref.commands.keys()).join(', ')}`
+  help(name: CommandName = null, ref: Console = this): string {
+    if(!name) return `Console::help(): Available commands: ${Array.from(ref.commands.keys()).join(', ')}, help 'command'`
+
+    const commandInfo: CommandInfo = ref.commands.get(name)
+    if(!commandInfo) {
+      ref.executeCommand("help")
+      return `Console::help(): Invalid command name!`
+    }
+
+    return `Console::help(): ${name} command description = ${commandInfo.description}`
   }
 
   executeCommand(input: string) {

@@ -23,7 +23,7 @@ export default class Debug {
     this.createDebugStats()
 
     this.console = new Console(this.root)
-    this.console.registerCommand("ds", { ref: this, callback: this.toggleDebugStats, arg: false })
+    this.console.registerCommand({ name: "ds", description: "Display debug statistics.", ref: this, callback: this.toggleDebugStats, arg: false })
   }
 
   static update = (debugState: DebugState) => {
