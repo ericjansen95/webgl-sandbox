@@ -50,6 +50,7 @@ export default class Client {
   }
 
   sendText(text: string, ref: Client = this) {
+    if(ref.peerConnection?.connectionState !== "connected") return `Client::sendText(): Failed sending text = client not connected!`
     if(!text) return `Client::sendText(): Failed sending text = invalid arguments!`
 
     const data = JSON.stringify({
