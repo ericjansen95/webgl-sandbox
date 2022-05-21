@@ -144,8 +144,15 @@ export default class Console {
       inputParts.shift()
       const text: string = inputParts.join(" ")
 
-      const result = callback(text, ref)
-      this.log(result.then ? await result : result)
+      let result = callback(text, ref)
+      if(result.then) {
+        try {
+          result = await result
+        } catch (error) {
+          result = error
+        }
+      }
+      this.log(result)
     }
 
     handleExecution()

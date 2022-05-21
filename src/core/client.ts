@@ -55,7 +55,7 @@ export default class Client {
     this.channels = new Map<string, RTCDataChannel>()
 
     Debug.console.registerCommand({ name: "st", description: "Send text to clients. Example: st 'text'", ref: this, callback: this.sendText, arg: true})
-    Debug.console.registerCommand({ name: "cc", description: "Connect to server. Example: cs 'url'", ref: this, callback: this.connect, arg: true})
+    Debug.console.registerCommand({ name: "cc", description: "Connect to server. Example: cc 'url'", ref: this, callback: this.connect, arg: true})
     Debug.console.registerCommand({ name: "dc", description: "Disconnect from server. Example: ds", ref: this, callback: this.disconnect})
 
     const init = async () => {
@@ -201,7 +201,7 @@ export default class Client {
               },
               body: JSON.stringify({
                 sdp: localSessionDescription,
-                clientId: this.clientId
+                clientId: self.clientId
               })
             })
         
@@ -221,7 +221,7 @@ export default class Client {
               reject(`Client::connect(): Failed to set remote session description = ${error}!`)
               return
             }
-          } catch (error) {
+          } catch (error) { 
             reject(`Client::connect(): Server ${url} is not available!`)
             return
           }
