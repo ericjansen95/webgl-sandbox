@@ -15,17 +15,32 @@ type TextPackage = {
 
 type NetworkPackage = PingPackage | TextPackage
 
+const isValidHttpUrl = (input: string) => {
+  let url;
+  
+  try {
+    url = new URL(input);
+  } catch (_) {
+    return false;
+  }
+
+  return url.protocol === "http:" || url.protocol === "https:";
+}
+
 export default class Client {
   peerConnection: RTCPeerConnection
   channels: Map<string, RTCDataChannel>
 
   constructor() {
     this.channels = new Map<string, RTCDataChannel>()
+
     Debug.console.registerCommand({ name: "st", description: "Send text to clients. Example: st 'text'", ref: this, callback: this.sendText, arg: true})
+    Debug.console.registerCommand({ name: "cs", description: "Connect to server. Example: cs 'url'", ref: this, callback: this.connect, arg: true})
+    Debug.console.registerCommand({ name: "ds", description: "Disconnect from server. Example: ds", ref: this, callback: this.disconnect})
 
     const init = async () => {
       try {
-        Debug.info(await this.connect("http://localhost:6969/connect"))
+        Debug.info(await this.connect("localhost:6969"))
       } catch (error) {
         Debug.error(error)
       }
@@ -106,22 +121,28 @@ export default class Client {
     this.channels.delete(label)
   }
 
-  disconnect() {
-    this.peerConnection.close()
-    this.peerConnection = null
+  disconnect(self: Client = this) {
+    self.peerConnection.close()
+    self.peerConnection = null
 
-    this.channels.clear()
+    self.channels.clear()
 
-    Debug.warn('Client::constructor(): Disconnected from server!')
+    return `Client::constructor(): Disconnected from server!`
   }
 
-  connect(url: string): Promise<string> {
-    console.log("connect")
+  connect(url: string, self: Client = this): Promise<string> {
     return new Promise(async (resolve, reject) => {
         if(!url) {
           reject(`Client::connect(): Invalid server url!`)
           return
         }  
+
+        url = `http://${url}/connect`
+
+        if(!isValidHttpUrl(url))  {
+          reject(`Client::connect(): Invalid server url!`)
+          return
+        }
 
         const handleConnection = async (localSessionDescription: string) => {
           try {
@@ -143,7 +164,7 @@ export default class Client {
             }  
     
             try {
-              this.peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(sdp))))
+              self.peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(sdp))))
               resolve(`Client::connect(): Connecting to server ${url} ...`)
               return
             } catch (error) {
@@ -156,7 +177,7 @@ export default class Client {
           }
         }
 
-        this.peerConnection = new RTCPeerConnection({
+        self.peerConnection = new RTCPeerConnection({
           iceServers: [
             {
               urls: 'stun:stun.l.google.com:19302'
@@ -164,17 +185,17 @@ export default class Client {
           ]
         })
     
-        this.peerConnection.onnegotiationneeded = e => 
-          this.peerConnection.createOffer().then(d => 
-            this.peerConnection.setLocalDescription(d)).catch(error => 
+        self.peerConnection.onnegotiationneeded = e => 
+          self.peerConnection.createOffer().then(d => 
+            self.peerConnection.setLocalDescription(d)).catch(error => 
               Debug.error(`Client::connect(): Failed getting local session description = ${error}`
             )
           )
     
-        this.peerConnection.onicecandidate = async event => {
+        self.peerConnection.onicecandidate = async event => {
           if (event.candidate === null) {
             try {
-              const localSessionDescription = btoa(JSON.stringify(this.peerConnection.localDescription))
+              const localSessionDescription = btoa(JSON.stringify(self.peerConnection.localDescription))
               await handleConnection(localSessionDescription)
             } catch (error) {
               reject(error)
@@ -183,8 +204,8 @@ export default class Client {
           }
         }
     
-        this.peerConnection.onconnectionstatechange = async event => {
-          const connectionState = this.peerConnection.connectionState
+        self.peerConnection.onconnectionstatechange = async event => {
+          const connectionState = self.peerConnection.connectionState
     
           switch (connectionState) {
             case "connected": {
@@ -195,14 +216,14 @@ export default class Client {
               break;
             }
             default: {
-              this.disconnect()
+              self.disconnect()
               break;
             }
           }
         }
 
         // onicecandidate is not called before a channel is added
-        this.addChannel("default")
+        self.addChannel("default")
     })
   }
 }

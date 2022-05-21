@@ -124,25 +124,31 @@ export default class Console {
   }
 
   executeCommand(input: string) {
-    const inputParts: Array<string> = input.split(" ")
-    const name: CommandName = inputParts[0]
+    const handleExecution = async () => {
+      const inputParts: Array<string> = input.split(" ")
+      const name: CommandName = inputParts[0]
+  
+      if(!this.commands.has(name)) {
+        this.log("Console::executeCommand(): Invalid command!", "ERROR")
+        this.executeCommand("help")
+        return;
+      }
+  
+      const { ref, callback, arg } = this.commands.get(name) 
+  
+      if(!arg) {
+        this.log(callback(ref))
+        return
+      }
+  
+      inputParts.shift()
+      const text: string = inputParts.join(" ")
 
-    if(!this.commands.has(name)) {
-      this.log("Console::executeCommand(): Invalid command!", "ERROR")
-      this.executeCommand("help")
-      return;
+      const result = callback(text, ref)
+      this.log(result.then ? await result : result)
     }
 
-    const { ref, callback, arg } = this.commands.get(name) 
-
-    if(!arg) {
-      this.log(callback(ref))
-      return
-    }
-
-    inputParts.shift()
-    const text: string = inputParts.join(" ")
-    this.log(callback(text, ref))
+    handleExecution()
   }
   
   toggleVisible() {
