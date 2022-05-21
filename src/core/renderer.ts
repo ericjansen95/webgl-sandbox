@@ -4,7 +4,10 @@ import Material from "../components/material"
 import Entity from "./entity"
 import Geometry from "../components/geometry/geometry"
 import Transform from "../components/transform"
-import FlyControls from "../components/controls/flyControls"
+import BoundingBox from "../components/boundingBox"
+import BoundingSphere from "../components/boundingSphere"
+import { Component } from "../components/component"
+import Debug from "./debug"
 
 const DEFAULT_CLEAR_COLOR_LUMINANCE = 0.25
 
@@ -14,6 +17,7 @@ export default class Renderer {
   clearColor: vec3
   drawCalls: number
   cullCount: number
+  sceneRoot: Entity
 
   constructor(canvas: HTMLCanvasElement) {
     // ToDo(Eric) Use webgl2 here instead of webgl 1.0
@@ -23,6 +27,7 @@ export default class Renderer {
     //this.clearColor.fill(DEFAULT_CLEAR_COLOR_LUMINANCE)
 
     this.clearColor = vec3.fromValues(0.549, 0.745, 0.839)
+    this.sceneRoot = null
 
     if(!GL) {
       console.error('Failed to initialize WebGL!') 
@@ -33,6 +38,8 @@ export default class Renderer {
     GL.clearDepth(1.0)
     GL.enable(GL.DEPTH_TEST)
     GL.depthFunc(GL.LEQUAL)
+
+    Debug.console.registerCommand("bv", { ref: this, callback: this.toggleBoundingVolumes })
   }
 
   bindGeometry = (geometry: Geometry): boolean => {
@@ -184,6 +191,8 @@ export default class Renderer {
     this.drawCalls = 0
     this.cullCount = 0
 
+    this.sceneRoot = root
+
     camera.getComponent("FlyControls").onUpdate(camera, camera)
     camera.getComponent("Transform").onUpdate(camera, camera)
     camera.getComponent("Camera").onUpdate(camera, camera)
@@ -204,5 +213,32 @@ export default class Renderer {
     self.getComponent("Transform").children.forEach(child => {
       this.renderChildren(child, camera)
     })
+  }
+
+  toggleBoundingVolumes(): string {
+    // @ts-expect-error
+    const { ref, callback } = this
+
+    if(!ref.sceneRoot) return "Failed toggeling bounding volumes = no scene root found!"
+
+    const toggleBoundingVolume = (parent: Entity) => {
+      let boundingVolume: Component | null
+
+      // ToDo(Eric): create entity traverse function
+      // ToDo(Eric): let bounding volumes inherit from centeral class or interface
+
+      boundingVolume = parent.getComponent("BoundingSphere")
+      if(boundingVolume) (boundingVolume as BoundingSphere).setVisible(!(boundingVolume as BoundingSphere).visible)
+      else {
+        boundingVolume = parent.getComponent("BoundingBox")
+        if(boundingVolume) (boundingVolume as BoundingBox).setVisible(!(boundingVolume as BoundingBox).visible)
+      }
+
+      (parent.getComponent("Transform") as Transform).children.forEach(child => toggleBoundingVolume(child))
+    }
+
+    toggleBoundingVolume(ref.sceneRoot)
+
+    return "Toggled bounding volumes."
   }
 }

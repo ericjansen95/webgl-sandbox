@@ -32,7 +32,7 @@ export default class Client {
     this.dataChannel = this.peerConnection.createDataChannel('default')
 
     this.dataChannel.onopen = () => {
-      Debug.log('Client(): Connected.')
+      Debug.info('Client(): Connected.')
       try {
         const data = JSON.stringify({
           type: "TEXT",
@@ -41,28 +41,28 @@ export default class Client {
 
         this.dataChannel.send(data)
       } catch (error) {
-        Debug.log(`Client::connect(): Failed sending message = ${error}`)
+        Debug.info(`Client::connect(): Failed sending message = ${error}`)
       }
     }
-    this.dataChannel.onclose = () => Debug.log('Client(): Disconnected.')
+    this.dataChannel.onclose = () => Debug.info('Client(): Disconnected.')
 
     this.dataChannel.onmessage = e => {this.handleMessage(e.data)}
     
     this.peerConnection.onnegotiationneeded = e => 
       this.peerConnection.createOffer().then(d => 
         this.peerConnection.setLocalDescription(d)).catch(error => 
-          Debug.log(`Client(): Failed setting session description = ${error}`
+          Debug.info(`Client(): Failed setting session description = ${error}`
         )
       )
     this.peerConnection.onicecandidate = async event => {
       if (event.candidate === null) {
         this.sessionDescription = btoa(JSON.stringify(this.peerConnection.localDescription))
         
-        Debug.log("Client::onicecandidate(): Set local session description.")
+        Debug.info("Client::onicecandidate(): Set local session description.")
         try {
           this.connect("http://localhost:6969/connect")
         } catch (error) {
-          Debug.log(error)
+          Debug.info(error)
         }
       }
     }
@@ -78,11 +78,11 @@ export default class Client {
         return true
       }
       case "TEXT": {
-        Debug.log(`Client::handleMessage(): Received text = ${data}`)
+        Debug.info(`Client::handleMessage(): Received text = ${data}`)
         return true
       }
       default: {
-        Debug.log(`Client::handleMessage(): Invalid message type = ${type}!`)
+        Debug.info(`Client::handleMessage(): Invalid message type = ${type}!`)
         return null
       }
     }
@@ -104,7 +104,7 @@ export default class Client {
       const body: {sdp: string} = await response.json()
       const { sdp } = body
 
-      Debug.log("Client::connect(): Received remote session description.")
+      Debug.info("Client::connect(): Received remote session description.")
       console.log("remote session description =", sdp)
 
       try {

@@ -39,6 +39,7 @@ const main = () => {
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
 
+  Debug.init()
   const renderer = new Renderer(canvas)
 
   const camera: Entity = new Entity()
@@ -128,7 +129,6 @@ const main = () => {
   // register input events
   Input.init()
   Time.init()
-  Debug.init(sceneRoot)
 
   const client: Client = new Client()
 
