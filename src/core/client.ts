@@ -1,4 +1,3 @@
-import { Console } from "console";
 import Debug from "./debug";
 
 // ToDo Improve types and add origin id / info?
@@ -21,6 +20,8 @@ export default class Client {
   sessionDescription: string
 
   constructor() {
+    Debug.info('Client::constructor(): Connecting to server ...')
+
     this.peerConnection = new RTCPeerConnection({
       iceServers: [
         {
@@ -32,7 +33,10 @@ export default class Client {
     this.dataChannel = this.peerConnection.createDataChannel('default')
 
     this.dataChannel.onopen = () => {
-      Debug.info('Client(): Connected.')
+      Debug.info('Client::constructor(): Connected to server!')
+
+      Debug.console.registerCommand("st", { ref: this, callback: this.sendText, arg: true})
+
       try {
         const data = JSON.stringify({
           type: "TEXT",
@@ -51,14 +55,13 @@ export default class Client {
     this.peerConnection.onnegotiationneeded = e => 
       this.peerConnection.createOffer().then(d => 
         this.peerConnection.setLocalDescription(d)).catch(error => 
-          Debug.info(`Client(): Failed setting session description = ${error}`
+          Debug.error(`Client::constructor(): Failed setting session description = ${error}`
         )
       )
     this.peerConnection.onicecandidate = async event => {
       if (event.candidate === null) {
         this.sessionDescription = btoa(JSON.stringify(this.peerConnection.localDescription))
         
-        Debug.info("Client::onicecandidate(): Set local session description.")
         try {
           this.connect("http://localhost:6969/connect")
         } catch (error) {
@@ -66,6 +69,18 @@ export default class Client {
         }
       }
     }
+  }
+
+  sendText(text: string, ref: Client = this) {
+    if(!text) return `Client::sendText(): Failed sending text = invalid input!`
+
+    const data = JSON.stringify({
+      type: "TEXT",
+      data: text
+    })
+    ref.dataChannel.send(data)
+
+    return `Client::sendText(): Send text = ${text}`
   }
 
   handleMessage(raw: string): boolean | null {
@@ -103,9 +118,6 @@ export default class Client {
   
       const body: {sdp: string} = await response.json()
       const { sdp } = body
-
-      Debug.info("Client::connect(): Received remote session description.")
-      console.log("remote session description =", sdp)
 
       try {
         this.peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(sdp))))

@@ -2,7 +2,7 @@ import Input from "./input"
 
 type CommandName = string
 type CommandCallback = Function
-type CommandInfo = { ref: any, callback: CommandCallback }
+type CommandInfo = { ref: any, callback: CommandCallback, arg: boolean }
 
 export default class Console {
   root: HTMLDivElement
@@ -15,7 +15,7 @@ export default class Console {
     this.root = root
 
     this.init()
-    this.registerCommand("help", { ref: this, callback: this.getCommandList})
+    this.registerCommand("help", { ref: this, callback: this.getCommandList, arg: false})
   }
 
   private console: HTMLDivElement
@@ -74,7 +74,19 @@ export default class Console {
     const consoleOutputItem: HTMLLIElement = document.createElement('li')
 
     consoleOutputItem.style.cssText = 'margin: 0px 0px 6px 0px; color: lightgray;'
-    consoleOutputItem.innerHTML = `<span>${new Date().toLocaleTimeString()}</span> <b>${type}</b><span>: ${message}</span>`
+
+    let color: string = "lightgreen"
+
+    switch (type) {
+      case "WARN":
+        color = "lightyellow"
+        break
+      case "ERROR":
+        color = "lightsalmon"
+        break
+    }
+
+    consoleOutputItem.innerHTML = `<small>${new Date().toLocaleTimeString()}</small> <b style="color:${color};">${type}</b><span>: ${message}</span>`
 
     this.consoleOutputList.insertBefore(consoleOutputItem, this.consoleOutputList.firstChild)
   }
@@ -83,20 +95,30 @@ export default class Console {
     this.commands.set(name, info)
   }
 
-  getCommandList(): string {
-    // @ts-expect-error
-    const { ref, callback } = this
-    return `Available commands: ${Array.from(ref.commands.keys()).join(', ')}`
+  getCommandList(ref: Console = this): string {
+    return `Console::getCommandList(): Available commands: ${Array.from(ref.commands.keys()).join(', ')}`
   }
 
-  executeCommand(value) {
-    if(!this.commands.has(value)) {
-      this.log("Invalid command!", "ERROR")
+  executeCommand(input: string) {
+    const inputParts: Array<string> = input.split(" ")
+    const name: CommandName = inputParts[0]
+
+    if(!this.commands.has(name)) {
+      this.log("Console::executeCommand(): Invalid command!", "ERROR")
       this.executeCommand("help")
       return;
     }
 
-    this.log(this.commands.get(value).callback())
+    const { ref, callback, arg } = this.commands.get(name) 
+
+    if(!arg) {
+      this.log(callback(ref))
+      return
+    }
+
+    inputParts.shift()
+    const text: string = inputParts.join(" ")
+    this.log(callback(text, ref))
   }
   
   toggleVisible() {

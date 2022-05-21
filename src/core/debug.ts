@@ -20,7 +20,7 @@ export default class Debug {
     this.createDebugStats()
 
     this.console = new Console(this.root)
-    this.console.registerCommand("ds", { ref: this, callback: this.toggleDebugStats })
+    this.console.registerCommand("ds", { ref: this, callback: this.toggleDebugStats, arg: false })
   }
 
   static update = (debugState: DebugState) => {
@@ -54,13 +54,11 @@ export default class Debug {
     this.debugStats.appendChild(this.cullCounter)
   }
 
-  static toggleDebugStats(): string {
-    // @ts-expect-error
-    const { ref, callback } = this
-    
-    ref.debugStats.style.visibility = ref.debugStats.style.visibility === "hidden" ? "" : "hidden"
+  static toggleDebugStats(ref: Debug = this): string {
+    const isHidden = Debug.debugStats.style.visibility === "hidden";
+    Debug.debugStats.style.visibility = isHidden ? "" : "hidden"
 
-    return "Toggled debug stats."
+    return `Debug::toggleDebugStats(): ${isHidden ? "Enabled" : "Disabled"} debug stats.`
   }
 
   static info = (message: string) => {
