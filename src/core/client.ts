@@ -35,6 +35,8 @@ type GameDisconnectPackage = {
 type GamePackage = GameConnectPackage | GameDisconnectPackage
 type NetworkPackage = PingPackage | TextPackage | GamePackage
 
+type ListenerCallback = (data: NetworkPackage["data"]) => void
+
 const isValidHttpUrl = (input: string) => {
   let url;
   
@@ -51,29 +53,29 @@ export default class Client {
   clientId: string
   peerConnection: RTCPeerConnection
   channels: Map<string, RTCDataChannel>
-  listeners: Map<ChannelType, Map<PackageType, Set<Function>>>
+  listeners: Map<ChannelType, Map<PackageType, Set<ListenerCallback>>>
 
   constructor() {
     this.clientId = uuidv4()
     this.channels = new Map<ChannelType, RTCDataChannel>()
-    this.listeners = new Map<ChannelType, Map<PackageType, Set<Function>>>()
+    this.listeners = new Map<ChannelType, Map<PackageType, Set<ListenerCallback>>>()
 
     Debug.console.registerCommand({ name: "st", description: "Send text message to all remote clients. Example: st 'text'", ref: this, callback: this.sendText, arg: true})
     Debug.console.registerCommand({ name: "cc", description: "Connect to server. Example: cc 'url'", ref: this, callback: this.connect, arg: true})
     Debug.console.registerCommand({ name: "dc", description: "Disconnect from server. Example: ds", ref: this, callback: this.disconnect})
 
-    this.subscribe("GAME", "PING", (data) => {
+    this.subscribe("GAME", "PING", (data: PingPackage["data"]) => {
       // can this be negativ based on system time differences?
       const ping: number = Math.max(0, Math.ceil(Date.now() - parseInt(data, 10)))
       Debug.update({client: {ping}})
     })
-    this.subscribe("TEXT", "TEXT", (data) => {
+    this.subscribe("TEXT", "TEXT", (data: TextPackage["data"]) => {
       Debug.info(`Client::handleMessage(): Received text = '${data.message}' from '${data.clientId}'.`)
     })
-    this.subscribe("GAME", "CONNECT", (data) => {
+    this.subscribe("GAME", "CONNECT", (data: GameConnectPackage["data"]) => {
       Debug.info(`Client::handleMessage(): Remote client with id = '${data.clientId}' connected.`)
     })
-    this.subscribe("GAME", "DISCONNECT", (data) => {
+    this.subscribe("GAME", "DISCONNECT", (data: GameDisconnectPackage["data"]) => {
       Debug.warn(`Client::handleMessage(): Remote client with id = ${data.clientId} disconnected!`)
     })
 
@@ -89,14 +91,14 @@ export default class Client {
   }
 
   // ToDo: Test this!
-  subscribe(channelType: ChannelType, packageType: PackageType, callback: Function) {
+  subscribe(channelType: ChannelType, packageType: PackageType, callback: ListenerCallback) {
     if(!this.listeners.has(channelType))
-      this.listeners.set(channelType, new Map<PackageType, Set<Function>>())
+      this.listeners.set(channelType, new Map<PackageType, Set<ListenerCallback>>())
 
     const channelListeners = this.listeners.get(channelType)
 
     if(!channelListeners.has(packageType))
-      channelListeners.set(packageType, new Set<Function>())
+      channelListeners.set(packageType, new Set<ListenerCallback>())
 
     const packageTypeCallbacks = channelListeners.get(packageType)  
 
@@ -107,7 +109,7 @@ export default class Client {
   }
 
   // ToDo: Test this!
-  unsubscribe(callback: Function) {
+  unsubscribe(callback: ListenerCallback) {
     for(const [channelType, channelListeners] of this.listeners) {
       for(const [packageType, callbacks] of channelListeners) {
         if(!callbacks.has(callback)) continue
