@@ -2,6 +2,8 @@ import Debug from "./debug";
 import { v4 as uuidv4 } from 'uuid';
 
 type ChannelType = "TEXT" | "GAME"
+ 
+type PackageType = "PING" | "TEXT" | "CONNECT" | "DISCONNECT"
 
 type PingPackage = {
   type: "PING"
@@ -49,14 +51,31 @@ export default class Client {
   clientId: string
   peerConnection: RTCPeerConnection
   channels: Map<string, RTCDataChannel>
+  listeners: Map<ChannelType, Map<PackageType, Set<Function>>>
 
   constructor() {
     this.clientId = uuidv4()
-    this.channels = new Map<string, RTCDataChannel>()
+    this.channels = new Map<ChannelType, RTCDataChannel>()
+    this.listeners = new Map<ChannelType, Map<PackageType, Set<Function>>>()
 
-    Debug.console.registerCommand({ name: "st", description: "Send text to clients. Example: st 'text'", ref: this, callback: this.sendText, arg: true})
+    Debug.console.registerCommand({ name: "st", description: "Send text message to all remote clients. Example: st 'text'", ref: this, callback: this.sendText, arg: true})
     Debug.console.registerCommand({ name: "cc", description: "Connect to server. Example: cc 'url'", ref: this, callback: this.connect, arg: true})
     Debug.console.registerCommand({ name: "dc", description: "Disconnect from server. Example: ds", ref: this, callback: this.disconnect})
+
+    this.subscribe("GAME", "PING", (data) => {
+      // can this be negativ based on system time differences?
+      const ping: number = Math.max(0, Math.ceil(Date.now() - parseInt(data, 10)))
+      Debug.update({client: {ping}})
+    })
+    this.subscribe("TEXT", "TEXT", (data) => {
+      Debug.info(`Client::handleMessage(): Received text = '${data.message}' from '${data.clientId}'.`)
+    })
+    this.subscribe("GAME", "CONNECT", (data) => {
+      Debug.info(`Client::handleMessage(): Remote client with id = '${data.clientId}' connected.`)
+    })
+    this.subscribe("GAME", "DISCONNECT", (data) => {
+      Debug.warn(`Client::handleMessage(): Remote client with id = ${data.clientId} disconnected!`)
+    })
 
     const init = async () => {
       try {
@@ -67,6 +86,35 @@ export default class Client {
     }
 
     init()
+  }
+
+  // ToDo: Test this!
+  subscribe(channelType: ChannelType, packageType: PackageType, callback: Function) {
+    if(!this.listeners.has(channelType))
+      this.listeners.set(channelType, new Map<PackageType, Set<Function>>())
+
+    const channelListeners = this.listeners.get(channelType)
+
+    if(!channelListeners.has(packageType))
+      channelListeners.set(packageType, new Set<Function>())
+
+    const packageTypeCallbacks = channelListeners.get(packageType)  
+
+    if(!packageTypeCallbacks.has(callback))  
+      packageTypeCallbacks.add(callback)
+    else
+      Debug.warn(`Client::subscribe(): Failed subscription because callback is already registered for channel type = ${channelType} and packageType = ${packageType}`)  
+  }
+
+  // ToDo: Test this!
+  unsubscribe(callback: Function) {
+    for(const [channelType, channelListeners] of this.listeners) {
+      for(const [packageType, callbacks] of channelListeners) {
+        if(!callbacks.has(callback)) continue
+  
+        callbacks.delete(callback)
+      }
+    }
   }
 
   sendText(message: string, ref: Client = this) {
@@ -85,36 +133,54 @@ export default class Client {
 
     return `Client::sendText(): Send text message = '${message}'`
   }
+ 
+  // ToDo: Wrap this into promise? => callback can be async
+  // Do we need so much error handling here => performance!?
+  async dispatchMessage(channelType: ChannelType, networkPackage: NetworkPackage) {
+    if(!this.listeners.has(channelType)) {
+      Debug.warn(`Client::dispatchMessage(): No listeners for channel type = ${channelType} found!`)
+      return null
+    } 
 
-  handleMessage(raw: string): boolean | null {
-    const {type, data} = JSON.parse(raw) as any
+    const { type, data } = networkPackage
 
-    if(!type || !data) return null
+    const packageTypeCallbacks = this.listeners.get(channelType)
+    if(!packageTypeCallbacks.has(type)) {
+      //Debug.warn(`Client::dispatchMessage(): No callbacks for network package type = ${type} found!`)
+      return null
+    } 
 
-    switch (type) {
-      case "PING": {
-        // can this be negativ based on system time differences?
-        const ping: number = Math.max(0, Math.ceil(Date.now() - parseInt(data, 10)))
-        Debug.update({client: {ping}})
-        return true
-      }
-      case "TEXT": {
-        Debug.info(`Client::handleMessage(): Received text = '${data.message}' from '${data.clientId}'.`)
-        return true
-      }
-      case "CONNECT": {
-        Debug.info(`Client::handleMessage(): Remote client with id = '${data.clientId}' connected.`)
-        return true
-      }
-      case "DISCONNECT": {
-        Debug.warn(`Client::handleMessage(): Remote client with id = ${data.clientId} disconnected!`)
-        return true
-      }
-      default: {
-        Debug.info(`Client::handleMessage(): Invalid message type = ${type}!`)
+    const callbacks = packageTypeCallbacks.get(type)
+    if(!callbacks.size) {
+      //Debug.warn(`Client::dispatchMessage(): No callbacks for network package type = ${type} found!`)
+      return null
+    } 
+
+    for (const callback of callbacks) {
+      try {
+        callback(data)
+      } catch (error) {
+        Debug.error(`Client::dispatchMessage(): Failed dispatching message = ${error}`)
         return null
       }
     }
+
+    return true
+  }
+
+  handleMessage(channelType: ChannelType, raw: string): boolean | null {
+    const networkPackage = JSON.parse(raw) as NetworkPackage
+    const {type, data} = networkPackage
+
+    // ToDo: Check type and payload with typeguards?
+    if(!type || !data) {
+      Debug.error(`Client::handleMessage(): Received invalid network package!`)
+      // ToDo: Close connection here?
+      return null
+    }
+
+    this.dispatchMessage(channelType, networkPackage)
+    return true
   }
 
   addChannel(channelType: ChannelType, reliable: boolean = true) {
@@ -135,7 +201,7 @@ export default class Client {
       this.handleChannelClose(channelType)
     }
     channel.onmessage = e => {
-      this.handleMessage(e.data)
+      this.handleMessage(channelType, e.data)
     }
   }
 
