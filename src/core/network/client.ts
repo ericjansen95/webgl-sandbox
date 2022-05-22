@@ -1,9 +1,9 @@
-import Debug from "./debug";
-import { v4 as uuidv4 } from 'uuid';
+import Debug from "../internal/debug";
+const short = require('short-uuid');
 
 type ChannelType = "TEXT" | "GAME"
  
-type PackageType = "PING" | "TEXT" | "CONNECT" | "DISCONNECT"
+type PackageType = "PING" | "TEXT" | "CONNECT" | "DISCONNECT" | "TRANSFORM"
 
 type PingPackage = {
   type: "PING"
@@ -18,21 +18,30 @@ type TextPackage = {
   }
 }
 
-type GameConnectPackage = {
+export type GameConnectPackage = {
     type: "CONNECT",
     data: { 
       clientId: string 
     }
 }
 
-type GameDisconnectPackage = {
+export type GameDisconnectPackage = {
   type: "DISCONNECT",
   data: { 
     clientId: string 
   }
 }
 
-type GamePackage = GameConnectPackage | GameDisconnectPackage
+export type GameTransformPackage = {
+  type: "TRANSFORM",
+  data: {
+    clientId: string,
+    position: Array<number>,
+    rotation: number
+  }
+}
+
+type GamePackage = GameConnectPackage | GameDisconnectPackage | GameTransformPackage
 type NetworkPackage = PingPackage | TextPackage | GamePackage
 
 type ListenerCallback = (data: NetworkPackage["data"]) => void
@@ -56,11 +65,11 @@ export default class Client {
   listeners: Map<ChannelType, Map<PackageType, Set<ListenerCallback>>>
 
   constructor() {
-    this.clientId = uuidv4()
+    this.clientId = short.generate()
     this.channels = new Map<ChannelType, RTCDataChannel>()
     this.listeners = new Map<ChannelType, Map<PackageType, Set<ListenerCallback>>>()
 
-    Debug.console.registerCommand({ name: "st", description: "Send text message to all remote clients. Example: st 'text'", ref: this, callback: this.sendText, arg: true})
+    Debug.console.registerCommand({ name: "st", description: "Send text message to all remote clients. Example: st 'text'", ref: this, callback: this.sendTextMessage, arg: true})
     Debug.console.registerCommand({ name: "cc", description: "Connect to server. Example: cc 'url'", ref: this, callback: this.connect, arg: true})
     Debug.console.registerCommand({ name: "dc", description: "Disconnect from server. Example: ds", ref: this, callback: this.disconnect})
 
@@ -70,13 +79,16 @@ export default class Client {
       Debug.update({client: {ping}})
     })
     this.subscribe("TEXT", "TEXT", (data: TextPackage["data"]) => {
-      Debug.info(`Client::handleMessage(): Received text = '${data.message}' from '${data.clientId}'.`)
+      Debug.info(`Client::callback(): Received text = '${data.message}' from '${data.clientId}'.`)
     })
     this.subscribe("GAME", "CONNECT", (data: GameConnectPackage["data"]) => {
-      Debug.info(`Client::handleMessage(): Remote client with id = '${data.clientId}' connected.`)
+      Debug.info(`Client::callback(): Remote client = '${data.clientId}' connected.`)
     })
     this.subscribe("GAME", "DISCONNECT", (data: GameDisconnectPackage["data"]) => {
-      Debug.warn(`Client::handleMessage(): Remote client with id = ${data.clientId} disconnected!`)
+      Debug.warn(`Client::callback(): Remote client = '${data.clientId}' disconnected!`)
+    })
+    this.subscribe("GAME", "TRANSFORM", (data: GameTransformPackage["data"]) => {
+      Debug.info(`Client::callback(): Remote client = '${data.clientId}' position = ${data.position.toString()}`)
     })
 
     const init = async () => {
@@ -119,7 +131,7 @@ export default class Client {
     }
   }
 
-  sendText(message: string, ref: Client = this) {
+  sendTextMessage(message: string, ref: Client = this) {
     if(ref.peerConnection?.connectionState !== "connected") return `Client::sendText(): Failed sending text = client not connected!`
     if(!message) return `Client::sendText(): Failed sending text = invalid arguments!`
 
@@ -133,14 +145,21 @@ export default class Client {
 
     ref.channels.get("TEXT").send(data)
 
-    return `Client::sendText(): Send text message = '${message}'`
+    return `Client::sendText(): Send text message = '${message}'.`
+  }
+
+  sendPackage(channelType: ChannelType, networkPackage: NetworkPackage) {
+    const data = JSON.stringify(networkPackage)
+
+    this.channels.get(channelType).send(data)
+    // Debug.info(`Client::sendPackage(): Send text package = '${data}' to channel = '${channelType}'.`)
   }
  
   // ToDo: Wrap this into promise? => callback can be async
   // Do we need so much error handling here => performance!?
   async dispatchMessage(channelType: ChannelType, networkPackage: NetworkPackage) {
     if(!this.listeners.has(channelType)) {
-      Debug.warn(`Client::dispatchMessage(): No listeners for channel type = ${channelType} found!`)
+      Debug.warn(`Client::dispatchMessage(): No listeners for channel = ${channelType} found!`)
       return null
     } 
 
@@ -208,7 +227,7 @@ export default class Client {
   }
 
   handleChannelOpen(channelType: ChannelType) { 
-    Debug.info(`Client::handleChannelOpen(): Channel ${channelType} opened.`)
+    //Debug.info(`Client::handleChannelOpen(): Channel ${channelType} opened.`)
 
     let data: NetworkPackage = null
 
@@ -227,13 +246,13 @@ export default class Client {
         return
       }
       default: {
-        Debug.error(`Client::handleChannelOpen(): Invalid channel = ${channelType}`)
+        Debug.error(`Client::handleChannelOpen(): Invalid channel = ${channelType}!`)
         return
       }
     }
 
     if(this.channels?.has(channelType)) this.channels.get(channelType).send(JSON.stringify(data))
-    else Debug.error(`Client::handleChannelOpen(): Failed sending package to channel = ${channelType}`)
+    else Debug.error(`Client::handleChannelOpen(): Failed sending package to channel = ${channelType}.`)
   }
 
   handleChannelClose(channelType: ChannelType) {
@@ -242,7 +261,7 @@ export default class Client {
   }
 
   disconnect(self: Client = this) {
-    if(self.peerConnection?.connectionState !== "connected") return `Client::disconnect(): Client is not connected.`
+    if(self.peerConnection?.connectionState !== "connected") return `Client::disconnect(): Client is not connected!`
 
     self.peerConnection.close()
     self.peerConnection = null
@@ -297,7 +316,7 @@ export default class Client {
               return
             }
           } catch (error) { 
-            reject(`Client::connect(): Server ${url} is not available!`)
+            reject(`Client::connect(): Server ${url} is not reachable!`)
             return
           }
         }

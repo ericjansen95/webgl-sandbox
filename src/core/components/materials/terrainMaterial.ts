@@ -1,6 +1,6 @@
 import { mat4, vec3 } from "gl-matrix";
 import Material, { compileProgram, MaterialType } from "../material";
-import { GL } from "../../core/renderer"
+import { GL } from "../../scene/renderer"
 
 const vsTerrainSource: string = require('/public/res/shader/terrain.vs') as string
 const fsTerrainSorce: string = require('/public/res/shader/terrain.fs') as string

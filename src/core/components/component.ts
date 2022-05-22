@@ -1,4 +1,4 @@
-import Entity from "../core/entity"
+import Entity from "../scene/entity"
 
 export interface Component {
   // remove self and add delta time?

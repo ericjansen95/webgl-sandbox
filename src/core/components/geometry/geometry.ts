@@ -1,5 +1,5 @@
 import { vec3, vec4 } from "gl-matrix"
-import Entity from "../../core/entity"
+import Entity from "../../scene/entity"
 import BoundingSphere from "../boundingSphere"
 import { Component } from "../component"
 

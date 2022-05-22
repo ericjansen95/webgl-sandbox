@@ -1,5 +1,5 @@
 import { vec3 } from "gl-matrix";
-import Entity from "../core/entity";
+import Entity from "../scene/entity";
 import Material from "./material";
 import { Component } from "./component";
 import Geometry from "./geometry/geometry";

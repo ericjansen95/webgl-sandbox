@@ -1,8 +1,8 @@
 import { vec3, vec2, mat4, quat } from "gl-matrix"
-import Entity from "../../core/entity"
+import Entity from "../../scene/entity"
 import { Component } from "../component"
-import Input from "../../core/input"
-import Time from "../../core/time"
+import Input from "../../internal/input"
+import Time from "../../internal/time"
 
 const VECTOR_UP: vec3 = vec3.fromValues(0.0, -1.0, 0.0)
 

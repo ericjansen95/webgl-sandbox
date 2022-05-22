@@ -1,10 +1,8 @@
 import { vec3 } from "gl-matrix";
-import Entity from "../core/entity";
-import Material from "./material";
+import Entity from "../scene/entity";
 import { Component } from "./component";
 import Geometry from "./geometry/geometry";
 import UnlitMaterial from "./materials/unlitMaterial";
-import Transform from "./transform";
 
 export default class BoundingSphere implements Component {
   

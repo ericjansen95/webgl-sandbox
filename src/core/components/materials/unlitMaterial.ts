@@ -1,6 +1,6 @@
 import { vec3 } from "gl-matrix";
 import Material, { compileProgram, MaterialType } from "../material";
-import { GL } from "../../core/renderer"
+import { GL } from "../../scene/renderer"
 
 const vsDefaultSource: string = require('/public/res/shader/default.vs') as string
 const fsUnlitSource: string = require('/public/res/shader/unlit.fs') as string

@@ -7,7 +7,7 @@ import Transform from "../components/transform"
 import BoundingBox from "../components/boundingBox"
 import BoundingSphere from "../components/boundingSphere"
 import { Component } from "../components/component"
-import Debug from "./debug"
+import Debug from "../internal/debug"
 
 const DEFAULT_CLEAR_COLOR_LUMINANCE = 0.25
 

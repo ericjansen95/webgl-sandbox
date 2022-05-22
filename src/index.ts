@@ -1,21 +1,21 @@
-import Camera from './components/camera';
-import Entity from './core/entity';
-import Geometry from './components/geometry/geometry';
-import Input from './core/input';
-import LambertMaterial from './components/materials/lambertMaterial';
-import Debug from './core/debug';
-import Renderer from './core/renderer';
-import Time from './core/time';
-import Material from './components/material';
-import UnlitMaterial from './components/materials/unlitMaterial';
-import FlyControls from './components/controls/flyControls';
-import Grid from './components/geometry/grid';
-import Terrain from './components/terrain';
-import Client from './core/client';
+import Camera from './core/components/camera';
+import Entity from './core/scene/entity';
+import Geometry from './core/components/geometry/geometry';
+import Input from './core/internal/input';
+import LambertMaterial from './core/components/materials/lambertMaterial';
+import Debug from './core/internal/debug';
+import Renderer from './core/scene/renderer';
+import Time from './core/internal/time';
+import Material from './core/components/material';
+import UnlitMaterial from './core/components/materials/unlitMaterial';
+import FlyControls from './core/components/controls/flyControls';
+import Grid from './core/components/geometry/grid';
+import Terrain from './core/components/terrain';
+import Client from './core/network/client';
+import GameNetworkController from './core/network/gameNetworkController';
 
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
-const humanObj: string = require('/public/res/geo/human.txt') as string
 
 /*
 
@@ -76,16 +76,6 @@ const main = () => {
 
   const lambertMaterial: Material = new LambertMaterial([1.0, 1.0, 1.0]) as Material
 
-  const human: Entity = new Entity()
-  const humanGeometry = new Geometry()
-  humanGeometry.loadFromObj(humanObj)
-  human.addComponent(humanGeometry)
-  human.addComponent(lambertMaterial)
-
-  human.getComponent("Transform").setPosition([0.0, 0.0, -2.5])
-
-  sceneRoot.getComponent("Transform").addChild(human)
-
   const teapot: Entity = new Entity()
   const teapotGeometry: Geometry = new Geometry()
   teapotGeometry.loadFromObj(teapotObj)
@@ -131,6 +121,7 @@ const main = () => {
   Time.init()
 
   const client: Client = new Client()
+  const gameNetworkController: GameNetworkController = new GameNetworkController(client, sceneRoot, camera)
 
   const update = curTime => {
     Time.tick(curTime)

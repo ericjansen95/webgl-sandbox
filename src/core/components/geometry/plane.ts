@@ -1,5 +1,5 @@
 import { vec3 } from "gl-matrix";
-import entity from "../../core/entity";
+import entity from "../../scene/entity";
 import BoundingBox from "../boundingBox";
 import Geometry, { calcNormals } from "./geometry";
 

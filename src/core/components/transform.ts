@@ -1,6 +1,6 @@
 import { mat4, vec3 } from "gl-matrix";
 import Camera from "./camera";
-import Entity from "../core/entity";
+import Entity from "../scene/entity";
 import { Component } from "./component";
 
 export default class Transform implements Component {
@@ -60,6 +60,14 @@ export default class Transform implements Component {
   addChild = (entity: Entity) => {
     entity.getComponent("Transform").parent = this
     this.children.push(entity)
+  }
+
+  removeChild = (entity: Entity) => {
+    // ToDo: Improve Error handling
+    const entityIndex = this.children.indexOf(entity)
+    if(!entityIndex) return
+
+    this.children.splice(entityIndex, 1)
   }
 
   onUpdate = () => {

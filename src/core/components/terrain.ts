@@ -1,6 +1,6 @@
 import { mat4, vec2, vec3 } from "gl-matrix";
 import Camera from "./camera";
-import Entity from "../core/entity";
+import Entity from "../scene/entity";
 import Material from "./material";
 import Plane from "./geometry/plane";
 import { Component } from "./component";
