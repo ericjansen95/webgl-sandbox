@@ -105,6 +105,6 @@ export default class GameNetworkController {
     setInterval(() => {
       const position = camera.getComponent("Transform").getPosition()
       onLocalClientTransformUpdate(vec3ToRoundedArray(position))
-    }, 250)
+    }, 167)
   }
 }

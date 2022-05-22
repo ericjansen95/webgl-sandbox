@@ -19,17 +19,30 @@ const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
 
 /*
 
+  Ideas:
   - scene skybox
-  - fix terrain border => save normals in texture
-  - fix light rotation
-  - reduce matrix multipications => cache bounding volume data
-  - create bounding volume base class
   - update terrain lod
-  - fix camera position => look at matrix
-
-  - first person controller => get terrain height
+  - thirdPersonControls
   - animation => skinning matrix
-  - networking => websocket / socket io go
+
+  ToDo:
+  - this in console callbacks => remove ref
+  - clientId
+  - server network package verification => block unallowed
+  - server client authentication
+  - server append clientId
+  - client do not send client id in packages
+  - culling
+  - light rotations
+  - terrain normal lookup
+  - terrain border
+  - bounding volume abstraction with class
+  - game network manager => create local and remote client compoents for entities
+  - reduce matrix multipications => cache bounding volume data
+  - server delta compression
+  - server client tick negotation
+  - server game client connect inital transform
+  - server connect with same client id after reload
 
 */
 
