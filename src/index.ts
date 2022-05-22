@@ -13,6 +13,7 @@ import Grid from './core/components/geometry/grid';
 import Terrain from './core/components/terrain';
 import Client from './core/network/client';
 import GameNetworkController from './core/network/gameNetworkController';
+import Transform from './core/components/transform';
 
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
@@ -24,9 +25,10 @@ const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
   - update terrain lod
   - thirdPersonControls
   - animation => skinning matrix
+  - device capibility check and lod (mesh, shader, textures, ...)
+  - streaming (network and scene)
 
   ToDo:
-  - this in console callbacks => remove ref
   - clientId
   - server network package verification => block unallowed
   - server client authentication
@@ -43,6 +45,21 @@ const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
   - server client tick negotation
   - server game client connect inital transform
   - server connect with same client id after reload
+  - monorepo => frontend, game-server (chat-server, auth-server, ...), engine, cms, tools (blender, pipeline)
+  - name for project
+  - split build scene graph and component updates => "parralize" by updating async and building scene graph => is this possible without cache?
+  - come up with a dynamic networking model => check o3d engine talk (state, event, ...)
+  - make component state easily serializable by adding functions to interface
+  - canvas resize event
+  - namespaces and core engine class that abstracts initialisation (and entity assemby?)
+  - instanced mesh system
+  - fix obj loader
+  - camera frustrum performance
+  - network entity interpolation
+  - better material attrib pipeline
+  - webgl2.0
+  - Component query
+  - abstract component constructor arguments into options objects
 
 */
 
@@ -133,7 +150,7 @@ const main = () => {
   Input.init()
   Time.init()
 
-  const client: Client = new Client()
+  const client: Client = new Client(camera.getComponent("Transform") as Transform)
   const gameNetworkController: GameNetworkController = new GameNetworkController(client, sceneRoot, camera)
 
   const update = curTime => {

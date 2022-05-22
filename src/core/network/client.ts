@@ -1,5 +1,7 @@
 import Debug from "../internal/debug";
 const short = require('short-uuid');
+import Transform from "../components/transform";
+import vec3ToRoundedArray from "../../util/math/vector";
 
 type ChannelType = "TEXT" | "GAME"
  
@@ -20,9 +22,7 @@ type TextPackage = {
 
 export type GameConnectPackage = {
     type: "CONNECT",
-    data: { 
-      clientId: string 
-    }
+    data: GameTransformPackageData
 }
 
 export type GameDisconnectPackage = {
@@ -32,13 +32,15 @@ export type GameDisconnectPackage = {
   }
 }
 
-export type GameTransformPackage = {
-  type: "TRANSFORM",
-  data: {
+type GameTransformPackageData = {
     clientId: string,
     position: Array<number>,
     rotation: number
-  }
+}
+
+export type GameTransformPackage = {
+  type: "TRANSFORM",
+  data: GameTransformPackageData
 }
 
 type GamePackage = GameConnectPackage | GameDisconnectPackage | GameTransformPackage
@@ -64,14 +66,14 @@ export default class Client {
   channels: Map<string, RTCDataChannel>
   listeners: Map<ChannelType, Map<PackageType, Set<ListenerCallback>>>
 
-  constructor() {
+  constructor(transform: Transform) {
     this.clientId = short.generate()
     this.channels = new Map<ChannelType, RTCDataChannel>()
     this.listeners = new Map<ChannelType, Map<PackageType, Set<ListenerCallback>>>()
 
-    Debug.console.registerCommand({ name: "st", description: "Send text message to all remote clients. Example: st 'text'", ref: this, callback: this.sendTextMessage, arg: true})
-    Debug.console.registerCommand({ name: "cc", description: "Connect to server. Example: cc 'url'", ref: this, callback: this.connect, arg: true})
-    Debug.console.registerCommand({ name: "dc", description: "Disconnect from server. Example: ds", ref: this, callback: this.disconnect})
+    Debug.console.registerCommand({ name: "st", description: "Send text message to all remote clients. Example: st 'text'", callback: this.sendTextMessage, arg: true})
+    Debug.console.registerCommand({ name: "cc", description: "Connect to server. Example: cc 'url'", callback: this.connect, arg: true})
+    Debug.console.registerCommand({ name: "dc", description: "Disconnect from server. Example: ds", callback: this.disconnect})
 
     this.subscribe("GAME", "PING", (data: PingPackage["data"]) => {
       // can this be negativ based on system time differences?
@@ -81,19 +83,18 @@ export default class Client {
     this.subscribe("TEXT", "TEXT", (data: TextPackage["data"]) => {
       Debug.info(`Client::callback(): Received text = '${data.message}' from '${data.clientId}'.`)
     })
-    this.subscribe("GAME", "CONNECT", (data: GameConnectPackage["data"]) => {
-      Debug.info(`Client::callback(): Remote client = '${data.clientId}' connected.`)
-    })
     this.subscribe("GAME", "DISCONNECT", (data: GameDisconnectPackage["data"]) => {
       Debug.warn(`Client::callback(): Remote client = '${data.clientId}' disconnected!`)
     })
+    /*
     this.subscribe("GAME", "TRANSFORM", (data: GameTransformPackage["data"]) => {
       Debug.info(`Client::callback(): Remote client = '${data.clientId}' position = ${data.position.toString()}`)
     })
+    */
 
     const init = async () => {
       try {
-        Debug.info(await this.connect("localhost:6969"))
+        Debug.info(await this.connect("localhost:6969", vec3ToRoundedArray(transform.getPosition()), transform.rotation[1]))
       } catch (error) {
         Debug.error(error)
       }
@@ -131,19 +132,19 @@ export default class Client {
     }
   }
 
-  sendTextMessage(message: string, ref: Client = this) {
-    if(ref.peerConnection?.connectionState !== "connected") return `Client::sendText(): Failed sending text = client not connected!`
+  sendTextMessage = (message: string) => {
+    if(this.peerConnection?.connectionState !== "connected") return `Client::sendText(): Failed sending text = client not connected!`
     if(!message) return `Client::sendText(): Failed sending text = invalid arguments!`
 
     const data = JSON.stringify({
       type: "TEXT",
       data: {
         message,
-        clientId: ref.clientId
+        clientId: this.clientId
       }
     })
 
-    ref.channels.get("TEXT").send(data)
+    this.channels.get("TEXT").send(data)
 
     return `Client::sendText(): Send text message = '${message}'.`
   }
@@ -260,18 +261,18 @@ export default class Client {
     this.channels.delete(channelType)
   }
 
-  disconnect(self: Client = this) {
-    if(self.peerConnection?.connectionState !== "connected") return `Client::disconnect(): Client is not connected!`
+  disconnect = () => {
+    if(this.peerConnection?.connectionState !== "connected") return `Client::disconnect(): Client is not connected!`
 
-    self.peerConnection.close()
-    self.peerConnection = null
+    this.peerConnection.close()
+    this.peerConnection = null
 
-    self.channels.clear()
+    this.channels.clear()
 
     return `Client::disconnect(): Disconnected from server!`
   }
 
-  connect(url: string, self: Client = this): Promise<string> {
+  connect = (url: string, position: Array<number> = [0.0, -1000.0, 0.0], rotation: number = 0.0): Promise<string> => {
     return new Promise(async (resolve, reject) => {
         if(!url) {
           reject(`Client::connect(): Invalid server url!`)
@@ -287,16 +288,21 @@ export default class Client {
 
         const handleConnection = async (localSessionDescription: string) => {
           try {
+
+            const connectInfo: GameTransformPackageData & {sdp: string} = {
+              sdp: localSessionDescription,
+              clientId: this.clientId,
+              position,
+              rotation
+            }
+
             const response = await fetch(url, {
               method: 'POST',
               headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({
-                sdp: localSessionDescription,
-                clientId: self.clientId
-              })
+              body: JSON.stringify(connectInfo)
             })
         
             const body: { sdp: string } = await response.json()
@@ -308,7 +314,7 @@ export default class Client {
             }  
     
             try {
-              self.peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(sdp))))
+              this.peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(sdp))))
               resolve(`Client::connect(): Connecting to server ${url} ...`)
               return
             } catch (error) {
@@ -321,7 +327,7 @@ export default class Client {
           }
         }
 
-        self.peerConnection = new RTCPeerConnection({
+        this.peerConnection = new RTCPeerConnection({
           iceServers: [
             {
               urls: 'stun:stun.l.google.com:19302'
@@ -329,17 +335,17 @@ export default class Client {
           ]
         })
     
-        self.peerConnection.onnegotiationneeded = e => 
-          self.peerConnection.createOffer().then(d => 
-            self.peerConnection.setLocalDescription(d)).catch(error => 
+        this.peerConnection.onnegotiationneeded = e => 
+          this.peerConnection.createOffer().then(d => 
+            this.peerConnection.setLocalDescription(d)).catch(error => 
               Debug.error(`Client::connect(): Failed getting local session description = ${error}`
             )
           )
     
-        self.peerConnection.onicecandidate = async event => {
+        this.peerConnection.onicecandidate = async event => {
           if (event.candidate === null) {
             try {
-              const localSessionDescription = btoa(JSON.stringify(self.peerConnection.localDescription))
+              const localSessionDescription = btoa(JSON.stringify(this.peerConnection.localDescription))
               await handleConnection(localSessionDescription)
             } catch (error) {
               reject(error)
@@ -348,8 +354,8 @@ export default class Client {
           }
         }
     
-        self.peerConnection.onconnectionstatechange = async event => {
-          const connectionState = self.peerConnection.connectionState
+        this.peerConnection.onconnectionstatechange = async event => {
+          const connectionState = this.peerConnection.connectionState
     
           switch (connectionState) {
             case "connected": {
@@ -360,15 +366,15 @@ export default class Client {
               break;
             }
             default: {
-              self.disconnect()
+              this.disconnect()
               break;
             }
           }
         }
 
         // onicecandidate is not called before a channel is added
-        self.addChannel("TEXT")
-        self.addChannel("GAME", false)
+        this.addChannel("TEXT")
+        this.addChannel("GAME", false)
     })
   }
 }

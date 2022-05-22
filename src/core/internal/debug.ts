@@ -23,7 +23,7 @@ export default class Debug {
     this.createDebugStats()
 
     this.console = new Console(this.root)
-    this.console.registerCommand({ name: "ds", description: "Display debug statistics.", ref: this, callback: this.toggleDebugStats, arg: false })
+    this.console.registerCommand({ name: "ds", description: "Display debug statistics.", callback: this.toggleDebugStats, arg: false })
   }
 
   static update = (debugState: DebugState) => {
@@ -69,7 +69,7 @@ export default class Debug {
     this.debugStats.appendChild(this.pingCounter)
   }
 
-  static toggleDebugStats(ref: Debug = this): string {
+  static toggleDebugStats = (): string => {
     const isHidden = Debug.debugStats.style.visibility === "hidden";
     Debug.debugStats.style.visibility = isHidden ? "" : "hidden"
 

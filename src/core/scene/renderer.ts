@@ -39,7 +39,7 @@ export default class Renderer {
     GL.enable(GL.DEPTH_TEST)
     GL.depthFunc(GL.LEQUAL)
 
-    Debug.console.registerCommand({ name: "bv", description: "Visualize bounding volumes.", ref: this, callback: this.toggleBoundingVolumes, arg: false })
+    Debug.console.registerCommand({ name: "bv", description: "Visualize bounding volumes.", callback: this.toggleBoundingVolumes, arg: false })
   }
 
   bindGeometry = (geometry: Geometry): boolean => {
@@ -215,8 +215,8 @@ export default class Renderer {
     })
   }
 
-  toggleBoundingVolumes(ref: Renderer = this): string {
-    if(!ref.sceneRoot) return "Failed toggeling bounding volumes = no scene root found!"
+  toggleBoundingVolumes = (): string => {
+    if(!this.sceneRoot) return "Failed toggeling bounding volumes = no scene root found!"
 
     const toggleBoundingVolume = (parent: Entity) => {
       let boundingVolume: Component | null
@@ -234,7 +234,7 @@ export default class Renderer {
       (parent.getComponent("Transform") as Transform).children.forEach(child => toggleBoundingVolume(child))
     }
 
-    toggleBoundingVolume(ref.sceneRoot)
+    toggleBoundingVolume(this.sceneRoot)
 
     return "Renderer::toggleBondingVolumes(): Toggled bounding volumes."
   }

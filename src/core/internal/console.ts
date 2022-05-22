@@ -5,7 +5,6 @@ type CommandCallback = Function
 type CommandInfo = { 
   name: CommandName,
   description?: string,
-  ref: any, 
   arg?: boolean,
   callback: CommandCallback,
 }
@@ -22,8 +21,7 @@ export default class Console {
 
     this.init()
     this.registerCommand({
-      name: "help", 
-      ref: this, 
+      name: "help",
       callback: this.help, 
       arg: true,
     })
@@ -111,12 +109,12 @@ export default class Console {
     this.commands.set(info.name, info)
   }
 
-  help(name: CommandName = null, ref: Console = this): string {
-    if(!name) return `Console::help(): Available commands: ${Array.from(ref.commands.keys()).join(', ')}, help 'command'`
+  help = (name: CommandName = null): string => {
+    if(!name) return `Console::help(): Available commands: ${Array.from(this.commands.keys()).join(', ')}, help 'command'`
 
-    const commandInfo: CommandInfo = ref.commands.get(name)
+    const commandInfo: CommandInfo = this.commands.get(name)
     if(!commandInfo) {
-      ref.executeCommand("help")
+      this.executeCommand("help")
       return `Console::help(): Invalid command name!`
     }
 
@@ -134,17 +132,17 @@ export default class Console {
         return;
       }
   
-      const { ref, callback, arg } = this.commands.get(name) 
+      const { callback, arg } = this.commands.get(name) 
   
       if(!arg) {
-        this.log(callback(ref))
+        this.log(callback())
         return
       }
   
       inputParts.shift()
       const text: string = inputParts.join(" ")
 
-      let result = callback(text, ref)
+      let result = callback(text)
       if(result.then) {
         try {
           result = await result
