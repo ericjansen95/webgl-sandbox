@@ -1,4 +1,4 @@
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, quat, vec3 } from "gl-matrix";
 import Camera from "./camera";
 import Entity from "../scene/entity";
 import { Component } from "./component";
@@ -51,6 +51,10 @@ export default class Transform implements Component {
 
   getPosition = (): vec3 => {
     return mat4.getTranslation(vec3.create(), this.worldMatrix)
+  }
+
+  getRotation = (): quat => {
+    return mat4.getRotation(quat.create(), this.worldMatrix)
   }
 
   getScale = (): vec3 => {

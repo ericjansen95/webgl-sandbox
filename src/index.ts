@@ -13,7 +13,6 @@ import Grid from './core/components/geometry/grid';
 import Terrain from './core/components/terrain';
 import Client from './core/network/client';
 import GameNetworkController from './core/network/gameNetworkController';
-import Transform from './core/components/transform';
 
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
@@ -60,6 +59,7 @@ const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
   - webgl2.0
   - Component query
   - abstract component constructor arguments into options objects
+  - rename wording for channels to "SCENE" and "CHAT"
 
 */
 
@@ -150,7 +150,7 @@ const main = () => {
   Input.init()
   Time.init()
 
-  const client: Client = new Client(camera.getComponent("Transform") as Transform)
+  const client: Client = new Client(camera)
   const gameNetworkController: GameNetworkController = new GameNetworkController(client, sceneRoot, camera)
 
   const update = curTime => {

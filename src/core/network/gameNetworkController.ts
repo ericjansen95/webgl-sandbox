@@ -1,6 +1,5 @@
-import { mat4, quat, vec3 } from "gl-matrix";
-import degreeToRadians from "../../util/math/radians";
-import vec3ToRoundedArray from "../../util/math/vector";
+import { vec3 } from "gl-matrix";
+import vec3ToRoundedArray, { roundNumber } from "../../util/math/vector";
 import FlyControls from "../components/controls/flyControls";
 import Geometry from "../components/geometry/geometry";
 import Material from "../components/material";
@@ -45,11 +44,12 @@ export default class GameNetworkController {
     // add only send data when transform diry / changed
     setInterval(() => {
       const transform = camera.getComponent("Transform") as Transform
+      const controls = camera.getComponent("FlyControls") as FlyControls
 
       const position = vec3ToRoundedArray(transform.getPosition())
       position[1] -= 1.3
-      // TMP rotation extraction
-      const rotation = Math.PI + quat.getAxisAngle(vec3.fromValues(0, 1, 0), mat4.getRotation(quat.create(), transform.worldMatrix))
+
+      const rotation = roundNumber(controls.angleRotation[0] + Math.PI)
 
       this.onLocalClientTransformUpdate(position, rotation)
     }, 167)
@@ -86,6 +86,8 @@ export default class GameNetworkController {
         targetRotation: rotation
       }
     }
+
+    console.log(JSON.parse(JSON.stringify(remoteClient)))
 
     this.remoteClients.set(clientId, remoteClient)
 

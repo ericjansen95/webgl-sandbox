@@ -9,13 +9,17 @@ const VECTOR_UP: vec3 = vec3.fromValues(0.0, -1.0, 0.0)
 const MAX_YAW_ANGEL: number = Math.PI * 0.45
 const ROTATE_SPEED: number = 150.0
 const TRANSLATE_SPEED: number = 14.0
+const TWO_PI: number = 2.0 * Math.PI
 
 export default class FlyControls implements Component {
   angleRotation: vec2
+  tmpAngleRotation: vec2
+
   position: vec3
 
   constructor() {
     this.angleRotation = vec2.create()
+    this.tmpAngleRotation = vec2.create()
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
@@ -26,12 +30,18 @@ export default class FlyControls implements Component {
     vec2.scale(deltaMousePosition, deltaMousePosition, -1.0)
     const rotateSpeed = ROTATE_SPEED * Time.deltaTime;
 
-    vec2.add(this.angleRotation, this.angleRotation, vec2.scale(deltaMousePosition, deltaMousePosition, rotateSpeed))
+    vec2.copy(this.tmpAngleRotation, this.angleRotation)
 
-    if(this.angleRotation[1] > MAX_YAW_ANGEL)
-      this.angleRotation[1] = MAX_YAW_ANGEL
-    if(this.angleRotation[1] < -MAX_YAW_ANGEL)
-      this.angleRotation[1] = -MAX_YAW_ANGEL;
+    vec2.add(this.tmpAngleRotation, this.tmpAngleRotation, vec2.scale(deltaMousePosition, deltaMousePosition, rotateSpeed))
+
+    if(this.tmpAngleRotation[1] > MAX_YAW_ANGEL)
+      this.tmpAngleRotation[1] = MAX_YAW_ANGEL
+    if(this.tmpAngleRotation[1] < -MAX_YAW_ANGEL)
+      this.tmpAngleRotation[1] = -MAX_YAW_ANGEL;
+
+    // ToDo: Clamp rotation angle to 0 => two PI
+
+    vec2.copy(this.angleRotation, this.tmpAngleRotation)
 
     const rotation = quat.create()
     quat.rotateY(rotation, rotation, this.angleRotation[0])

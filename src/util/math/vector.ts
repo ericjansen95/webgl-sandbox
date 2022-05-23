@@ -8,6 +8,6 @@ export default function vec3ToRoundedArray(vec3: vec3): Array<number> {
   return [x, y, z]
 }
 
-function roundNumber(number: number): number {
+export function roundNumber(number: number): number {
   return Math.round(number * 1000) * 0.001
 }

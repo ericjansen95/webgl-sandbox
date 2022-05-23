@@ -1,7 +1,10 @@
 import Debug from "../internal/debug";
 const short = require('short-uuid');
 import Transform from "../components/transform";
-import vec3ToRoundedArray from "../../util/math/vector";
+import vec3ToRoundedArray, { roundNumber } from "../../util/math/vector";
+import { vec3 } from "gl-matrix";
+import FlyControls from "../components/controls/flyControls";
+import Entity from "../scene/entity";
 
 type ChannelType = "TEXT" | "GAME"
  
@@ -66,7 +69,7 @@ export default class Client {
   channels: Map<string, RTCDataChannel>
   listeners: Map<ChannelType, Map<PackageType, Set<ListenerCallback>>>
 
-  constructor(transform: Transform) {
+  constructor(clientEntity: Entity) {
     this.clientId = short.generate()
     this.channels = new Map<ChannelType, RTCDataChannel>()
     this.listeners = new Map<ChannelType, Map<PackageType, Set<ListenerCallback>>>()
@@ -94,7 +97,15 @@ export default class Client {
 
     const init = async () => {
       try {
-        Debug.info(await this.connect("localhost:6969", vec3ToRoundedArray(transform.getPosition()), transform.rotation[1]))
+        const transform = clientEntity.getComponent("Transform") as Transform
+        const controls = clientEntity.getComponent("FlyControls") as FlyControls
+  
+        const position = vec3ToRoundedArray(transform.getPosition())
+        position[1] -= 1.3
+  
+        const rotation = roundNumber(controls.angleRotation[0] + Math.PI)
+
+        Debug.info(await this.connect("localhost:6969", position, rotation))
       } catch (error) {
         Debug.error(error)
       }
@@ -272,7 +283,7 @@ export default class Client {
     return `Client::disconnect(): Disconnected from server!`
   }
 
-  connect = (url: string, position: Array<number> = [0.0, -1000.0, 0.0], rotation: number = 0.0): Promise<string> => {
+  connect = (url: string, position: Array<number> = [0.0, -1000.0, 0.0], rotation: number = Math.PI): Promise<string> => {
     return new Promise(async (resolve, reject) => {
         if(!url) {
           reject(`Client::connect(): Invalid server url!`)
