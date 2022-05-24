@@ -39,6 +39,11 @@ export default class FlyControls implements Component {
     if(this.tmpAngleRotation[1] < -MAX_YAW_ANGEL)
       this.tmpAngleRotation[1] = -MAX_YAW_ANGEL;
 
+    if(this.tmpAngleRotation[0] < 0.0)
+      this.tmpAngleRotation[0] += TWO_PI
+    if(this.tmpAngleRotation[0] > TWO_PI)
+      this.tmpAngleRotation[0] -= TWO_PI
+
     // ToDo: Clamp rotation angle to 0 => two PI
 
     vec2.copy(this.angleRotation, this.tmpAngleRotation)

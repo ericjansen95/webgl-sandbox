@@ -47,9 +47,7 @@ export default class GameNetworkController {
       const controls = camera.getComponent("FlyControls") as FlyControls
 
       const position = vec3ToRoundedArray(transform.getPosition())
-      position[1] -= 1.3
-
-      const rotation = roundNumber(controls.angleRotation[0] + Math.PI)
+      const rotation = roundNumber(controls.angleRotation[0])
 
       this.onLocalClientTransformUpdate(position, rotation)
     }, 167)
