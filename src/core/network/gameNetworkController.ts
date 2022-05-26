@@ -1,4 +1,5 @@
 import { vec3 } from "gl-matrix";
+import clamp from "../../util/math/clamp";
 import vec3ToRoundedArray, { roundNumber } from "../../util/math/vector";
 import FlyControls from "../components/controls/flyControls";
 import Geometry from "../components/geometry/geometry";
@@ -6,12 +7,13 @@ import Material from "../components/material";
 import LambertMaterial from "../components/materials/lambertMaterial";
 import Transform from "../components/transform";
 import Debug from "../internal/debug";
+import Time from "../internal/time";
 import Entity from "../scene/entity";
 import Client, { GameConnectPackage, GameDisconnectPackage, GameTransformPackage } from "./client";
 
 const humanObj: string = require('/public/res/geo/human.txt') as string
 
-type RemoteClientTransform = {
+type ClientTransform = {
   currentPosition: Array<number>,
   targetPosition: Array<number>
 
@@ -19,38 +21,103 @@ type RemoteClientTransform = {
   targetRotation: number
 }
 
-type RemoteClient = {
+type ClientCache = {
   clientId: string,
-  transform: RemoteClientTransform,
+  transform: ClientTransform,
   entity: Entity
 }
 
+const getLocalClientTransform = (entity: Entity): ClientTransform => {
+  const transform = entity.getComponent("Transform") as Transform
+  const controls = entity.getComponent("FlyControls") as FlyControls
+
+  const position = vec3ToRoundedArray(transform.getPosition())
+  const rotation = roundNumber(controls.angleRotation[0])
+
+  return {
+    currentPosition: position,
+    targetPosition: position,
+  
+    currentRotation: rotation,
+    targetRotation: rotation 
+  }
+}
+
+const createLocalClient = (clientId: string, entity: Entity) : ClientCache => {
+  return {
+    clientId,
+    entity,
+    transform: getLocalClientTransform(entity)
+  }
+}
+
+const equalPosition = (a: Array<number>, b: Array<number>) => {
+  for (var i = 0; i < a.length; ++i) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true
+}
+
 export default class GameNetworkController {
-  localClient: Client
-  remoteClients: Map<string, RemoteClient>
+  client: Client
+
+  localClient: ClientCache
+  remoteClients: Map<string, ClientCache>
 
   sceneRoot: Entity
 
-  constructor(client: Client, sceneRoot: Entity, camera: Entity) {
-    this.localClient = client
+  constructor(client: Client, sceneRoot: Entity, entity: Entity) {
+    this.client = client
+    this.localClient = createLocalClient(client.clientId, entity)
     this.sceneRoot = sceneRoot
-    this.remoteClients = new Map<string, RemoteClient>()
+    this.remoteClients = new Map<string, ClientCache>()
 
-    this.localClient.subscribe("GAME", "CONNECT", this.onRemoteClientConnect)
-    this.localClient.subscribe("GAME", "DISCONNECT", this.onRemoteClientDisconnect)
-    this.localClient.subscribe("GAME", "TRANSFORM", this.onRemoteClientTransformUpdate)
+    this.client.subscribe("GAME", "CONNECT", this.onRemoteClientConnect)
+    this.client.subscribe("GAME", "DISCONNECT", this.onRemoteClientDisconnect)
+    this.client.subscribe("GAME", "TRANSFORM", this.onRemoteClientTransformUpdate)
 
-    // TMP test => send 4 times a second local camera position to remote clients^
-    // add only send data when transform diry / changed
+    // TMP test => send 4 times a second local camera position to remote clients
     setInterval(() => {
-      const transform = camera.getComponent("Transform") as Transform
-      const controls = camera.getComponent("FlyControls") as FlyControls
+      // get current transform
+      const currentTransform = getLocalClientTransform(this.localClient.entity)
 
-      const position = vec3ToRoundedArray(transform.getPosition())
-      const rotation = roundNumber(controls.angleRotation[0])
+      // update transform cache
+      const { transform } = this.localClient
+      transform.currentPosition = currentTransform.currentPosition
+      transform.currentRotation = currentTransform.currentRotation
 
-      this.onLocalClientTransformUpdate(position, rotation)
-    }, 167)
+      // send transform package and update cache if position or rotation changed
+      if(transform.targetRotation === transform.currentRotation && equalPosition(transform.targetPosition, transform.currentPosition)) return
+            
+      transform.targetPosition = transform.currentPosition
+      transform.targetRotation = transform.currentRotation
+
+      this.onLocalClientTransformUpdate(transform)
+    }, 1000 / 4)
+  }
+
+  update = () => {
+    const deltaTime = Time.deltaTime
+    const INTERPOLATION_SPEED = 8 / 4
+
+    for(const client of this.remoteClients.values()) {
+      const {transform, entity} = client
+
+      const targetPosition = vec3.fromValues(transform.targetPosition[0], transform.targetPosition[1], transform.targetPosition[2])
+      const currentPosition = vec3.lerp(vec3.create(), 
+                                        vec3.fromValues(transform.currentPosition[0], transform.currentPosition[1], transform.currentPosition[2]), 
+                                        targetPosition, 
+                                        INTERPOLATION_SPEED * deltaTime)
+      transform.currentPosition = vec3ToRoundedArray(currentPosition)
+
+      const targetRotation = transform.targetRotation
+      const currentRotation = clamp(transform.currentRotation + (targetRotation - transform.currentRotation) * INTERPOLATION_SPEED * deltaTime, 0.0, Math.PI * 2.0);
+      transform.currentRotation = currentRotation
+  
+      const transformComponent = entity.getComponent("Transform") as Transform
+      transformComponent.setPosition(currentPosition)
+      transformComponent.setRotation(vec3.fromValues(0.0, transform.currentRotation, 0.0));
+    }
   }
 
   onRemoteClientConnect = (data: GameConnectPackage["data"]) => {
@@ -73,7 +140,7 @@ export default class GameNetworkController {
 
     this.sceneRoot.getComponent("Transform").addChild(entity)
 
-    const remoteClient: RemoteClient = {
+    const remoteClient: ClientCache = {
       clientId,
       entity,
       transform: {
@@ -84,8 +151,6 @@ export default class GameNetworkController {
         targetRotation: rotation
       }
     }
-
-    console.log(JSON.parse(JSON.stringify(remoteClient)))
 
     this.remoteClients.set(clientId, remoteClient)
 
@@ -110,25 +175,21 @@ export default class GameNetworkController {
       return
     }
 
-    const {transform, entity} = this.remoteClients.get(clientId)
+    const {transform} = this.remoteClients.get(clientId)
 
     transform.targetPosition = position
-    transform.targetRotation = rotation;
-
-    const transformComponent = entity.getComponent("Transform") as Transform
-    transformComponent.setPosition(vec3.fromValues(transform.targetPosition[0], transform.targetPosition[1], transform.targetPosition[2]))
-    transformComponent.setRotation(vec3.fromValues(0.0, transform.targetRotation, 0.0));
+    transform.targetRotation = rotation
   } 
-  onLocalClientTransformUpdate = (position: Array<number>, rotation: number) => {
+  onLocalClientTransformUpdate = (transform: ClientTransform) => {
     const networkPackage: GameTransformPackage = {
       type: "TRANSFORM",
       data: {
         clientId: this.localClient.clientId,
-        position,
-        rotation
+        position: transform.targetPosition,
+        rotation: transform.targetRotation
       }
     }
 
-    this.localClient.sendPackage("GAME", networkPackage)
+    this.client.sendPackage("GAME", networkPackage)
   }
 }

@@ -3,6 +3,7 @@ import Entity from "../../scene/entity"
 import { Component } from "../component"
 import Input from "../../internal/input"
 import Time from "../../internal/time"
+import clamp from "../../../util/math/clamp"
 
 const VECTOR_UP: vec3 = vec3.fromValues(0.0, -1.0, 0.0)
 
@@ -39,10 +40,7 @@ export default class FlyControls implements Component {
     if(this.tmpAngleRotation[1] < -MAX_YAW_ANGEL)
       this.tmpAngleRotation[1] = -MAX_YAW_ANGEL;
 
-    if(this.tmpAngleRotation[0] < 0.0)
-      this.tmpAngleRotation[0] += TWO_PI
-    if(this.tmpAngleRotation[0] > TWO_PI)
-      this.tmpAngleRotation[0] -= TWO_PI
+    this.tmpAngleRotation[0] = clamp(this.tmpAngleRotation[0], 0.0, TWO_PI)
 
     // ToDo: Clamp rotation angle to 0 => two PI
 

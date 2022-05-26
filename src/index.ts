@@ -13,6 +13,7 @@ import Grid from './core/components/geometry/grid';
 import Terrain from './core/components/terrain';
 import Client from './core/network/client';
 import GameNetworkController from './core/network/gameNetworkController';
+import Scene from './core/scene/scene';
 
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
@@ -26,6 +27,7 @@ const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
   - animation => skinning matrix
   - device capibility check and lod (mesh, shader, textures, ...)
   - streaming (network and scene)
+  - scene, sceneNetworkController, remoteClient Component, networkedTransfrom Component
 
   ToDo:
   - clientId
@@ -64,30 +66,23 @@ const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
 */
 
 const main = () => {
-  
+  Time.init()
+  Debug.init()
+  Input.init()
+
   const canvas: HTMLCanvasElement = document.getElementById('glCanvas') as HTMLCanvasElement
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
 
-  Debug.init()
   const renderer = new Renderer(canvas)
 
   const camera: Entity = new Entity()
   camera.getComponent("Transform").setPosition([0.0, 1.0, 4.0])
-
   camera.addComponent(new FlyControls())
   camera.addComponent(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
-  const sceneRoot: Entity = new Entity()
-
-  const grid: Entity = new Entity()
-  grid.getComponent("Transform").setScale([10.0, 10.0, 10.0])
-  grid.getComponent("Transform").setPosition([-5.0, 0.0, -5.0])
-
-  grid.addComponent(new Grid(10))
-  grid.addComponent(new UnlitMaterial([0.75, 0.75, 0.75]))
-
-  sceneRoot.getComponent("Transform").addChild(grid)
+  const client: Client = new Client(camera)
+  const scene: Scene = new Scene(camera, client)
 
   // debug vis for camera frustrum
 
@@ -107,31 +102,28 @@ const main = () => {
   const lambertMaterial: Material = new LambertMaterial([1.0, 1.0, 1.0]) as Material
 
   const teapot: Entity = new Entity()
+  teapot.getComponent("Transform").setPosition([0.0, 0.5, 0.0])
   const teapotGeometry: Geometry = new Geometry()
   teapotGeometry.loadFromObj(teapotObj)
   teapot.addComponent(teapotGeometry)
   teapot.addComponent(lambertMaterial)
 
-  teapot.getComponent("Transform").setPosition([0.0, 0.5, 0.0])
-
   const bunny: Entity = new Entity()
+  bunny.getComponent("Transform").setScale([0.5, 0.5, 0.5])
+  bunny.getComponent("Transform").setPosition([-5.0, 0.0, 0.0])
   const bunnyGeometry: Geometry = new Geometry()
   bunnyGeometry.loadFromObj(bunnyObj)
   bunny.addComponent(bunnyGeometry)
-  
   bunny.addComponent(lambertMaterial)
-
-  bunny.getComponent("Transform").setScale([0.5, 0.5, 0.5])
-  bunny.getComponent("Transform").setPosition([-5.0, 0.0, 0.0])
 
   // assemble scene hierachy
   teapot.getComponent("Transform").addChild(bunny)
-  sceneRoot.getComponent("Transform").addChild(teapot)
+  scene.root.getComponent("Transform").addChild(teapot)
 
   const terrain: Entity = new Entity()
   terrain.addComponent(new Terrain())
 
-  sceneRoot.getComponent("Transform").addChild(terrain)
+  scene.root.getComponent("Transform").addChild(terrain)
 
   // water
 
@@ -145,13 +137,6 @@ const main = () => {
 
   sceneRoot.getComponent("Transform").addChild(water)
   */
- 
-  // register input events
-  Input.init()
-  Time.init()
-
-  const client: Client = new Client(camera)
-  const gameNetworkController: GameNetworkController = new GameNetworkController(client, sceneRoot, camera)
 
   const update = curTime => {
     Time.tick(curTime)
@@ -162,7 +147,9 @@ const main = () => {
     const bunnyTransform = bunny.getComponent("Transform")
     bunnyTransform.setRotation([bunnyTransform.rotation[0] + Math.PI * 0.2 * Time.deltaTime, 0.0, 0.0])
 
-    renderer.renderScene(sceneRoot, camera)
+    scene.networkController.update()
+
+    renderer.renderScene(scene.root, camera)
 
     Debug.update({renderer: {drawCalls: renderer.drawCalls, cullCount: renderer.cullCount}})
 
