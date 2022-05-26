@@ -30,6 +30,7 @@ const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
   - scene, sceneNetworkController, remoteClient Component, networkedTransfrom Component
 
   ToDo:
+  - transform local vs global
   - clientId
   - server network package verification => block unallowed
   - server client authentication

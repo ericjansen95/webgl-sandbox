@@ -1,5 +1,4 @@
-import { vec3 } from "gl-matrix";
-import clamp from "../../util/math/clamp";
+import { quat, vec3 } from "gl-matrix";
 import vec3ToRoundedArray, { roundNumber } from "../../util/math/vector";
 import FlyControls from "../components/controls/flyControls";
 import Geometry from "../components/geometry/geometry";
@@ -9,7 +8,7 @@ import Transform from "../components/transform";
 import Debug from "../internal/debug";
 import Time from "../internal/time";
 import Entity from "../scene/entity";
-import Client, { GameConnectPackage, GameDisconnectPackage, GameTransformPackage } from "./client";
+import Client, { GameConnectPackage, GameDeltaStatePackage, GameDisconnectPackage, GameTransformPackage } from "./client";
 
 const humanObj: string = require('/public/res/geo/human.txt') as string
 
@@ -27,7 +26,7 @@ type ClientCache = {
   entity: Entity
 }
 
-const getLocalClientTransform = (entity: Entity): ClientTransform => {
+export const getLocalClientTransform = (entity: Entity): ClientTransform => {
   const transform = entity.getComponent("Transform") as Transform
   const controls = entity.getComponent("FlyControls") as FlyControls
 
@@ -74,7 +73,7 @@ export default class GameNetworkController {
 
     this.client.subscribe("GAME", "CONNECT", this.onRemoteClientConnect)
     this.client.subscribe("GAME", "DISCONNECT", this.onRemoteClientDisconnect)
-    this.client.subscribe("GAME", "TRANSFORM", this.onRemoteClientTransformUpdate)
+    this.client.subscribe("GAME", "DELTA_STATE", this.onDeltaStateUpdate)
 
     // TMP test => send 4 times a second local camera position to remote clients
     setInterval(() => {
@@ -109,19 +108,30 @@ export default class GameNetworkController {
                                         targetPosition, 
                                         INTERPOLATION_SPEED * deltaTime)
       transform.currentPosition = vec3ToRoundedArray(currentPosition)
+      
+      /*
+      const TWO_PI = Math.PI
+     
+      const currentRotation = quat.fromEuler(quat.create(), 0.0, transform.currentRotation / TWO_PI, 0.0) 
+      const targetRotation = vec3.create()
+      quat.getAxisAngle(targetRotation, quat.slerp(quat.create(), currentRotation, quat.fromEuler(quat.create(), 0.0, transform.targetRotation / TWO_PI, 0.0), INTERPOLATION_SPEED * deltaTime))
+      targetRotation[1] *= TWO_PI
+      
+      console.log(targetRotation)
+      */
 
-      const targetRotation = transform.targetRotation
-      const currentRotation = clamp(transform.currentRotation + (targetRotation - transform.currentRotation) * INTERPOLATION_SPEED * deltaTime, 0.0, Math.PI * 2.0);
-      transform.currentRotation = currentRotation
+      transform.currentRotation = transform.targetRotation
   
       const transformComponent = entity.getComponent("Transform") as Transform
       transformComponent.setPosition(currentPosition)
-      transformComponent.setRotation(vec3.fromValues(0.0, transform.currentRotation, 0.0));
+      transformComponent.setRotation(vec3.fromValues(0.0, transform.targetRotation, 0.0));
     }
   }
 
   onRemoteClientConnect = (data: GameConnectPackage["data"]) => {
     const {clientId, position, rotation} = data
+
+    Debug.info(JSON.stringify(position))
 
     // ToDo: Decide when to spawn client => after first transform package received?
     // can this be part of the inital connect package?
@@ -179,6 +189,24 @@ export default class GameNetworkController {
 
     transform.targetPosition = position
     transform.targetRotation = rotation
+  } 
+  onDeltaStateUpdate = (data: GameDeltaStatePackage["data"]) => {
+    const transformPackages = data as Array<GameTransformPackage>
+
+    for(const transformPackage of transformPackages) {
+      const {clientId, position, rotation} = transformPackage.data
+
+      // ToDo: Check error handling => this should not happen?
+      if(this.client.clientId === clientId || !this.remoteClients.has(clientId)) {
+        //Debug.error(`gameNetworkService::onRemoteClientTransformUpdate(): Received tranform update for client = '${clientId}' who does not exists!`)
+        continue
+      }
+
+      const {transform} = this.remoteClients.get(clientId)
+
+      transform.targetPosition = position
+      transform.targetRotation = rotation
+    }
   } 
   onLocalClientTransformUpdate = (transform: ClientTransform) => {
     const networkPackage: GameTransformPackage = {

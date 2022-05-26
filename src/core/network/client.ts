@@ -5,10 +5,11 @@ import vec3ToRoundedArray, { roundNumber } from "../../util/math/vector";
 import { vec3 } from "gl-matrix";
 import FlyControls from "../components/controls/flyControls";
 import Entity from "../scene/entity";
+import { getLocalClientTransform } from "./gameNetworkController";
 
 type ChannelType = "TEXT" | "GAME"
  
-type PackageType = "PING" | "TEXT" | "CONNECT" | "DISCONNECT" | "TRANSFORM"
+type PackageType = "PING" | "TEXT" | "CONNECT" | "DISCONNECT" | "DELTA_STATE" | "TRANSFORM"
 
 type PingPackage = {
   type: "PING"
@@ -46,7 +47,12 @@ export type GameTransformPackage = {
   data: GameTransformPackageData
 }
 
-type GamePackage = GameConnectPackage | GameDisconnectPackage | GameTransformPackage
+export type GameDeltaStatePackage = {
+	type: "DELTA_STATE",
+	data: Array<GameTransformPackage>
+}
+
+type GamePackage = GameConnectPackage | GameDisconnectPackage | GameDeltaStatePackage | GameTransformPackage
 type NetworkPackage = PingPackage | TextPackage | GamePackage
 
 type ListenerCallback = (data: NetworkPackage["data"]) => void
@@ -79,8 +85,7 @@ export default class Client {
     Debug.console.registerCommand({ name: "dc", description: "Disconnect from server. Example: ds", callback: this.disconnect})
 
     this.subscribe("GAME", "PING", (data: PingPackage["data"]) => {
-      // can this be negativ based on system time differences?
-      const ping: number = Math.max(0, Math.ceil(Date.now() - parseInt(data, 10)))
+      const ping: number = Math.ceil(Date.now() - parseInt(data, 10))
       Debug.update({client: {ping}})
     })
     this.subscribe("TEXT", "TEXT", (data: TextPackage["data"]) => {
@@ -89,23 +94,12 @@ export default class Client {
     this.subscribe("GAME", "DISCONNECT", (data: GameDisconnectPackage["data"]) => {
       Debug.warn(`Client::callback(): Remote client = '${data.clientId}' disconnected!`)
     })
-    /*
-    this.subscribe("GAME", "TRANSFORM", (data: GameTransformPackage["data"]) => {
-      Debug.info(`Client::callback(): Remote client = '${data.clientId}' position = ${data.position.toString()}`)
-    })
-    */
 
     const init = async () => {
       try {
-        const transform = clientEntity.getComponent("Transform") as Transform
-        const controls = clientEntity.getComponent("FlyControls") as FlyControls
-  
-        const position = vec3ToRoundedArray(transform.getPosition())
-        position[1] -= 1.3
-  
-        const rotation = roundNumber(controls.angleRotation[0] + Math.PI)
+        const transform = getLocalClientTransform(clientEntity)
 
-        Debug.info(await this.connect("localhost:6969", position, rotation))
+        Debug.info(await this.connect("localhost:6969", transform.currentPosition, transform.currentRotation))
       } catch (error) {
         Debug.error(error)
       }

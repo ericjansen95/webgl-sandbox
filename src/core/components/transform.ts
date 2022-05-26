@@ -76,6 +76,7 @@ export default class Transform implements Component {
 
   onUpdate = () => {
     if(this.dirty) {
+      // ToDo Do this in the setters of the local transform
       this.modelMatrix = mat4.create()
   
       mat4.translate(this.modelMatrix, this.modelMatrix, this.position)
