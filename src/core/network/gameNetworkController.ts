@@ -8,7 +8,7 @@ import Transform from "../components/transform";
 import Debug from "../internal/debug";
 import Time from "../internal/time";
 import Entity from "../scene/entity";
-import Client, { GameConnectPackage, GameDeltaStatePackage, GameDisconnectPackage, GameTransformPackage } from "./client";
+import Client, { GameConnectPackage, GameDeltaStatePackage, GameDisconnectPackage, GameTransformPackage, GlobalConnectPackage } from "./client";
 
 const humanObj: string = require('/public/res/geo/human.txt') as string
 
@@ -59,6 +59,7 @@ const equalPosition = (a: Array<number>, b: Array<number>) => {
 
 export default class GameNetworkController {
   client: Client
+  timerId: NodeJS.Timer
 
   localClient: ClientCache
   remoteClients: Map<string, ClientCache>
@@ -67,37 +68,56 @@ export default class GameNetworkController {
 
   constructor(client: Client, sceneRoot: Entity, entity: Entity) {
     this.client = client
-    this.localClient = createLocalClient(client.clientId, entity)
+    this.localClient = createLocalClient(client.settings.clientId, entity)
     this.sceneRoot = sceneRoot
     this.remoteClients = new Map<string, ClientCache>()
 
     this.client.subscribe("GAME", "CONNECT", this.onRemoteClientConnect)
     this.client.subscribe("GAME", "DISCONNECT", this.onRemoteClientDisconnect)
     this.client.subscribe("GAME", "DELTA_STATE", this.onDeltaStateUpdate)
+    this.client.subscribe("GLOBAL", "CONNECT", this.onConnect)
+  }
 
-    // TMP test => send 4 times a second local camera position to remote clients
-    setInterval(() => {
-      // get current transform
-      const currentTransform = getLocalClientTransform(this.localClient.entity)
+  tick = () => {
+    // ToDo Log tick time
 
-      // update transform cache
-      const { transform } = this.localClient
-      transform.currentPosition = currentTransform.currentPosition
-      transform.currentRotation = currentTransform.currentRotation
+    // get current transform
+    const currentTransform = getLocalClientTransform(this.localClient.entity)
 
-      // send transform package and update cache if position or rotation changed
-      if(transform.targetRotation === transform.currentRotation && equalPosition(transform.targetPosition, transform.currentPosition)) return
-            
-      transform.targetPosition = transform.currentPosition
-      transform.targetRotation = transform.currentRotation
+    // update transform cache
+    const { transform } = this.localClient
+    transform.currentPosition = currentTransform.currentPosition
+    transform.currentRotation = currentTransform.currentRotation
 
-      this.onLocalClientTransformUpdate(transform)
-    }, 1000 / 4)
+    // send transform package and update cache if position or rotation changed
+    if(transform.targetRotation === transform.currentRotation && equalPosition(transform.targetPosition, transform.currentPosition)) return
+          
+    transform.targetPosition = transform.currentPosition
+    transform.targetRotation = transform.currentRotation
+
+    this.onLocalClientTransformUpdate(transform)
+  }
+
+  onConnect = (data: GlobalConnectPackage["data"]) => {
+    const {timeMs, tickIntervalMs} = data
+
+    const currentTimeMs = Date.now()
+    const timeDifferenceMs = currentTimeMs - timeMs
+
+    // TMP Come up with a solution that is validated
+    // Right now we sync the local message loop to send every 0.25 * tickIntervalMs from the server tick start time
+    const syncDelayMs = Math.floor(tickIntervalMs * 0.25 - timeDifferenceMs)
+
+    setTimeout(() => {
+      this.timerId = setInterval(this.tick, tickIntervalMs)
+    }, syncDelayMs)
   }
 
   update = () => {
-    const deltaTime = Time.deltaTime
-    const INTERPOLATION_SPEED = 8 / 4
+    const { deltaTime } = Time
+    const { tickIntervalMs } = this.client.settings
+
+    const INTERPOLATION_SPEED = 8 * (1000 / tickIntervalMs)
 
     for(const client of this.remoteClients.values()) {
       const {transform, entity} = client
@@ -131,8 +151,6 @@ export default class GameNetworkController {
   onRemoteClientConnect = (data: GameConnectPackage["data"]) => {
     const {clientId, position, rotation} = data
 
-    Debug.info(JSON.stringify(position))
-
     // ToDo: Decide when to spawn client => after first transform package received?
     // can this be part of the inital connect package?
 
@@ -164,7 +182,7 @@ export default class GameNetworkController {
 
     this.remoteClients.set(clientId, remoteClient)
 
-    Debug.info(`gameNetworkService::onRemoteClientConnect(): Remote client = '${data.clientId}' connected.`)
+    Debug.info(`gameNetworkService::onRemoteClientConnect(): Remote client = '${clientId}' connected.`)
   }
   onRemoteClientDisconnect = (data: GameDisconnectPackage["data"]) => {
     const {clientId} = data
@@ -174,22 +192,8 @@ export default class GameNetworkController {
 
     this.remoteClients.delete(clientId)
     
-    Debug.warn(`gameNetworkService::onRemoteClientDisconnect(): Remote client = '${data.clientId}' disconnected!`)
+    Debug.warn(`gameNetworkService::onRemoteClientDisconnect(): Remote client = '${clientId}' disconnected!`)
   }
-  onRemoteClientTransformUpdate = (data: GameTransformPackage["data"]) => {
-    const {clientId, position, rotation} = data
-
-    // ToDo: Check error handling => this should not happen?
-    if(!this.remoteClients.has(clientId)) {
-      Debug.error(`gameNetworkService::onRemoteClientTransformUpdate(): Received tranform update for client = '${data.clientId}' who does not exists!`)
-      return
-    }
-
-    const {transform} = this.remoteClients.get(clientId)
-
-    transform.targetPosition = position
-    transform.targetRotation = rotation
-  } 
   onDeltaStateUpdate = (data: GameDeltaStatePackage["data"]) => {
     const transformPackages = data as Array<GameTransformPackage>
 
@@ -197,7 +201,7 @@ export default class GameNetworkController {
       const {clientId, position, rotation} = transformPackage.data
 
       // ToDo: Check error handling => this should not happen?
-      if(this.client.clientId === clientId || !this.remoteClients.has(clientId)) {
+      if(this.client.settings.clientId === clientId || !this.remoteClients.has(clientId)) {
         //Debug.error(`gameNetworkService::onRemoteClientTransformUpdate(): Received tranform update for client = '${clientId}' who does not exists!`)
         continue
       }

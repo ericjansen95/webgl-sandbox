@@ -1,19 +1,15 @@
 import Debug from "../internal/debug";
 const short = require('short-uuid');
-import Transform from "../components/transform";
-import vec3ToRoundedArray, { roundNumber } from "../../util/math/vector";
-import { vec3 } from "gl-matrix";
-import FlyControls from "../components/controls/flyControls";
 import Entity from "../scene/entity";
 import { getLocalClientTransform } from "./gameNetworkController";
 
-type ChannelType = "TEXT" | "GAME"
+type ChannelType = "TEXT" | "GAME" | "GLOBAL"
  
 type PackageType = "PING" | "TEXT" | "CONNECT" | "DISCONNECT" | "DELTA_STATE" | "TRANSFORM"
 
 type PingPackage = {
   type: "PING"
-  data: string
+  data: number
 }
 
 type TextPackage = {
@@ -52,8 +48,29 @@ export type GameDeltaStatePackage = {
 	data: Array<GameTransformPackage>
 }
 
+export type ConnectResposeBody = {
+  sdp: string, 
+  timeMs: number, 
+  tickIntervalMs: number
+}
+
+type ClientSettings = {
+  clientId: string,
+  timeMs: number,
+  tickIntervalMs: number
+}
+
+export type GlobalConnectPackage = {
+  type: "CONNECT",
+  data: {
+    timeMs: ClientSettings["timeMs"],
+    tickIntervalMs: ClientSettings["tickIntervalMs"]
+  }
+}
+
+type GlobalPackage = GlobalConnectPackage | PingPackage
 type GamePackage = GameConnectPackage | GameDisconnectPackage | GameDeltaStatePackage | GameTransformPackage
-type NetworkPackage = PingPackage | TextPackage | GamePackage
+type NetworkPackage = TextPackage | GamePackage | GlobalPackage
 
 type ListenerCallback = (data: NetworkPackage["data"]) => void
 
@@ -70,13 +87,20 @@ const isValidHttpUrl = (input: string) => {
 }
 
 export default class Client {
-  clientId: string
+  settings: ClientSettings
+
   peerConnection: RTCPeerConnection
+
   channels: Map<string, RTCDataChannel>
   listeners: Map<ChannelType, Map<PackageType, Set<ListenerCallback>>>
 
   constructor(clientEntity: Entity) {
-    this.clientId = short.generate()
+    this.settings = {
+      clientId: short.generate(),
+      timeMs: -1,
+      tickIntervalMs: -1,
+    }
+
     this.channels = new Map<ChannelType, RTCDataChannel>()
     this.listeners = new Map<ChannelType, Map<PackageType, Set<ListenerCallback>>>()
 
@@ -85,7 +109,7 @@ export default class Client {
     Debug.console.registerCommand({ name: "dc", description: "Disconnect from server. Example: ds", callback: this.disconnect})
 
     this.subscribe("GAME", "PING", (data: PingPackage["data"]) => {
-      const ping: number = Math.ceil(Date.now() - parseInt(data, 10))
+      const ping: number = Math.ceil(Date.now() - data)
       Debug.update({client: {ping}})
     })
     this.subscribe("TEXT", "TEXT", (data: TextPackage["data"]) => {
@@ -145,7 +169,7 @@ export default class Client {
       type: "TEXT",
       data: {
         message,
-        clientId: this.clientId
+        clientId: this.settings.clientId
       }
     })
 
@@ -243,7 +267,7 @@ export default class Client {
           type: "TEXT",
           data: { 
             message: `Hello :)`,
-            clientId: this.clientId
+            clientId: this.settings.clientId
           }
         }
         break
@@ -296,7 +320,7 @@ export default class Client {
 
             const connectInfo: GameTransformPackageData & {sdp: string} = {
               sdp: localSessionDescription,
-              clientId: this.clientId,
+              clientId: this.settings.clientId,
               position,
               rotation
             }
@@ -310,8 +334,11 @@ export default class Client {
               body: JSON.stringify(connectInfo)
             })
         
-            const body: { sdp: string } = await response.json()
-            const { sdp } = body
+            const body: ConnectResposeBody = await response.json()
+            const { sdp, timeMs, tickIntervalMs } = body
+
+            this.settings.timeMs = timeMs
+            this.settings.tickIntervalMs = tickIntervalMs
     
             if(!body.sdp) {
               reject(`Client::connect(): Failed connecting to server ${url} = invalid remote session description!`)
@@ -365,6 +392,8 @@ export default class Client {
           switch (connectionState) {
             case "connected": {
               Debug.info('Client::connect(): Connected to server.')
+              const globalConnectPackage = {type: "CONNECT", data: { timeMs: this.settings.timeMs, tickIntervalMs: this.settings.tickIntervalMs }} as GlobalConnectPackage
+              this.dispatchMessage("GLOBAL", globalConnectPackage)
               break;
             }
             case "connecting": {
