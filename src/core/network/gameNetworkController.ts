@@ -117,8 +117,9 @@ export default class GameNetworkController {
     const { deltaTime } = Time
     const { tickIntervalMs } = this.client.settings
 
-    const INTERPOLATION_SPEED = 8 * (1000 / tickIntervalMs)
+    const INTERPOLATION_SPEED = 0.35 * (1000 / tickIntervalMs)
 
+    // ToDo Log interpolation time and make this async
     for(const client of this.remoteClients.values()) {
       const {transform, entity} = client
 

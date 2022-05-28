@@ -91,7 +91,7 @@ export default class Client {
 
   peerConnection: RTCPeerConnection
 
-  channels: Map<string, RTCDataChannel>
+  channels: Map<string, RTCDataChannel> // ToDo Make callbacks asyncs
   listeners: Map<ChannelType, Map<PackageType, Set<ListenerCallback>>>
 
   constructor(clientEntity: Entity) {

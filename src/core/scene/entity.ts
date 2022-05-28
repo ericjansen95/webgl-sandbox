@@ -13,6 +13,7 @@ import Transform from "../components/transform";
 // TMP => find proper way to do this by class type without instance?
 // abstract into Type ComponentInfo {type, name}
 // abstract BoundingVolume and Controls with base Component Classes
+// maybe use enum here?
 type ComponentName = "Transform" | "Material" | "Camera" | "Geometry" | "BoundingSphere" | "BoundingBox" | "FlyControls"
 type ComponentType = Transform | Material | Camera | Geometry | BoundingSphere | BoundingBox | FlyControls
 

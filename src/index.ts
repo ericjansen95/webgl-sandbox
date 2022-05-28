@@ -7,12 +7,9 @@ import Debug from './core/internal/debug';
 import Renderer from './core/scene/renderer';
 import Time from './core/internal/time';
 import Material from './core/components/material';
-import UnlitMaterial from './core/components/materials/unlitMaterial';
 import FlyControls from './core/components/controls/flyControls';
-import Grid from './core/components/geometry/grid';
 import Terrain from './core/components/terrain';
 import Client from './core/network/client';
-import GameNetworkController from './core/network/gameNetworkController';
 import Scene from './core/scene/scene';
 
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
@@ -57,7 +54,6 @@ const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
   - instanced mesh system
   - fix obj loader
   - camera frustrum performance
-  - network entity interpolation
   - better material attrib pipeline
   - webgl2.0
   - Component query
@@ -71,7 +67,7 @@ const main = () => {
   Debug.init()
   Input.init()
 
-  const canvas: HTMLCanvasElement = document.getElementById('glCanvas') as HTMLCanvasElement
+  const canvas = document.getElementById('glCanvas') as HTMLCanvasElement
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
 
