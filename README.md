@@ -1,19 +1,21 @@
-# WebGl Renderer
+# Project Choros Engine
 
-A basic WebGl renderer supporting obj geometry loading. 
+A 3D engine for the browser.
 
 ## Features
 
 - Entity based scene graph system
-- Component system for geometry and materials
+- Component system
 - Lambert and Phong lighting
 - Terrain rendering with vertex heightmap displacement
-- Discrete terrain space partitioning with geometric level of detail 
+- Discrete terrain space partitioning
+- Frustrum culling
+- Networking for scene state synch between clients
 
 <table>
   <tr>
-    <td> <img src="/public/res/img/terrain.jpg"  alt="terrain" width = 640px height = 300px ></td>
-    <td><img src="/public/res/img/phong.JPG" alt="phong" width = 640px height = 300px></td>
+    <td> <img src="/public/res/img/terrain.jpg"  alt="terrain" width = 640px height = 250px ></td>
+    <td><img src="/public/res/img/phong.JPG" alt="phong" width = 640px height = 250px></td>
   </tr> 
 </table>
 
