@@ -94,7 +94,7 @@ export default class Renderer {
         break
       }
       case "TERRAIN": {
-        material.bind(lightDir, 0, transform.modelMatrix)
+        material.bind(lightDir, transform.modelMatrix)
         break
       }
       case "UNLIT": {

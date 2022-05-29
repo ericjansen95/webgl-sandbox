@@ -4,6 +4,10 @@ uniform vec3 uLightDir;
 uniform float uAmbientLight;
 
 varying vec4 vVertexNormal;
+varying vec2 vUvPosition;
+
+uniform sampler2D uGrassmap;
+uniform sampler2D uCliffmap;
 
 vec4 GREEN = vec4(0.419,0.608,0.117,1.0);
 vec4 LIGHT_GREEN = vec4(0.725,0.850,0.502,1.0);  
@@ -27,10 +31,13 @@ void main() {
   float steepnessMask = step(STEEPNESS_THRESHOLD, steepness);
   float snowMask = step(SNOW_THRESHOLD, height);
 
+  vec4 grass = texture2D(uGrassmap, vUvPosition * 250.0);
+  vec4 cliff = texture2D(uCliffmap, vUvPosition * 150.0);
+
   // ToDo(Eric) Decrese operation count based on case => snow or not
-  vec4 color = (mix(GREEN, LIGHT_GREEN, height) * steepnessMask +
-               mix(BROWN, WHITE, height) * (1.0 - steepnessMask)) * (1.0 - snowMask) +
-               WHITE * snowMask * steepnessMask + mix(BROWN, WHITE, height) * snowMask * (1.0 - steepnessMask);
+  vec4 color = (grass * mix(GREEN, LIGHT_GREEN, height) * steepnessMask +
+               cliff * mix(BROWN, WHITE, height) * (1.0 - steepnessMask)) * (1.0 - snowMask) +
+               WHITE * snowMask * steepnessMask + cliff * mix(BROWN, WHITE, height) * snowMask * (1.0 - steepnessMask);
 
   float light = dot(normal, normalize(uLightDir));
 
