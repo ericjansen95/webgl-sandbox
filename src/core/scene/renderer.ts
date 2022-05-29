@@ -164,7 +164,7 @@ export default class Renderer {
     if(!this.bindMaterial(entity,
                           camera.getComponent("Transform").worldMatrix,
                           camera.getComponent("Camera").projectionMatrix,
-                          vec3.normalize(vec3.create(), [-0.75, 0.5, 0.0]))) return
+                          vec3.normalize(vec3.create(), [0.75, 0.25, 0.0]))) return
 
     let mode: number | null = null
     let count: number | null = null

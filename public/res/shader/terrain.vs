@@ -1,36 +1,22 @@
 attribute vec4 aVertexPosition;
 attribute vec3 aVertexNormal;
 
-uniform mat4 uWorldMatrix;
-uniform mat4 uViewMatrix;
-uniform mat4 uProjectionMatrix;
-
 uniform mat4 uOffsetMatrix;
+
+varying vec2 vUvPosition;
+varying vec4 vVertexNormal;
 
 uniform sampler2D uHeightmap;
 uniform float uHeight;
 
-varying vec4 vVertexNormal;
-varying vec2 vUvPosition;
-
-// ToDo(Eric) Move this in a uniform?
-float STEP = 0.025;
+uniform mat4 uWorldMatrix;
+uniform mat4 uViewMatrix;
+uniform mat4 uProjectionMatrix;
 
 void main() {
-
-  vec2 uvPosition = (uOffsetMatrix * aVertexPosition).xz * 2.0 + vec2(1.0, 1.0);
-
-  float heightLeft = texture2D(uHeightmap, vec2((uvPosition.x - STEP + 1.0) * 0.5, (uvPosition.y  + 1.0) * 0.5)).y;
-  float heightTop = texture2D(uHeightmap, vec2((uvPosition.x  + 1.0) * 0.5, (uvPosition.y + STEP  + 1.0) * 0.5)).y;
-  float heightRight = texture2D(uHeightmap, vec2((uvPosition.x + STEP  + 1.0) * 0.5, (uvPosition.y  + 1.0) * 0.5)).y;
-  float heightBottom = texture2D(uHeightmap, vec2((uvPosition.x  + 1.0) * 0.5, (uvPosition.y - STEP  + 1.0) * 0.5)).y;
-
-  float heightCenter = texture2D(uHeightmap, vec2((uvPosition.x  + 1.0) * 0.5, (uvPosition.y  + 1.0) * 0.5)).y;
+  vUvPosition = (uOffsetMatrix * aVertexPosition).xz + vec2(2.0, 2.0);
+  vVertexNormal = texture2D(uHeightmap, vUvPosition);
   
-  vec4 position = vec4(aVertexPosition.x, aVertexPosition.y + heightCenter * uHeight, aVertexPosition.z, aVertexPosition.w);
-
-  vVertexNormal = vec4(normalize(vec3((heightRight - heightLeft), 0.15, (heightBottom - heightTop))), heightCenter);
-  vUvPosition = uvPosition.xy;
-
+  vec4 position = vec4(aVertexPosition.x, aVertexPosition.y + vVertexNormal.w * uHeight, aVertexPosition.z, aVertexPosition.w);
   gl_Position = uProjectionMatrix * uViewMatrix * uWorldMatrix * position;  
 }

@@ -9,9 +9,8 @@ import TerrainMaterial from "./materials/terrainMaterial";
 import UnlitMaterial from "./materials/unlitMaterial";
 import Transform from "./transform";
 
-const TERRAIN_HEIGHTMAP_URI: string = "/res/map/heightmap.png"
-const GRASS_MAP_URI: string = "/res/map/grassmap.jpg"
-const CLIFF_MAP_URI: string = "/res/map/cliffmap.jpg"
+const TERRAIN_HEIGHTMAP_URI: string = "/res/map/heightcombined.png"
+const TERRAIN_MAP_COMBINED: string = "/res/map/terrainCombined.jpg"
 
 // these settings are also related to the heightmap resolution
 // going to high with a low heightmap makes not much sense
@@ -40,7 +39,7 @@ export default class Terrain implements Component {
   constructor(size: number = 1000) {
     this.size = size
 
-    this.height = 100.0
+    this.height = 75.0
 
     this.activeChunkIndex = null
     this.chunks = new Array<Entity>()
@@ -48,7 +47,7 @@ export default class Terrain implements Component {
     this.lowMaterial = new UnlitMaterial([1.0, 0.0, 1.0]) as Material
     this.lowGeometry = new Plane(TERRAIN_CHUNK_LOW_SUBDEVISIONS) as Geometry
 
-    this.highMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, GRASS_MAP_URI, CLIFF_MAP_URI, this.height) as Material
+    this.highMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, TERRAIN_MAP_COMBINED, this.height) as Material
     this.highGeometry = new Plane(TERRAIN_CHUNK_HIGH_SUBDEVISIONS) as Geometry
 
     const step: number = TERRAIN_CHUNK_SIZE / this.size

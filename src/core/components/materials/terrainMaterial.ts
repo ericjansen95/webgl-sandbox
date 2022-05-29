@@ -7,13 +7,12 @@ const fsTerrainSorce: string = require('/public/res/shader/terrain.fs') as strin
 
 export default class TerrainMaterial extends Material {
   heightmap: WebGLTexture
-  grassmap: WebGLTexture
-  cliffmap: WebGLTexture
+  terrainmap: WebGLTexture
 
   height: number
   offsetMatrix: mat4
 
-  constructor(heightmapUri: string, grassmapUri: string, cliffmapUri: string, height: number) {
+  constructor(heightmapUri: string, terrainmapUri: string, height: number) {
     super()
 
     this.height = height
@@ -31,8 +30,7 @@ export default class TerrainMaterial extends Material {
     this.uniformLocations.set('uLightDir', GL.getUniformLocation(program, 'uLightDir'))
 
     this.uniformLocations.set('uHeightmap', GL.getUniformLocation(program, 'uHeightmap'))
-    this.uniformLocations.set('uGrassmap', GL.getUniformLocation(program, 'uGrassmap'))  
-    this.uniformLocations.set('uCliffmap', GL.getUniformLocation(program, 'uCliffmap'))
+    this.uniformLocations.set('uTerrain', GL.getUniformLocation(program, 'uTerrain'))
 
     this.uniformLocations.set('uHeight', GL.getUniformLocation(program, 'uHeight'))
 
@@ -51,30 +49,17 @@ export default class TerrainMaterial extends Material {
       GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, heightmap);
     });
 
-    var grassmap = new Image();
-    grassmap.src = grassmapUri;
+    var terrainmap = new Image();
+    terrainmap.src = terrainmapUri;
 
-    grassmap.addEventListener('load', () => {
-      this.grassmap = GL.createTexture();
-      GL.bindTexture(GL.TEXTURE_2D, this.grassmap);
+    terrainmap.addEventListener('load', () => {
+      this.terrainmap = GL.createTexture();
+      GL.bindTexture(GL.TEXTURE_2D, this.terrainmap);
   
       GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
       GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
   
-      GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, grassmap);
-    });
-
-    var cliffmap = new Image();
-    cliffmap.src = cliffmapUri;
-
-    cliffmap.addEventListener('load', () => {
-      this.cliffmap = GL.createTexture();
-      GL.bindTexture(GL.TEXTURE_2D, this.cliffmap);
-  
-      GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.LINEAR);
-      GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.LINEAR);
-  
-      GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, cliffmap);
+      GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, terrainmap);
     });
   }
 
@@ -87,12 +72,8 @@ export default class TerrainMaterial extends Material {
     GL.uniform1i(this.uniformLocations.get('uHeightmap'), 0)
     
     GL.activeTexture(GL.TEXTURE1)
-    GL.bindTexture(GL.TEXTURE_2D, this.grassmap)
-    GL.uniform1i(this.uniformLocations.get('uGrassmap'), 1)
-
-    GL.activeTexture(GL.TEXTURE2)
-    GL.bindTexture(GL.TEXTURE_2D, this.cliffmap)
-    GL.uniform1i(this.uniformLocations.get('uCliffmap'), 2)
+    GL.bindTexture(GL.TEXTURE_2D, this.terrainmap)
+    GL.uniform1i(this.uniformLocations.get('uTerrain'), 1)
 
     GL.uniform1f(this.uniformLocations.get('uHeight'), this.height)
     GL.uniformMatrix4fv(this.uniformLocations.get('uOffsetMatrix'), false, offsetMatrix)
