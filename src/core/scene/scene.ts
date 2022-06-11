@@ -13,6 +13,8 @@ export default class Scene {
 
   constructor(clientEntity: Entity | null = null, client: Client | null = null) {
     this.root = new Entity()
+    // ToDo: Add entities with scene.add() instead while update loop?
+    // handle entity passing with integer id?
     this.entities = new Array<Entity>()
 
     const grid: Entity = new Entity()
@@ -28,10 +30,6 @@ export default class Scene {
   }
 
   update = (camera: Entity) => {
-    camera.getComponent("FlyControls").onUpdate(camera, camera)
-    camera.getComponent("Transform").onUpdate(camera, camera)
-    camera.getComponent("Camera").onUpdate(camera, camera)
-
     this.entities = []
     this.updateEntity(this.root, camera, true)
 
@@ -48,10 +46,8 @@ export default class Scene {
     
     if(!recursive) return
 
-    const transform = entity.getComponent("Transform")
-
-    for(const child of transform.children)
-      this.updateEntity(child, camera, recursive)
+    for(const child of entity)
+      this.updateEntity(child, camera)
   }
 
   updateEntityTransform = (entity: Entity): void => {
@@ -65,6 +61,7 @@ export default class Scene {
     })
   }
 
+  // this returns a "display list" for all visible entities that are in the camera frustrum
   getVisibleEntities = (camera: Entity): Array<Entity> => {
     const cameraComponent = camera.getComponent("Camera") as Camera
 

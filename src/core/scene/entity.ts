@@ -35,6 +35,24 @@ export default class Entity {
     this.addComponent(new Transform())
   }
 
+  *[Symbol.iterator]() {
+    const entities = new Array<Entity>()
+
+    const traverse = (parent: Entity) => {
+      for (const child of parent.getComponent("Transform").children)
+        traverse(child)
+
+      if(this === parent) return
+      
+      entities.push(parent)
+    }
+
+    traverse(this)
+
+    for(const entity of entities)
+      yield entity
+  }
+
   addComponent = <Type>(component: Type): Type | null => {
     const componentName: ComponentName = getComponentName(component)
 

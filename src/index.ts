@@ -11,6 +11,8 @@ import FlyControls from './core/components/controls/flyControls';
 import Terrain from './core/components/terrain';
 import Client from './core/network/client';
 import Scene from './core/scene/scene';
+import Quad from './core/components/geometry/quad';
+import UnlitMaterial from './core/components/materials/unlitMaterial';
 
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
@@ -53,8 +55,7 @@ const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
   - fix obj loader
   - camera frustrum performance
   - better material attrib pipeline
-  - webgl2.0
-  - Component query
+  - Component query => enum and int key resolve / handle components in array
   - abstract component constructor arguments into options objects
   - rename wording for channels to "SCENE" and "CHAT"
 
@@ -71,28 +72,31 @@ const main = () => {
 
   const renderer = new Renderer(canvas)
 
-  const camera: Entity = new Entity()
-  camera.getComponent("Transform").setPosition([0.0, 1.0, 4.0])
-  camera.addComponent(new FlyControls())
-  camera.addComponent(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
+  const sceneCamera: Entity = new Entity()
+  sceneCamera.getComponent("Transform").setPosition([0.0, 0.0, -200.0])
+  const camera = sceneCamera.addComponent(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
-  const client: Client = new Client(camera)
-  const scene: Scene = new Scene(camera, client)
+  const debugCamera: Entity = new Entity()
+  debugCamera.getComponent("Transform").setPosition([0.0, 1.0, 4.0])
+  debugCamera.addComponent(new FlyControls())
+  debugCamera.addComponent(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
+
+  //const client: Client = new Client(dynamicCamera)
+  const scene: Scene = new Scene()
 
   // debug vis for camera frustrum
+  const debugMaterial = new UnlitMaterial([1.0, 0.0, 1.0]) as Material
 
-  /*
-  for(let posIndex = 0; posIndex < cameraComponent.frustrum.positions.length; posIndex += 4) {  
+  for(let posIndex = 0; posIndex < camera.frustrum.positions.length; posIndex += 4) {  
     const frustrumPlane = new Entity()
 
-    const positions = cameraComponent.frustrum.positions.slice(posIndex, posIndex + 4)
+    const positions = camera.frustrum.positions.slice(posIndex, posIndex + 4)
 
     frustrumPlane.addComponent(new Quad(positions, true, false, false))
     frustrumPlane.addComponent(debugMaterial)
 
-    camera.getComponent("Transform").addChild(frustrumPlane)
+    sceneCamera.getComponent("Transform").addChild(frustrumPlane)
   }
-  */
 
   const lambertMaterial: Material = new LambertMaterial([1.0, 1.0, 1.0]) as Material
 
@@ -119,7 +123,7 @@ const main = () => {
   terrain.addComponent(new Terrain())
 
   scene.root.getComponent("Transform").addChild(terrain)
-
+  scene.root.getComponent("Transform").addChild(sceneCamera)
   // water
 
   /*
@@ -142,8 +146,16 @@ const main = () => {
     const bunnyTransform = bunny.getComponent("Transform")
     bunnyTransform.setRotation([bunnyTransform.rotation[0] + Math.PI * 0.2 * Time.deltaTime, 0.0, 0.0])
 
-    scene.update(camera)
-    renderer.renderEntities(scene.getVisibleEntities(camera), camera)
+    const sceneCameraTransform = sceneCamera.getComponent("Transform")
+    sceneCameraTransform.setRotation([0.0, Math.cos((Date.now() - Time.startTime) * 0.0005) * Math.PI * 0.25, 0.0])
+
+    scene.update(sceneCamera)
+    
+    debugCamera.getComponent("FlyControls").onUpdate(debugCamera, debugCamera)
+    debugCamera.getComponent("Transform").onUpdate(debugCamera, debugCamera)
+    debugCamera.getComponent("Camera").onUpdate(debugCamera, debugCamera)
+
+    renderer.renderEntities(scene.getVisibleEntities(sceneCamera), debugCamera)
 
     Debug.update({renderer: {drawCalls: renderer.drawCalls, cullCount: renderer.cullCount}})
 
