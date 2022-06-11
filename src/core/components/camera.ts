@@ -9,6 +9,7 @@ import Transform from './transform';
 import BoundingBox from './boundingBox';
 import { Plane } from '../../util/math/plane';
 import UnlitMaterial from './materials/unlitMaterial';
+import Geometry from './geometry/geometry';
 
 const DEFAULT_Z_NEAR: number = 0.05
 const DEFAULT_Z_FAR: number = 10000.0
@@ -54,7 +55,7 @@ export default class Camera implements Component {
     this.updateFrustrum()
   }
 
-  isPoinInFrustrum = (point: vec3): boolean => {
+  isPointInFrustrum = (point: vec3): boolean => {
     for(const plane of this.frustrum.planes)
       if(!this.isPointInFront(plane, point)) return false
 
@@ -98,7 +99,10 @@ export default class Camera implements Component {
   }
 
   isEntityInFrustrum = (entity: Entity): boolean => {
-    if(!this.frustrum) return false
+    const geometry: Geometry | null = entity.getComponent("Geometry")
+
+    if(!this.frustrum || !geometry?.visible) return false
+    if(!geometry.cull) return true
 
     let isInFrustrum: boolean | null = null
 
@@ -120,7 +124,7 @@ export default class Camera implements Component {
       isInFrustrum = this.isBoxInFrustrum(boundingBox.corners, worldMatrix)
     }
 
-    if(isInFrustrum === null) isInFrustrum = this.isPoinInFrustrum(point)
+    if(isInFrustrum === null) isInFrustrum = this.isPointInFrustrum(point)
 
     return isInFrustrum
   }

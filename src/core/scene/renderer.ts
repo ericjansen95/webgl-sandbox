@@ -22,12 +22,7 @@ export default class Renderer {
   constructor(canvas: HTMLCanvasElement) {
     // ToDo(Eric) Use webgl2 here instead of webgl 1.0
     GL = canvas.getContext('webgl') as WebGL2RenderingContext
-
-    //this.clearColor = vec3.create()
-    //this.clearColor.fill(DEFAULT_CLEAR_COLOR_LUMINANCE)
-
     this.clearColor = vec3.fromValues(0.549, 0.745, 0.839)
-    this.sceneRoot = null
 
     if(!GL) {
       console.error('Failed to initialize WebGL!') 
@@ -110,17 +105,6 @@ export default class Renderer {
 
   renderEntity = (entity: Entity, camera: Entity) => {
     const geometry: Geometry | null = entity.getComponent("Geometry")
-
-    if(!geometry?.visible) return;
-
-    if(geometry.cull) {
-      const cameraComponent: Camera | null = camera.getComponent("Camera")
-      if(!cameraComponent.isEntityInFrustrum(entity)) {
-        this.cullCount++
-        return
-      }
-    }
-
     const material: Material | null = entity.getComponent("Material")
 
     if(!material || !this.bindGeometry(geometry)) return
@@ -185,34 +169,14 @@ export default class Renderer {
     GL.drawArrays(mode, offset, count)
   }
 
-  renderScene = (root: Entity, camera: Entity) => {  
+  renderEntities = (entities: Array<Entity>, camera: Entity) => {
     GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT)
 
     this.drawCalls = 0
     this.cullCount = 0
 
-    this.sceneRoot = root
-
-    camera.getComponent("FlyControls").onUpdate(camera, camera)
-    camera.getComponent("Transform").onUpdate(camera, camera)
-    camera.getComponent("Camera").onUpdate(camera, camera)
-
-    this.renderChildren(root, camera)
-  }
-
-  renderChildren = (self: Entity, camera: Entity) => {
-
-    //ToDo(Eric) Split update and render loop => how to handle worldMatrix for update?
-    self.components.forEach(curComponent => {
-      if(curComponent.onUpdate)
-        curComponent.onUpdate(self, camera)
-    })
-
-    this.renderEntity(self, camera)              
-
-    self.getComponent("Transform").children.forEach(child => {
-      this.renderChildren(child, camera)
-    })
+    for(const entity of entities)
+      this.renderEntity(entity, camera)
   }
 
   toggleBoundingVolumes = (): string => {

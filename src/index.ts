@@ -25,6 +25,11 @@ const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
   - device capibility check and lod (mesh, shader, textures, ...)
   - streaming (network and scene)
   - scene, sceneNetworkController, remoteClient Component, networkedTransfrom Component
+  - ContextConsumer
+  - module bundle namespace
+  - app-sandbox
+  - level wording
+  - base-server, chat-server, scene-server
 
   ToDo:
   - transform local vs global
@@ -35,17 +40,10 @@ const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
   - client do not send client id in packages
   - culling
   - light rotations
-  - terrain normal lookup
-  - terrain border
   - bounding volume abstraction with class
   - game network manager => create local and remote client compoents for entities
   - reduce matrix multipications => cache bounding volume data
-  - server delta compression
-  - server client tick negotation
-  - server game client connect inital transform
   - server connect with same client id after reload
-  - monorepo => frontend, game-server (chat-server, auth-server, ...), engine, cms, tools (blender, pipeline)
-  - name for project
   - split build scene graph and component updates => "parralize" by updating async and building scene graph => is this possible without cache?
   - come up with a dynamic networking model => check o3d engine talk (state, event, ...)
   - make component state easily serializable by adding functions to interface
@@ -144,9 +142,8 @@ const main = () => {
     const bunnyTransform = bunny.getComponent("Transform")
     bunnyTransform.setRotation([bunnyTransform.rotation[0] + Math.PI * 0.2 * Time.deltaTime, 0.0, 0.0])
 
-    scene.networkController.update()
-
-    renderer.renderScene(scene.root, camera)
+    scene.update(camera)
+    renderer.renderEntities(scene.getVisibleEntities(camera), camera)
 
     Debug.update({renderer: {drawCalls: renderer.drawCalls, cullCount: renderer.cullCount}})
 
