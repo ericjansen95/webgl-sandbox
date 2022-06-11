@@ -21,7 +21,7 @@ export default class Renderer {
 
   constructor(canvas: HTMLCanvasElement) {
     // ToDo(Eric) Use webgl2 here instead of webgl 1.0
-    GL = canvas.getContext('webgl') as WebGL2RenderingContext
+    GL = canvas.getContext('webgl2') as WebGL2RenderingContext
     this.clearColor = vec3.fromValues(0.549, 0.745, 0.839)
 
     if(!GL) {
