@@ -1,7 +1,6 @@
 import { SceneStats } from "../scene/scene"
 import Console from "./console"
 import FrameInspector from "./fameInspector"
-import Time from "./time"
 
 export type DebugStats = {
   scene?: SceneStats,
@@ -43,7 +42,7 @@ export default class Debug {
     this.root.appendChild(this.statsRoot)
 
     this.statsElement = document.createElement('p')
-    this.statsElement.style.cssText = 'padding: 6px; margin-top: 0px; background-color: rgba(0.0, 0.0, 0.0, 0.5); color: white; width: fit-content;'
+    this.statsElement.style.cssText = 'min-width: 150px; padding: 6px; margin-top: 0px; background-color: rgba(0.0, 0.0, 0.0, 0.5); color: lightgray; width: fit-content; white-space: pre;'
     this.statsRoot.appendChild(this.statsElement)
   }
 
@@ -52,7 +51,18 @@ export default class Debug {
       this.stats[name] = entry
     }
 
-    this.statsElement.innerHTML = `<pre>${JSON.stringify(this.stats, null, '  ')}</pre>`
+    let output: string = ""
+
+    for(const [statSectionName, statSectionValue] of Object.entries(this.stats)) {
+      output += statSectionName + ':\r\n\r\n'
+
+      for(const [statName, statValue] of Object.entries(statSectionValue))
+        output += '  ' + statName + ' = ' + statValue.toString() + '\r\n'
+
+      output += '\r\n'  
+    }
+
+    this.statsElement.textContent = output
   }
 
   static toggleStats = (): string => {
