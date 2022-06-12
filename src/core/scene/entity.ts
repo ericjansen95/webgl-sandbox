@@ -1,7 +1,8 @@
 import BoundingBox from "../components/boundingBox";
 import BoundingSphere from "../components/boundingSphere";
+import BoundingVolume from "../components/boundingVolume";
 import Camera from "../components/camera";
-import { Component } from "../components/component";
+import Component from "../components/component";
 import FlyControls from "../components/controls/flyControls";
 import Geometry from "../components/geometry/geometry";
 import Material from "../components/material";
@@ -14,14 +15,16 @@ import Transform from "../components/transform";
 // abstract into Type ComponentInfo {type, name}
 // abstract BoundingVolume and Controls with base Component Classes
 // maybe use enum here?
-type ComponentName = "Transform" | "Material" | "Camera" | "Geometry" | "BoundingSphere" | "BoundingBox" | "FlyControls"
-type ComponentType = Transform | Material | Camera | Geometry | BoundingSphere | BoundingBox | FlyControls
+type ComponentName = "Transform" | "Material" | "Camera" | "Geometry" | "BoundingVolume" | "FlyControls"
+type ComponentType = Transform | Material | Camera | Geometry | BoundingVolume | FlyControls
 
 const getComponentName = <Type>(component: Type): ComponentName => {
   let componentName = component.constructor.name as ComponentName
   const parentName = Object.getPrototypeOf(component.constructor).name as ComponentName
 
   if(parentName.length) componentName = parentName
+  // ToDo: Find better way to do this
+  if(componentName.includes("Bounding")) componentName = "BoundingVolume"
 
   return componentName
 }

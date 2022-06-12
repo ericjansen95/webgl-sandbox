@@ -1,4 +1,4 @@
-import { quat, vec3 } from "gl-matrix";
+import { vec3 } from "gl-matrix";
 import vec3ToRoundedArray, { roundNumber } from "../../util/math/vector";
 import FlyControls from "../components/controls/flyControls";
 import Geometry from "../components/geometry/geometry";

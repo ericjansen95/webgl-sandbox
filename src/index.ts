@@ -157,8 +157,6 @@ const main = () => {
 
     renderer.renderEntities(scene.getVisibleEntities(sceneCamera), debugCamera)
 
-    Debug.update({renderer: {drawCalls: renderer.drawCalls, cullCount: renderer.cullCount}})
-
     requestAnimationFrame(update)
   }
   requestAnimationFrame(update)

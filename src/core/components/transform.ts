@@ -1,7 +1,7 @@
 import { mat4, quat, vec3 } from "gl-matrix";
 import Camera from "./camera";
 import Entity from "../scene/entity";
-import { Component } from "./component";
+import Component from "./component";
 
 export default class Transform implements Component {
   position: vec3

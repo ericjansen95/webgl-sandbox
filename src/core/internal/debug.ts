@@ -1,77 +1,63 @@
+import { SceneStats } from "../scene/scene"
 import Console from "./console"
+import FrameInspector from "./fameInspector"
 import Time from "./time"
 
-export type DebugState = {
-  renderer?: {
-    drawCalls: number,
-    cullCount: number
-  },
+export type DebugStats = {
+  scene?: SceneStats,
   client?: {
     ping: number,
   }
 }
 
 export default class Debug {
-  private static root: HTMLDivElement
   static console: Console
+  static frameInspector: FrameInspector
+
+  private static root: HTMLDivElement
+
+  private static stats: DebugStats
+
+  private static statsRoot: HTMLDivElement
+  private static statsElement: HTMLParagraphElement 
 
   static init = () => {
     this.root = document.createElement('div')
     this.root.style.cssText = 'position: absolute; font-family: monospace; font-size: 10px; height: 100%; width: 100%; top: 0px; left: 0px; background: rgba(0.0, 0.0, 0.0, 0.0); z-index: 0; display: flex; flex-direction: column;'
     document.body.appendChild(this.root)
 
-    this.createDebugStats()
+    this.initStats()
 
     this.console = new Console(this.root)
-    this.console.registerCommand({ name: "ds", description: "Display debug statistics.", callback: this.toggleDebugStats, arg: false })
+    this.frameInspector = new FrameInspector(this.root)
+
+    this.console.registerCommand({ name: "ds", description: "Display debug statistics.", callback: this.toggleStats })
+    this.console.registerCommand({ name: "fi", description: "Display fram inspector.", callback: this.frameInspector.toggleVisible })
   }
 
-  static update = (debugState: DebugState) => {
-    if(debugState.renderer) {
-      const {drawCalls, cullCount} = debugState.renderer
+  static initStats = () => {
+    this.stats = {}
 
-      this.fpsCounter.textContent = `${Math.ceil(1 / Time.deltaTime)} FPS`
-      this.drawCounter.textContent = `${drawCalls} Draw Calls`
-      this.cullCounter.textContent = `${cullCount} Culled Entities`
+    this.statsRoot = document.createElement('div')
+    this.statsRoot.style.cssText = 'background: rgba(0.0, 0.0, 0.0, 0.0); display: flex; flex-direction: column; visibility: hidden;'
+    this.root.appendChild(this.statsRoot)
+
+    this.statsElement = document.createElement('p')
+    this.statsElement.style.cssText = 'padding: 6px; margin-top: 0px; background-color: rgba(0.0, 0.0, 0.0, 0.5); color: white; width: fit-content;'
+    this.statsRoot.appendChild(this.statsElement)
+  }
+
+  static updateStats = (stats: DebugStats) => {
+    for(const [name, entry] of Object.entries(stats)) {
+      this.stats[name] = entry
     }
-    if(debugState.client) {
-      const { ping } = debugState.client
 
-      this.pingCounter.textContent = `${ping} ms Ping`
-    }
+    this.statsElement.innerHTML = `<pre>${JSON.stringify(this.stats, null, '  ')}</pre>`
   }
 
-  private static debugStats: HTMLDivElement
-  private static fpsCounter: HTMLParagraphElement 
-  private static drawCounter: HTMLParagraphElement
-  private static cullCounter: HTMLParagraphElement
-  private static pingCounter: HTMLParagraphElement
-
-  static createDebugStats = () => {
-    this.debugStats = document.createElement('div')
-    this.debugStats.style.cssText = 'height: 25%; width: 100%; background: rgba(0.0, 0.0, 0.0, 0.0); display: flex; flex-direction: column; visibility: hidden;'
-    this.root.appendChild(this.debugStats)
-
-    this.fpsCounter = document.createElement('p')
-    this.fpsCounter.style.cssText = 'margin: 6px; padding: 6px; background-color: black; color: lightgreen; width: fit-content;'
-    this.debugStats.appendChild(this.fpsCounter)
-
-    this.drawCounter = document.createElement('p')
-    this.drawCounter.style.cssText = 'margin: 6px; padding: 6px; background-color: black; color: lightsalmon; width: fit-content;'
-    this.debugStats.appendChild(this.drawCounter)
-
-    this.cullCounter = document.createElement('p')
-    this.cullCounter.style.cssText = 'margin: 6px; padding: 6px; background-color: black; color: lightblue; width: fit-content;'
-    this.debugStats.appendChild(this.cullCounter)
-
-    this.pingCounter = document.createElement('p')
-    this.pingCounter.style.cssText = 'margin: 6px; padding: 6px; background-color: black; color: lemonchiffon; width: fit-content;'
-    this.debugStats.appendChild(this.pingCounter)
-  }
-
-  static toggleDebugStats = (): string => {
-    const isHidden = Debug.debugStats.style.visibility === "hidden";
-    Debug.debugStats.style.visibility = isHidden ? "" : "hidden"
+  static toggleStats = (): string => {
+    const isHidden = Debug.statsRoot.style.visibility === "hidden";
+    Debug.statsRoot.style.visibility = isHidden ? "" : "hidden"
 
     return `Debug::toggleDebugStats(): ${isHidden ? "Enabled" : "Disabled"} debug stats.`
   }

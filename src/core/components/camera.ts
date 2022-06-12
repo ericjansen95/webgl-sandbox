@@ -1,6 +1,6 @@
 
 import { mat4, quat, vec3 } from 'gl-matrix';
-import { Component } from './component';
+import Component from './component';
 import createFrustrum, { Frustrum, PlaneIndex } from '../../util/math/frustrum'
 import Entity from '../scene/entity';
 import { createPlaneFromPoints } from '../../util/math/plane';
@@ -10,6 +10,7 @@ import BoundingBox from './boundingBox';
 import { Plane } from '../../util/math/plane';
 import UnlitMaterial from './materials/unlitMaterial';
 import Geometry from './geometry/geometry';
+import BoundingVolume from './boundingVolume';
 
 const DEFAULT_Z_NEAR: number = 0.05
 const DEFAULT_Z_FAR: number = 10000.0
@@ -110,18 +111,18 @@ export default class Camera implements Component {
 
     // ToDo: Abstract bounding volumes with base class and type to improve component query and code flow
 
-    const boundingSphere = entity.getComponent("BoundingSphere") as BoundingSphere
-    if(boundingSphere) {
+    const boundingVolume = entity.getComponent("BoundingVolume") as BoundingBox & BoundingSphere
+
+    if(boundingVolume.radius) {
       const scale: vec3 = (entity.getComponent("Transform") as Transform).getScale()
       // ToDo: Chache this!
       const radiusScalar: number = Math.max(scale[0], Math.max(scale[1], scale[2])) 
-      isInFrustrum = this.isSphereInFrustrum(point, boundingSphere.radius * radiusScalar)
+      isInFrustrum = this.isSphereInFrustrum(point, boundingVolume.radius * radiusScalar)
     }
 
-    const boundingBox = entity.getComponent("BoundingBox") as BoundingBox
-    if(boundingBox) {
+    if(boundingVolume.corners) {
       const worldMatrix: mat4 = (entity.getComponent("Transform") as Transform).worldMatrix
-      isInFrustrum = this.isBoxInFrustrum(boundingBox.corners, worldMatrix)
+      isInFrustrum = this.isBoxInFrustrum(boundingVolume.corners, worldMatrix)
     }
 
     if(isInFrustrum === null) isInFrustrum = this.isPointInFrustrum(point)

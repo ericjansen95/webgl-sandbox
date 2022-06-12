@@ -1,3 +1,4 @@
+import BoundingVolume from "../components/boundingVolume";
 import Camera from "../components/camera";
 import Grid from "../components/geometry/grid";
 import UnlitMaterial from "../components/materials/unlitMaterial";
@@ -6,9 +7,15 @@ import Client from "../network/client";
 import GameNetworkController from "../network/gameNetworkController";
 import Entity from "./entity";
 
+export type SceneStats = {
+  entityCount: number
+  cullCount: number
+}
+
 export default class Scene {
   root: Entity
   entities: Array<Entity>
+  stats: SceneStats
   networkController: GameNetworkController
 
   constructor(clientEntity: Entity | null = null, client: Client | null = null) {
@@ -16,6 +23,10 @@ export default class Scene {
     // ToDo: Add entities with scene.add() instead while update loop?
     // handle entity passing with integer id?
     this.entities = new Array<Entity>()
+    this.stats = {
+      entityCount: 0,
+      cullCount: 0
+    }
 
     const grid: Entity = new Entity()
     grid.getComponent("Transform").setScale([10.0, 10.0, 10.0])
@@ -23,6 +34,8 @@ export default class Scene {
     grid.addComponent(new Grid(10))
     grid.addComponent(new UnlitMaterial([0.75, 0.75, 0.75]))
     this.root.getComponent("Transform").addChild(grid)
+
+    Debug.console.registerCommand({ name: "bv", description: "Visualize bounding volumes.", callback: this.toggleBoundingVolumes })
 
     if(!clientEntity || !client) return
 
@@ -65,12 +78,33 @@ export default class Scene {
   getVisibleEntities = (camera: Entity): Array<Entity> => {
     const cameraComponent = camera.getComponent("Camera") as Camera
 
-    const visibleEnties = this.entities.filter(entity => cameraComponent.isEntityInFrustrum(entity))
+    const visibleEnties = this.getEntities().filter(entity => cameraComponent.isEntityInFrustrum(entity))
+
+    this.stats.cullCount = this.stats.entityCount - visibleEnties.length
+    Debug.updateStats({scene: this.stats})
 
     return visibleEnties
   }
 
   getEntities = (): Array<Entity> => {
+    this.stats.entityCount = this.entities.length
+
     return this.entities
+  }
+
+  toggleBoundingVolumes = (): string => {
+    if(!this.root) return "Failed toggeling bounding volumes = no scene root found!"
+
+    const toggleBoundingVolume = (entity: Entity) => {
+      const boundingVolume = entity.getComponent("BoundingVolume") as BoundingVolume
+      if(!boundingVolume) return
+      
+      boundingVolume.setVisible(!boundingVolume.visible)
+    }
+
+    for(const entity of this.entities)
+      toggleBoundingVolume(entity)
+
+    return "Renderer::toggleBondingVolumes(): Toggled bounding volumes."
   }
 }

@@ -1,12 +1,10 @@
 import { vec3 } from "gl-matrix";
 import Entity from "../scene/entity";
-import Material from "./material";
-import { Component } from "./component";
 import Geometry from "./geometry/geometry";
 import UnlitMaterial from "./materials/unlitMaterial";
-import Transform from "./transform";
+import BoundingVolume from "./boundingVolume";
 
-export default class BoundingBox implements Component {
+export default class BoundingBox implements BoundingVolume {
   
   box: Entity | null
 

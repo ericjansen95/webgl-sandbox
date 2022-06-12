@@ -1,6 +1,6 @@
 import Entity from "../scene/entity"
 
-export interface Component {
+export default interface Component {
   // remove self and add delta time?
   onUpdate?: (self: Entity, camera: Entity) => void
   onAdd?: (self: Entity) => void

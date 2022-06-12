@@ -1,13 +1,8 @@
 import { vec3, mat4 } from "gl-matrix"
-import Camera from "../components/camera"
 import Material from "../components/material"
 import Entity from "./entity"
 import Geometry from "../components/geometry/geometry"
 import Transform from "../components/transform"
-import BoundingBox from "../components/boundingBox"
-import BoundingSphere from "../components/boundingSphere"
-import { Component } from "../components/component"
-import Debug from "../internal/debug"
 
 const DEFAULT_CLEAR_COLOR_LUMINANCE = 0.25
 
@@ -33,8 +28,6 @@ export default class Renderer {
     GL.clearDepth(1.0)
     GL.enable(GL.DEPTH_TEST)
     GL.depthFunc(GL.LEQUAL)
-
-    Debug.console.registerCommand({ name: "bv", description: "Visualize bounding volumes.", callback: this.toggleBoundingVolumes, arg: false })
   }
 
   bindGeometry = (geometry: Geometry): boolean => {
@@ -177,29 +170,5 @@ export default class Renderer {
 
     for(const entity of entities)
       this.renderEntity(entity, camera)
-  }
-
-  toggleBoundingVolumes = (): string => {
-    if(!this.sceneRoot) return "Failed toggeling bounding volumes = no scene root found!"
-
-    const toggleBoundingVolume = (parent: Entity) => {
-      let boundingVolume: Component | null
-
-      // ToDo(Eric): create entity traverse function
-      // ToDo(Eric): let bounding volumes inherit from centeral class or interface
-
-      boundingVolume = parent.getComponent("BoundingSphere")
-      if(boundingVolume) (boundingVolume as BoundingSphere).setVisible(!(boundingVolume as BoundingSphere).visible)
-      else {
-        boundingVolume = parent.getComponent("BoundingBox")
-        if(boundingVolume) (boundingVolume as BoundingBox).setVisible(!(boundingVolume as BoundingBox).visible)
-      }
-
-      (parent.getComponent("Transform") as Transform).children.forEach(child => toggleBoundingVolume(child))
-    }
-
-    toggleBoundingVolume(this.sceneRoot)
-
-    return "Renderer::toggleBondingVolumes(): Toggled bounding volumes."
   }
 }

@@ -1,6 +1,6 @@
 import { vec3, vec2, mat4, quat } from "gl-matrix"
 import Entity from "../../scene/entity"
-import { Component } from "../component"
+import Component from "../component"
 import Input from "../../internal/input"
 import Time from "../../internal/time"
 import clamp from "../../../util/math/clamp"

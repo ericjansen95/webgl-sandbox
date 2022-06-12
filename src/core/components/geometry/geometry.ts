@@ -1,7 +1,7 @@
-import { vec3, vec4 } from "gl-matrix"
+import { vec3 } from "gl-matrix"
 import Entity from "../../scene/entity"
 import BoundingSphere from "../boundingSphere"
-import { Component } from "../component"
+import Component from "../component"
 
 export type GeometryType = "TRIANGLE" | "LINE"
 

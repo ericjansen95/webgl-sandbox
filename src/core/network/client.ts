@@ -110,7 +110,7 @@ export default class Client {
 
     this.subscribe("GAME", "PING", (data: PingPackage["data"]) => {
       const ping: number = Math.ceil(Date.now() - data)
-      Debug.update({client: {ping}})
+      Debug.updateStats({client: {ping}})
     })
     this.subscribe("TEXT", "TEXT", (data: TextPackage["data"]) => {
       Debug.info(`Client::callback(): Received text = '${data.message}' from '${data.clientId}'.`)
