@@ -3,6 +3,8 @@ import Material from "../components/material/material"
 import Entity from "./entity"
 import Geometry from "../components/geometry/geometry"
 import Transform from "../components/base/transform"
+import { ComponentType } from "../components/base/component"
+import Camera from "../components/base/camera"
 
 const DEFAULT_CLEAR_COLOR_LUMINANCE = 0.25
 
@@ -50,8 +52,8 @@ export default class Renderer {
   }
 
   bindMaterial = (entity: Entity, viewMatrix: mat4, projectionMatrix: mat4, lightDir: vec3): boolean => {
-    const transform: Transform = entity.getComponent("Transform") as Transform
-    const material: Material = entity.getComponent("Material") as Material
+    const transform: Transform = entity.getComponent(ComponentType.TRANSFORM) as Transform
+    const material: Material = entity.getComponent(ComponentType.MATERIAL) as Material
   
     if(!transform || !material) return false
 
@@ -97,8 +99,8 @@ export default class Renderer {
   }
 
   renderEntity = (entity: Entity, camera: Entity) => {
-    const geometry: Geometry | null = entity.getComponent("Geometry")
-    const material: Material | null = entity.getComponent("Material")
+    const geometry = entity.getComponent(ComponentType.GEOMETRY) as Geometry
+    const material = entity.getComponent(ComponentType.MATERIAL) as Material
 
     if(!material || !this.bindGeometry(geometry)) return
 
@@ -139,8 +141,8 @@ export default class Renderer {
     ) 
 
     if(!this.bindMaterial(entity,
-                          camera.getComponent("Transform").worldMatrix,
-                          camera.getComponent("Camera").projectionMatrix,
+                          (camera.getComponent(ComponentType.TRANSFORM) as Transform).worldMatrix,
+                          (camera.getComponent(ComponentType.CAMERA) as Camera).projectionMatrix,
                           vec3.normalize(vec3.create(), [0.75, 0.25, 0.0]))) return
 
     let mode: number | null = null

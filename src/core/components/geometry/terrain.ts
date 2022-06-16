@@ -2,7 +2,7 @@ import { mat4, vec2, vec3 } from "gl-matrix";
 import Entity from "../../scene/entity";
 import Material from "../material/material";
 import Plane from "./plane";
-import Component from "../base/component";
+import Component, { ComponentType } from "../base/component";
 import Geometry from "./geometry";
 import TerrainMaterial from "../material/terrainMaterial";
 import UnlitMaterial from "../material/unlitMaterial";
@@ -22,6 +22,7 @@ const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 128
 const TERRAIN_CHUNK_SIZE: number = 100.0
 
 export default class Terrain implements Component {
+  componentType: ComponentType
   size: number
   height: number
 
@@ -36,6 +37,7 @@ export default class Terrain implements Component {
 
   // size is in units / m
   constructor(size: number = 1000) {
+    this.componentType = ComponentType.TERRAIN
     this.size = size
 
     this.height = 75.0
@@ -58,8 +60,8 @@ export default class Terrain implements Component {
         chunkPos = vec3.fromValues(xPos, 0.0, zPos)
         const chunk: Entity = new Entity()
 
-        chunk.getComponent("Transform").setPosition(chunkPos)
-        chunk.getComponent("Transform").setScale(chunkScale)
+        chunk.getComponent(ComponentType.TRANSFORM).setPosition(chunkPos)
+        chunk.getComponent(ComponentType.TRANSFORM).setScale(chunkScale)
 
         chunk.addComponent(this.highGeometry)
         chunk.addComponent(this.highMaterial)
@@ -74,7 +76,7 @@ export default class Terrain implements Component {
 
   onUpdate = (self: Entity, camera: Entity) => {
     return;
-    const cameraPos: vec3 = (camera.getComponent("Transform") as Transform).getPosition()
+    const cameraPos: vec3 = (camera.getComponent(ComponentType.TRANSFORM) as Transform).getPosition()
     // ToDo(Eric) Check why we have to make this transform
     // => this seems wrong
     vec3.multiply(cameraPos, cameraPos, [-1.0, 1.0, -1.0])
@@ -86,7 +88,7 @@ export default class Terrain implements Component {
       const chunk: Entity = this.chunks[chunkIndex]
 
       const chunkPos: vec3 = vec3.create()
-      mat4.getTranslation(chunkPos, chunk.getComponent("Transform").worldMatrix)
+      mat4.getTranslation(chunkPos, chunk.getComponent(ComponentType.TRANSFORM).worldMatrix)
       
       // ToDo(Eric) Transform bb check in 0-1 range on both axis
       const chunkCornerLowerLeft: vec2 = [chunkPos[0] - 1.0 + this.size, chunkPos[2] + 1.0 + this.size]      
@@ -102,8 +104,8 @@ export default class Terrain implements Component {
 
         // TMP
         this.chunks.forEach(chunk => {
-          chunk.components[0] = this.lowGeometry as Component
-          chunk.components[1] = this.lowMaterial as Component 
+          //chunk.components[0] = this.lowGeometry
+          //chunk.components[1] = this.lowMaterial 
         })
 
         this.activeChunkIndex = chunkIndex
@@ -134,8 +136,8 @@ export default class Terrain implements Component {
   }
 
   onAdd = (self: Entity) => {
-    this.chunks.forEach(chunk => self.getComponent("Transform").addChild(chunk))
-    self.getComponent("Transform").setScale([this.size, 1.0, this.size])
-    self.getComponent("Transform").setPosition([this.size * -0.5, -100, this.size * -1.0])
+    this.chunks.forEach(chunk => self.getComponent(ComponentType.TRANSFORM).addChild(chunk))
+    self.getComponent(ComponentType.TRANSFORM).setScale([this.size, 1.0, this.size])
+    self.getComponent(ComponentType.TRANSFORM).setPosition([this.size * -0.5, -100, this.size * -1.0])
   }
 }

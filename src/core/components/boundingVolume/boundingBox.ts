@@ -1,11 +1,12 @@
 import { vec3 } from "gl-matrix";
 import Entity from "../../scene/entity";
+import { ComponentType } from "../base/component";
 import Geometry from "../geometry/geometry";
 import UnlitMaterial from "../material/unlitMaterial";
 import BoundingVolume from "./boundingVolume";
 
 export default class BoundingBox implements BoundingVolume {
-  
+  componentType: ComponentType
   box: Entity | null
 
   min: vec3 
@@ -17,6 +18,7 @@ export default class BoundingBox implements BoundingVolume {
   visible: boolean
   
   constructor(visible: boolean = false) {
+    this.componentType = ComponentType.BOUNDING_VOLUME
     this.visible = visible
     this.corners = new Array<vec3>()
   }
@@ -26,7 +28,7 @@ export default class BoundingBox implements BoundingVolume {
 
     this.createBox()
 
-    const geometry = this.box.getComponent("Geometry")
+    const geometry = this.box.getComponent(ComponentType.GEOMETRY)
     geometry.visible = visible
   }
 
@@ -93,7 +95,7 @@ export default class BoundingBox implements BoundingVolume {
     this.box.addComponent(boxGeometry)
     this.box.addComponent(new UnlitMaterial([1.0, 0.0, 1.0]))
 
-    this.self.getComponent("Transform").addChild(this.box)
+    this.self.getComponent(ComponentType.TRANSFORM).addChild(this.box)
 
     return true
   }
@@ -101,7 +103,7 @@ export default class BoundingBox implements BoundingVolume {
   onAdd = (self: Entity) => {
     this.self = self
 
-    const geometry = self.getComponent("Geometry")
+    const geometry = self.getComponent(ComponentType.GEOMETRY)
 
     this.min = geometry.vertex.min
     this.max = geometry.vertex.max

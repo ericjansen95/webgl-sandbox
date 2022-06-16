@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix"
 import Entity from "../../scene/entity"
 import BoundingSphere from "../boundingVolume/boundingSphere"
-import Component from "../base/component"
+import Component, { ComponentType } from "../base/component"
 
 export type GeometryType = "TRIANGLE" | "LINE"
 
@@ -15,6 +15,8 @@ export const parseUnindexedVertexPositions = (indices: Uint16Array, positions: F
 }
 
 export default class Geometry implements Component {
+  componentType: ComponentType
+
   vertex: {
     count: number
     positions: Array<number>
@@ -35,6 +37,7 @@ export default class Geometry implements Component {
   boundingSphere: boolean
 
   constructor(type: GeometryType = "TRIANGLE", visible: boolean = true, cull: boolean = true, boundingSphere: boolean = true) {
+    this.componentType = ComponentType.GEOMETRY
     this.vertex = null
     this.buffer = null
     this.type = type

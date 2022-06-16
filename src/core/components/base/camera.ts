@@ -1,6 +1,6 @@
 
 import { mat4, quat, vec3 } from 'gl-matrix';
-import Component from './component';
+import Component, { ComponentType } from './component';
 import createFrustrum, { Frustrum, PlaneIndex } from '../../../util/math/frustrum'
 import Entity from '../../scene/entity';
 import { createPlaneFromPoints } from '../../../util/math/plane';
@@ -19,6 +19,7 @@ const VECTOR_FORWARD: vec3 = vec3.fromValues(0.0, 0.0, -1.0)
 const VECTOR_UP: vec3 = vec3.fromValues(0.0, 1.0, 0.0)
 
 export default class Camera implements Component {
+  componentType: ComponentType
   self: Entity
 
   forward: vec3
@@ -32,6 +33,7 @@ export default class Camera implements Component {
   aspect: number
 
   constructor(fov: number, aspect: number) {
+    this.componentType = ComponentType.CAMERA
     this.projectionMatrix = mat4.create()
     this.frustrum = createFrustrum()
 
@@ -100,28 +102,28 @@ export default class Camera implements Component {
   }
 
   isEntityInFrustrum = (entity: Entity): boolean => {
-    const geometry: Geometry | null = entity.getComponent("Geometry")
+    const geometry: Geometry | null = entity.getComponent(ComponentType.GEOMETRY)
 
     if(!this.frustrum || !geometry?.visible) return false
     if(!geometry.cull) return true
 
     let isInFrustrum: boolean | null = null
 
-    const point: vec3 = (entity.getComponent("Transform") as Transform).getPosition()
+    const point: vec3 = (entity.getComponent(ComponentType.TRANSFORM) as Transform).getPosition()
 
     // ToDo: Abstract bounding volumes with base class and type to improve component query and code flow
 
-    const boundingVolume = entity.getComponent("BoundingVolume") as BoundingBox & BoundingSphere
+    const boundingVolume = entity.getComponent(ComponentType.BOUNDING_VOLUME) as BoundingBox & BoundingSphere
 
     if(boundingVolume.radius) {
-      const scale: vec3 = (entity.getComponent("Transform") as Transform).getScale()
+      const scale: vec3 = (entity.getComponent(ComponentType.TRANSFORM) as Transform).getScale()
       // ToDo: Chache this!
       const radiusScalar: number = Math.max(scale[0], Math.max(scale[1], scale[2])) 
       isInFrustrum = this.isSphereInFrustrum(point, boundingVolume.radius * radiusScalar)
     }
 
     if(boundingVolume.corners) {
-      const worldMatrix: mat4 = (entity.getComponent("Transform") as Transform).worldMatrix
+      const worldMatrix: mat4 = (entity.getComponent(ComponentType.TRANSFORM) as Transform).worldMatrix
       isInFrustrum = this.isBoxInFrustrum(boundingVolume.corners, worldMatrix)
     }
 
@@ -133,7 +135,7 @@ export default class Camera implements Component {
   updateFrustrum = () => {
     // ToDo: Optimize this!
 
-    const position = this.self.getComponent("Transform").getPosition()
+    const position = this.self.getComponent(ComponentType.TRANSFORM).getPosition()
 
     // see: http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-extracting-the-planes/
 
@@ -236,7 +238,7 @@ export default class Camera implements Component {
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
-    const worldMatrix = (self.getComponent("Transform") as Transform).worldMatrix
+    const worldMatrix = (self.getComponent(ComponentType.TRANSFORM) as Transform).worldMatrix
     const rotation: quat = mat4.getRotation(quat.create(), worldMatrix)
 
     vec3.transformQuat(this.forward, VECTOR_FORWARD, rotation)
