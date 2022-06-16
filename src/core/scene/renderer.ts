@@ -3,7 +3,7 @@ import Material from "../components/material/material"
 import Entity from "./entity"
 import Geometry from "../components/geometry/geometry"
 import Transform from "../components/base/transform"
-import { ComponentType } from "../components/base/component"
+import { Component } from "../components/base/component"
 import Camera from "../components/base/camera"
 
 const DEFAULT_CLEAR_COLOR_LUMINANCE = 0.25
@@ -52,8 +52,8 @@ export default class Renderer {
   }
 
   bindMaterial = (entity: Entity, viewMatrix: mat4, projectionMatrix: mat4, lightDir: vec3): boolean => {
-    const transform: Transform = entity.getComponent(ComponentType.TRANSFORM) as Transform
-    const material: Material = entity.getComponent(ComponentType.MATERIAL) as Material
+    const transform: Transform = entity.get(Component.TRANSFORM) as Transform
+    const material: Material = entity.get(Component.MATERIAL) as Material
   
     if(!transform || !material) return false
 
@@ -78,7 +78,7 @@ export default class Renderer {
       projectionMatrix
     )
 
-    switch(material.type) {
+    switch(material.materialType) {
       case "LAMBERT": {
         material.bind(lightDir)
         break
@@ -99,8 +99,8 @@ export default class Renderer {
   }
 
   renderEntity = (entity: Entity, camera: Entity) => {
-    const geometry = entity.getComponent(ComponentType.GEOMETRY) as Geometry
-    const material = entity.getComponent(ComponentType.MATERIAL) as Material
+    const geometry = entity.get(Component.GEOMETRY) as Geometry
+    const material = entity.get(Component.MATERIAL) as Material
 
     if(!material || !this.bindGeometry(geometry)) return
 
@@ -141,14 +141,14 @@ export default class Renderer {
     ) 
 
     if(!this.bindMaterial(entity,
-                          (camera.getComponent(ComponentType.TRANSFORM) as Transform).worldMatrix,
-                          (camera.getComponent(ComponentType.CAMERA) as Camera).projectionMatrix,
+                          (camera.get(Component.TRANSFORM) as Transform).worldMatrix,
+                          (camera.get(Component.CAMERA) as Camera).projectionMatrix,
                           vec3.normalize(vec3.create(), [0.75, 0.25, 0.0]))) return
 
     let mode: number | null = null
     let count: number | null = null
     
-    switch(geometry.type) {
+    switch(geometry.geometryType) {
       case "LINE":
         mode = GL.LINES
         count = geometry.vertex.count / 2.0

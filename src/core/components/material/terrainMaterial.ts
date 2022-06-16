@@ -16,7 +16,7 @@ export default class TerrainMaterial extends Material {
     super()
 
     this.height = height
-    this.type = "TERRAIN"
+    this.materialType = "TERRAIN"
 
     const {program, attributeLocations, uniformLocations} = compileProgram(vsTerrainSource, fsTerrainSorce)
     

@@ -6,7 +6,7 @@ import Debug from "../internal/debug";
 import Client from "../network/client";
 import GameNetworkController from "../network/gameNetworkController";
 import Entity from "./entity";
-import { ComponentType } from "../components/base/component";
+import { Component } from "../components/base/component";
 
 export type SceneStats = {
   entityCount: number
@@ -30,11 +30,11 @@ export default class Scene {
     }
 
     const grid: Entity = new Entity()
-    grid.getComponent(ComponentType.TRANSFORM).setScale([10.0, 10.0, 10.0])
-    grid.getComponent(ComponentType.TRANSFORM).setPosition([-5.0, 0.0, -5.0])
-    grid.addComponent(new Grid(10))
-    grid.addComponent(new UnlitMaterial([0.75, 0.75, 0.75]))
-    this.root.getComponent(ComponentType.TRANSFORM).addChild(grid)
+    grid.get(Component.TRANSFORM).setScale([10.0, 10.0, 10.0])
+    grid.get(Component.TRANSFORM).setPosition([-5.0, 0.0, -5.0])
+    grid.add(new Grid(10))
+    grid.add(new UnlitMaterial([0.75, 0.75, 0.75]))
+    this.root.get(Component.TRANSFORM).addChild(grid)
 
     Debug.console.registerCommand({ name: "bv", description: "Visualize bounding volumes.", callback: this.toggleBoundingVolumes })
 
@@ -65,19 +65,19 @@ export default class Scene {
   }
 
   updateEntityTransform = (entity: Entity): void => {
-    entity.getComponent(ComponentType.TRANSFORM).onUpdate()
+    entity.get(Component.TRANSFORM).onUpdate()
   }
 
   updateEntityComponents = (entity: Entity, camera: Entity): void => {
     entity.components.forEach((component) => {
-      if(component.onUpdate && component.componentType !== ComponentType.TRANSFORM)
+      if(component.onUpdate && component.type !== Component.TRANSFORM)
         component.onUpdate(entity, camera)
     })
   }
 
   // this returns a "display list" for all visible entities that are in the camera frustrum
   getVisibleEntities = (camera: Entity): Array<Entity> => {
-    const cameraComponent = camera.getComponent(ComponentType.CAMERA) as Camera
+    const cameraComponent = camera.get(Component.CAMERA) as Camera
 
     const visibleEnties = this.getEntities().filter(entity => cameraComponent.isEntityInFrustrum(entity))
 
@@ -97,7 +97,7 @@ export default class Scene {
     if(!this.root) return "Failed toggeling bounding volumes = no scene root found!"
 
     const toggleBoundingVolume = (entity: Entity) => {
-      const boundingVolume = entity.getComponent(ComponentType.BOUNDING_VOLUME) as BoundingVolume
+      const boundingVolume = entity.get(Component.BOUNDING_VOLUME) as BoundingVolume
       if(!boundingVolume) return
 
       boundingVolume.setVisible(!boundingVolume.visible)

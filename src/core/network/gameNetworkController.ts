@@ -9,7 +9,7 @@ import Debug from "../internal/debug";
 import Time from "../internal/time";
 import Entity from "../scene/entity";
 import Client, { GameConnectPackage, GameDeltaStatePackage, GameDisconnectPackage, GameTransformPackage, GlobalConnectPackage } from "./client";
-import { ComponentType } from "../components/base/component";
+import { Component } from "../components/base/component";
 
 const humanObj: string = require('/public/res/geo/human.txt') as string
 
@@ -28,8 +28,8 @@ type ClientCache = {
 }
 
 export const getLocalClientTransform = (entity: Entity): ClientTransform => {
-  const transform = entity.getComponent(ComponentType.TRANSFORM) as Transform
-  const controls = entity.getComponent(ComponentType.CONTROLS) as FlyControls
+  const transform = entity.get(Component.TRANSFORM) as Transform
+  const controls = entity.get(Component.CONTROLS) as FlyControls
 
   const position = vec3ToRoundedArray(transform.getPosition())
   const rotation = roundNumber(controls.angleRotation[0])
@@ -144,7 +144,7 @@ export default class GameNetworkController {
 
       transform.currentRotation = transform.targetRotation
   
-      const transformComponent = entity.getComponent(ComponentType.TRANSFORM) as Transform
+      const transformComponent = entity.get(Component.TRANSFORM) as Transform
       transformComponent.setPosition(currentPosition)
       transformComponent.setRotation(vec3.fromValues(0.0, transform.targetRotation, 0.0));
     }
@@ -158,17 +158,17 @@ export default class GameNetworkController {
 
     const lambertMaterial: Material = new LambertMaterial([Math.random(), Math.random(), Math.random()]) as Material
     const entity: Entity = new Entity()
-    const transform = entity.getComponent(ComponentType.TRANSFORM) as Transform
+    const transform = entity.get(Component.TRANSFORM) as Transform
     transform.setPosition(vec3.fromValues(position[0], position[1], position[2]))
     transform.setRotation(vec3.fromValues(0.0, rotation, 0.0))
 
     const humanGeometry = new Geometry()
     humanGeometry.loadFromObj(humanObj)
     
-    entity.addComponent(humanGeometry)
-    entity.addComponent(lambertMaterial)
+    entity.add(humanGeometry)
+    entity.add(lambertMaterial)
 
-    this.sceneRoot.getComponent(ComponentType.TRANSFORM).addChild(entity)
+    this.sceneRoot.get(Component.TRANSFORM).addChild(entity)
 
     const remoteClient: ClientCache = {
       clientId,
@@ -190,7 +190,7 @@ export default class GameNetworkController {
     const {clientId} = data
 
     const {entity} = this.remoteClients.get(clientId);
-    (this.sceneRoot.getComponent(ComponentType.TRANSFORM) as Transform).removeChild(entity)
+    (this.sceneRoot.get(Component.TRANSFORM) as Transform).removeChild(entity)
 
     this.remoteClients.delete(clientId)
     

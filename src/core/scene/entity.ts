@@ -1,19 +1,19 @@
-import Component, { ComponentType } from "../components/base/component";
+import ComponentInterface, { Component } from "../components/base/component";
 import Transform from "../components/base/transform";
 
 export default class Entity {
-  components: Array<Component>
+  components: Array<ComponentInterface>
 
   constructor() {
-    this.components = new Array<Component>()
-    this.addComponent(new Transform())
+    this.components = new Array<ComponentInterface>()
+    this.add(new Transform())
   }
 
   *[Symbol.iterator]() {
     const entities = new Array<Entity>()
 
     const traverse = (parent: Entity) => {
-      for (const child of (parent.getComponent(ComponentType.TRANSFORM) as Transform).children)
+      for (const child of (parent.get(Component.TRANSFORM) as Transform).children)
         traverse(child)
 
       if(this === parent) return
@@ -27,25 +27,25 @@ export default class Entity {
       yield entity
   }
 
-  addComponent = (component: any): any | null => {
-    const { componentType } = component as Component
+  add = (component: any): any | null => {
+    const { type } = component as ComponentInterface
 
-    if(this.components[componentType]) return null
+    if(this.components[type]) return null
 
-    this.components[componentType] = component
+    this.components[type] = component
     if(component.onAdd) component.onAdd(this)
 
     return component
   }
 
-  removeComponent = (componentType: ComponentType): boolean => {
-    if(!this.components[componentType]) return false
+  remove = (type: Component): boolean => {
+    if(!this.components[type]) return false
  
-    this.components[componentType] = null
+    this.components[type] = null
     return true
   }
 
-  getComponent = (componentType: ComponentType): any | null => {
-    return this.components[componentType] || null
+  get = (type: Component): any | null => {
+    return this.components[type] || null
   }
 }

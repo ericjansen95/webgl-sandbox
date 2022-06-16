@@ -11,7 +11,7 @@ export default class UnlitMaterial extends Material {
   constructor(color) {
     super()
 
-    this.type = "UNLIT"
+    this.materialType = "UNLIT"
 
     const {program, attributeLocations, uniformLocations} = compileProgram(vsDefaultSource, fsUnlitSource)
     

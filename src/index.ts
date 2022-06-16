@@ -14,7 +14,7 @@ import Quad from './core/components/geometry/quad';
 import UnlitMaterial from './core/components/material/unlitMaterial';
 import GltfLoader from './core/loader/gltfLoader';
 import Transform from './core/components/base/transform';
-import { ComponentType } from './core/components/base/component';
+import { Component } from './core/components/base/component';
 
 /*
 
@@ -69,13 +69,13 @@ const main = async () => {
   const renderer = new Renderer(canvas)
 
   const sceneCamera: Entity = new Entity()
-  sceneCamera.getComponent(ComponentType.TRANSFORM).setPosition([0.0, 0.0, 10.0])
-  const camera = sceneCamera.addComponent(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
+  sceneCamera.get(Component.TRANSFORM).setPosition([0.0, 0.0, 10.0])
+  const camera = sceneCamera.add(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
   const debugCamera: Entity = new Entity()
-  debugCamera.getComponent(ComponentType.TRANSFORM).setPosition([0.0, 1.0, 4.0])
-  debugCamera.addComponent(new FlyControls())
-  debugCamera.addComponent(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
+  debugCamera.get(Component.TRANSFORM).setPosition([0.0, 1.0, 4.0])
+  debugCamera.add(new FlyControls())
+  debugCamera.add(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
   //const client: Client = new Client(dynamicCamera)
   const scene: Scene = new Scene()
@@ -88,10 +88,10 @@ const main = async () => {
 
     const positions = camera.frustrum.positions.slice(posIndex, posIndex + 4)
 
-    frustrumPlane.addComponent(new Quad(positions, true, false, false))
-    frustrumPlane.addComponent(debugMaterial)
+    frustrumPlane.add(new Quad(positions, true, false, false))
+    frustrumPlane.add(debugMaterial)
 
-    sceneCamera.getComponent(ComponentType.TRANSFORM).addChild(frustrumPlane)
+    sceneCamera.get(Component.TRANSFORM).addChild(frustrumPlane)
   }
 
   const { geometry } = await new GltfLoader().load("http://localhost:8080/res/geo/testGeo.gltf")
@@ -100,18 +100,18 @@ const main = async () => {
 
   for(let geoIndex = 0; geoIndex < geometry.length; geoIndex++) {
     const entity: Entity = new Entity()
-    entity.getComponent(ComponentType.TRANSFORM).setPosition([0.0, 1.0, -2.0 * geoIndex])
-    entity.addComponent(geometry[geoIndex])
-    entity.addComponent(lambertMaterial)
+    entity.get(Component.TRANSFORM).setPosition([0.0, 1.0, -2.0 * geoIndex])
+    entity.add(geometry[geoIndex])
+    entity.add(lambertMaterial)
 
-    scene.root.getComponent(ComponentType.TRANSFORM).addChild(entity)
+    scene.root.get(Component.TRANSFORM).addChild(entity)
   }
 
   const terrain: Entity = new Entity()
-  terrain.addComponent(new Terrain())
+  terrain.add(new Terrain())
 
-  scene.root.getComponent(ComponentType.TRANSFORM).addChild(terrain)
-  scene.root.getComponent(ComponentType.TRANSFORM).addChild(sceneCamera)
+  scene.root.get(Component.TRANSFORM).addChild(terrain)
+  scene.root.get(Component.TRANSFORM).addChild(sceneCamera)
 
   const update = curTime => {
     Time.tick(curTime)
@@ -121,9 +121,9 @@ const main = async () => {
 
     scene.update(sceneCamera)
     
-    debugCamera.getComponent(ComponentType.CONTROLS).onUpdate(debugCamera, debugCamera)
-    debugCamera.getComponent(ComponentType.TRANSFORM).onUpdate(debugCamera, debugCamera)
-    debugCamera.getComponent(ComponentType.CAMERA).onUpdate(debugCamera, debugCamera)
+    debugCamera.get(Component.CONTROLS).onUpdate(debugCamera, debugCamera)
+    debugCamera.get(Component.TRANSFORM).onUpdate(debugCamera, debugCamera)
+    debugCamera.get(Component.CAMERA).onUpdate(debugCamera, debugCamera)
 
     renderer.renderEntities(scene.getVisibleEntities(sceneCamera), debugCamera)
 

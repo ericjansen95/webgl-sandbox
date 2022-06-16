@@ -1,11 +1,11 @@
-import Component, { ComponentType } from "../base/component"
+import ComponentInterface, { Component } from "../base/component"
 import { GL } from "../../scene/renderer"
 
 export type MaterialType = "LAMBERT" | "TERRAIN" | "UNLIT"
 
-export default class Material implements Component {
-  componentType: ComponentType
-  type: MaterialType
+export default class Material implements ComponentInterface {
+  type: Component
+  materialType: MaterialType
   program: WebGLProgram
 
   attributeLocations: Map<string, number>
@@ -14,7 +14,7 @@ export default class Material implements Component {
   bind: Function
 
   constructor() {
-    this.componentType = ComponentType.MATERIAL
+    this.type = Component.MATERIAL
     this.attributeLocations = new Map<string, number>()
     this.uniformLocations = new Map<string, WebGLUniformLocation>()
   }

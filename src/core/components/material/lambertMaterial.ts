@@ -11,7 +11,7 @@ export default class LambertMaterial extends Material {
   constructor(color) {
     super()
 
-    this.type = "LAMBERT"
+    this.materialType = "LAMBERT"
 
     const {program, attributeLocations, uniformLocations} = compileProgram(vsDefaultSource, fsLambertSource)
     

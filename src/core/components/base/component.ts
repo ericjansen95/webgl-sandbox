@@ -1,6 +1,6 @@
 import Entity from "../../scene/entity"
 
-export enum ComponentType {
+export enum Component {
   TRANSFORM = 0,
   CAMERA,
   GEOMETRY,
@@ -10,9 +10,9 @@ export enum ComponentType {
   TERRAIN
 }
 
-export default interface Component {
+export default interface ComponentInterface {
   // remove self and add delta time?
-  componentType: ComponentType
+  type: Component
   onUpdate?: (self: Entity, camera: Entity) => void
   onAdd?: (self: Entity) => void
   onRemove?: () => void

@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix"
 import Entity from "../../scene/entity"
 import BoundingSphere from "../boundingVolume/boundingSphere"
-import Component, { ComponentType } from "../base/component"
+import ComponentInterface, { Component } from "../base/component"
 
 export type GeometryType = "TRIANGLE" | "LINE"
 
@@ -14,8 +14,8 @@ export const parseUnindexedVertexPositions = (indices: Uint16Array, positions: F
   return output
 }
 
-export default class Geometry implements Component {
-  componentType: ComponentType
+export default class Geometry implements ComponentInterface {
+  type: Component
 
   vertex: {
     count: number
@@ -30,17 +30,17 @@ export default class Geometry implements Component {
     normal: WebGLBuffer
   } | null
 
-  type: GeometryType
+  geometryType: GeometryType
   visible: boolean
 
   cull: boolean
   boundingSphere: boolean
 
-  constructor(type: GeometryType = "TRIANGLE", visible: boolean = true, cull: boolean = true, boundingSphere: boolean = true) {
-    this.componentType = ComponentType.GEOMETRY
+  constructor(geometryType: GeometryType = "TRIANGLE", visible: boolean = true, cull: boolean = true, boundingSphere: boolean = true) {
+    this.type = Component.GEOMETRY
     this.vertex = null
     this.buffer = null
-    this.type = type
+    this.geometryType = geometryType
     this.visible = visible
     this.cull = cull
     this.boundingSphere = boundingSphere
@@ -114,7 +114,7 @@ export default class Geometry implements Component {
     if(!this.boundingSphere) return
     
     const boundingSphere: BoundingSphere = new BoundingSphere()
-    self.addComponent(boundingSphere)
+    self.add(boundingSphere)
   }
 }
 
