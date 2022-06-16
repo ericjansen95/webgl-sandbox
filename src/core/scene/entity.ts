@@ -1,13 +1,11 @@
 import Component, { ComponentType } from "../components/base/component";
 import Transform from "../components/base/transform";
 
-
 export default class Entity {
   components: Array<Component>
 
   constructor() {
     this.components = new Array<Component>()
-
     this.addComponent(new Transform())
   }
 
@@ -31,6 +29,7 @@ export default class Entity {
 
   addComponent = (component: any): any | null => {
     const { componentType } = component as Component
+
     if(this.components[componentType]) return null
 
     this.components[componentType] = component
