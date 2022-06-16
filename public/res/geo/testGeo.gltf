@@ -70,7 +70,7 @@
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 8974,
+            "count" : 52230,
             "max" : [
                 0.9531677961349487,
                 0.8126507997512817,
@@ -86,7 +86,7 @@
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 8974,
+            "count" : 52230,
             "type" : "VEC3"
         },
         {
@@ -98,7 +98,7 @@
         {
             "bufferView" : 3,
             "componentType" : 5126,
-            "count" : 2503,
+            "count" : 14904,
             "max" : [
                 0.7567317485809326,
                 0.8850491642951965,
@@ -114,7 +114,7 @@
         {
             "bufferView" : 4,
             "componentType" : 5126,
-            "count" : 2503,
+            "count" : 14904,
             "type" : "VEC3"
         },
         {
@@ -126,7 +126,7 @@
         {
             "bufferView" : 6,
             "componentType" : 5126,
-            "count" : 3644,
+            "count" : 3525,
             "max" : [
                 0.8444250226020813,
                 0.543729305267334,
@@ -142,7 +142,7 @@
         {
             "bufferView" : 7,
             "componentType" : 5126,
-            "count" : 3644,
+            "count" : 3525,
             "type" : "VEC3"
         },
         {
@@ -155,53 +155,53 @@
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 107688,
+            "byteLength" : 626760,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 107688,
-            "byteOffset" : 107688
+            "byteLength" : 626760,
+            "byteOffset" : 626760
         },
         {
             "buffer" : 0,
             "byteLength" : 104568,
-            "byteOffset" : 215376
+            "byteOffset" : 1253520
         },
         {
             "buffer" : 0,
-            "byteLength" : 30036,
-            "byteOffset" : 319944
+            "byteLength" : 178848,
+            "byteOffset" : 1358088
         },
         {
             "buffer" : 0,
-            "byteLength" : 30036,
-            "byteOffset" : 349980
+            "byteLength" : 178848,
+            "byteOffset" : 1536936
         },
         {
             "buffer" : 0,
             "byteLength" : 29808,
-            "byteOffset" : 380016
+            "byteOffset" : 1715784
         },
         {
             "buffer" : 0,
-            "byteLength" : 43728,
-            "byteOffset" : 409824
+            "byteLength" : 42300,
+            "byteOffset" : 1745592
         },
         {
             "buffer" : 0,
-            "byteLength" : 43728,
-            "byteOffset" : 453552
+            "byteLength" : 42300,
+            "byteOffset" : 1787892
         },
         {
             "buffer" : 0,
             "byteLength" : 37920,
-            "byteOffset" : 497280
+            "byteOffset" : 1830192
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 535200,
+            "byteLength" : 1868112,
             "uri" : "testGeo.bin"
         }
     ]
