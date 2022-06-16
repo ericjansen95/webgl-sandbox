@@ -1,16 +1,16 @@
 
 import { mat4, quat, vec3 } from 'gl-matrix';
 import Component from './component';
-import createFrustrum, { Frustrum, PlaneIndex } from '../../util/math/frustrum'
-import Entity from '../scene/entity';
-import { createPlaneFromPoints } from '../../util/math/plane';
-import BoundingSphere from './boundingSphere';
+import createFrustrum, { Frustrum, PlaneIndex } from '../../../util/math/frustrum'
+import Entity from '../../scene/entity';
+import { createPlaneFromPoints } from '../../../util/math/plane';
+import BoundingSphere from '../boundingVolume/boundingSphere';
 import Transform from './transform';
-import BoundingBox from './boundingBox';
-import { Plane } from '../../util/math/plane';
-import UnlitMaterial from './materials/unlitMaterial';
-import Geometry from './geometry/geometry';
-import BoundingVolume from './boundingVolume';
+import BoundingBox from '../boundingVolume/boundingBox';
+import { Plane } from '../../../util/math/plane';
+import UnlitMaterial from '../material/unlitMaterial';
+import Geometry from '../geometry/geometry';
+import BoundingVolume from '../boundingVolume/boundingVolume';
 
 const DEFAULT_Z_NEAR: number = 0.05
 const DEFAULT_Z_FAR: number = 10000.0

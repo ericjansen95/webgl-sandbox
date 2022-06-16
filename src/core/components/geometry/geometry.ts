@@ -1,9 +1,18 @@
 import { vec3 } from "gl-matrix"
 import Entity from "../../scene/entity"
-import BoundingSphere from "../boundingSphere"
-import Component from "../component"
+import BoundingSphere from "../boundingVolume/boundingSphere"
+import Component from "../base/component"
 
 export type GeometryType = "TRIANGLE" | "LINE"
+
+export const parseUnindexedVertexPositions = (indices: Uint16Array, positions: Float32Array) => {
+  const output = new Array<number>()
+  for(const index of indices) {
+    const correctedIndex = index * 3
+    output.push(positions[correctedIndex], positions[correctedIndex + 1], positions[correctedIndex + 2])
+  }
+  return output
+}
 
 export default class Geometry implements Component {
   vertex: {
@@ -52,6 +61,9 @@ export default class Geometry implements Component {
     this.vertex.positions = positions
     this.vertex.count = this.vertex.positions.length
     this.vertex.normals = calcNormals(this.vertex.positions)
+
+    this.vertex.min = [-1.0, -1.0, -1.0]
+    this.vertex.max = [1.0, 1.0, 1.0]
 
     return true
   }

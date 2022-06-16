@@ -1,12 +1,12 @@
 import { mat4, vec2, vec3 } from "gl-matrix";
-import Entity from "../scene/entity";
-import Material from "./material";
-import Plane from "./geometry/plane";
-import Component from "./component";
-import Geometry from "./geometry/geometry";
-import TerrainMaterial from "./materials/terrainMaterial";
-import UnlitMaterial from "./materials/unlitMaterial";
-import Transform from "./transform";
+import Entity from "../../scene/entity";
+import Material from "../material/material";
+import Plane from "./plane";
+import Component from "../base/component";
+import Geometry from "./geometry";
+import TerrainMaterial from "../material/terrainMaterial";
+import UnlitMaterial from "../material/unlitMaterial";
+import Transform from "../base/transform";
 
 const TERRAIN_HEIGHTMAP_URI: string = "/res/map/heightcombined.png"
 const TERRAIN_MAP_COMBINED: string = "/res/map/terrainCombined.jpg"

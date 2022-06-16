@@ -1,21 +1,23 @@
-import Camera from './core/components/camera';
+import Camera from './core/components/base/camera';
 import Entity from './core/scene/entity';
 import Geometry from './core/components/geometry/geometry';
 import Input from './core/internal/input';
-import LambertMaterial from './core/components/materials/lambertMaterial';
+import LambertMaterial from './core/components/material/lambertMaterial';
 import Debug from './core/internal/debug';
 import Renderer from './core/scene/renderer';
 import Time from './core/internal/time';
-import Material from './core/components/material';
+import Material from './core/components/material/material';
 import FlyControls from './core/components/controls/flyControls';
-import Terrain from './core/components/terrain';
+import Terrain from './core/components/geometry/terrain';
 import Client from './core/network/client';
 import Scene from './core/scene/scene';
 import Quad from './core/components/geometry/quad';
-import UnlitMaterial from './core/components/materials/unlitMaterial';
+import UnlitMaterial from './core/components/material/unlitMaterial';
+import GltfLoader from './core/loader/gltfLoader';
 
 const teapotObj: string = require('/public/res/geo/teapot.txt') as string
 const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
+const cubeObj: string = require('/public/res/geo/cube.txt') as string
 
 /*
 
@@ -61,7 +63,9 @@ const bunnyObj: string = require('/public/res/geo/bunny.txt') as string
 
 */
 
-const main = () => {
+const main = async () => {
+  const { geometry } = await new GltfLoader().load("http://localhost:8080/res/geo/testGeo.gltf")
+
   Time.init()
   Debug.init()
   Input.init()
@@ -73,7 +77,7 @@ const main = () => {
   const renderer = new Renderer(canvas)
 
   const sceneCamera: Entity = new Entity()
-  sceneCamera.getComponent("Transform").setPosition([0.0, 0.0, -200.0])
+  sceneCamera.getComponent("Transform").setPosition([0.0, 0.0, 10.0])
   const camera = sceneCamera.addComponent(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
   const debugCamera: Entity = new Entity()
@@ -107,6 +111,11 @@ const main = () => {
   teapot.addComponent(teapotGeometry)
   teapot.addComponent(lambertMaterial)
 
+  const gltfTest: Entity = new Entity()
+  gltfTest.getComponent("Transform").setPosition([0.0, 1.0, 0.0])
+  gltfTest.addComponent(geometry[0])
+  gltfTest.addComponent(lambertMaterial)
+
   const bunny: Entity = new Entity()
   bunny.getComponent("Transform").setScale([0.5, 0.5, 0.5])
   bunny.getComponent("Transform").setPosition([-5.0, 0.0, 0.0])
@@ -116,8 +125,9 @@ const main = () => {
   bunny.addComponent(lambertMaterial)
 
   // assemble scene hierachy
-  teapot.getComponent("Transform").addChild(bunny)
-  scene.root.getComponent("Transform").addChild(teapot)
+  //teapot.getComponent("Transform").addChild(bunny)
+  //scene.root.getComponent("Transform").addChild(teapot)
+  scene.root.getComponent("Transform").addChild(gltfTest)
 
   const terrain: Entity = new Entity()
   terrain.addComponent(new Terrain())
@@ -137,7 +147,11 @@ const main = () => {
   sceneRoot.getComponent("Transform").addChild(water)
   */
 
+  let frame = 0
+
   const update = curTime => {
+    //if(frame > 30) return
+
     Time.tick(curTime)
 
     const teapotTransform = teapot.getComponent("Transform")
@@ -146,8 +160,8 @@ const main = () => {
     const bunnyTransform = bunny.getComponent("Transform")
     bunnyTransform.setRotation([bunnyTransform.rotation[0] + Math.PI * 0.2 * Time.deltaTime, 0.0, 0.0])
 
-    const sceneCameraTransform = sceneCamera.getComponent("Transform")
-    sceneCameraTransform.setRotation([0.0, Math.cos((Date.now() - Time.startTime) * 0.0005) * Math.PI * 0.25, 0.0])
+    //const sceneCameraTransform = sceneCamera.getComponent("Transform")
+    //sceneCameraTransform.setRotation([0.0, Math.cos((Date.now() - Time.startTime) * 0.0005) * Math.PI * 0.25, 0.0])
 
     scene.update(sceneCamera)
     
@@ -157,6 +171,7 @@ const main = () => {
 
     renderer.renderEntities(scene.getVisibleEntities(sceneCamera), debugCamera)
 
+    frame++
     requestAnimationFrame(update)
   }
   requestAnimationFrame(update)

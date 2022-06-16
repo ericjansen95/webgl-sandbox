@@ -1,8 +1,8 @@
 import { vec3, mat4 } from "gl-matrix"
-import Material from "../components/material"
+import Material from "../components/material/material"
 import Entity from "./entity"
 import Geometry from "../components/geometry/geometry"
-import Transform from "../components/transform"
+import Transform from "../components/base/transform"
 
 const DEFAULT_CLEAR_COLOR_LUMINANCE = 0.25
 

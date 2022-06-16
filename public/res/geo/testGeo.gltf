@@ -1,0 +1,172 @@
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v1.6.16",
+        "version" : "2.0"
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0,
+                1,
+                2
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "dragon"
+        },
+        {
+            "mesh" : 1,
+            "name" : "bunny"
+        },
+        {
+            "mesh" : 2,
+            "name" : "teapot"
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "dragon_vrip",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0
+                    },
+                    "indices" : 1
+                }
+            ]
+        },
+        {
+            "name" : "bunny",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 2
+                    },
+                    "indices" : 3
+                }
+            ]
+        },
+        {
+            "name" : "teapot",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 4
+                    },
+                    "indices" : 5
+                }
+            ]
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 8974,
+            "max" : [
+                0.9531677961349487,
+                0.8126507997512817,
+                0.442190945148468
+            ],
+            "min" : [
+                -0.9440299272537231,
+                -0.5249736905097961,
+                -0.40643566846847534
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5123,
+            "count" : 52284,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5126,
+            "count" : 2503,
+            "max" : [
+                0.7567317485809326,
+                0.8850491642951965,
+                0.46843644976615906
+            ],
+            "min" : [
+                -0.67844557762146,
+                -0.5365029573440552,
+                -0.6451707482337952
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 3,
+            "componentType" : 5123,
+            "count" : 14904,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 4,
+            "componentType" : 5126,
+            "count" : 3644,
+            "max" : [
+                0.8444250226020813,
+                0.543729305267334,
+                0.5629500150680542
+            ],
+            "min" : [
+                -0.9665849804878235,
+                -0.38356682658195496,
+                -0.5629500150680542
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 5,
+            "componentType" : 5123,
+            "count" : 18960,
+            "type" : "SCALAR"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 107688,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 104568,
+            "byteOffset" : 107688
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 30036,
+            "byteOffset" : 212256
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 29808,
+            "byteOffset" : 242292
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 43728,
+            "byteOffset" : 272100
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 37920,
+            "byteOffset" : 315828
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 353748,
+            "uri" : "testGeo.bin"
+        }
+    ]
+}

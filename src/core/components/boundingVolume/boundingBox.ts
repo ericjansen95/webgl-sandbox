@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix";
-import Entity from "../scene/entity";
-import Geometry from "./geometry/geometry";
-import UnlitMaterial from "./materials/unlitMaterial";
+import Entity from "../../scene/entity";
+import Geometry from "../geometry/geometry";
+import UnlitMaterial from "../material/unlitMaterial";
 import BoundingVolume from "./boundingVolume";
 
 export default class BoundingBox implements BoundingVolume {

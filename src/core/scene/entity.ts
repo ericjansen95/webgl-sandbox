@@ -1,12 +1,12 @@
-import BoundingBox from "../components/boundingBox";
-import BoundingSphere from "../components/boundingSphere";
-import BoundingVolume from "../components/boundingVolume";
-import Camera from "../components/camera";
-import Component from "../components/component";
+import BoundingBox from "../components/boundingVolume/boundingBox";
+import BoundingSphere from "../components/boundingVolume/boundingSphere";
+import BoundingVolume from "../components/boundingVolume/boundingVolume";
+import Camera from "../components/base/camera";
+import Component from "../components/base/component";
 import FlyControls from "../components/controls/flyControls";
 import Geometry from "../components/geometry/geometry";
-import Material from "../components/material";
-import Transform from "../components/transform";
+import Material from "../components/material/material";
+import Transform from "../components/base/transform";
 
 // object.constructor.name
 // Object.getPrototypeOf(instance.constructor).name

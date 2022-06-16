@@ -1,6 +1,6 @@
 import { vec3 } from "gl-matrix";
 import entity from "../../scene/entity";
-import BoundingBox from "../boundingBox";
+import BoundingBox from "../boundingVolume/boundingBox";
 import Geometry, { calcNormals } from "./geometry";
 
 export default class Plane extends Geometry {

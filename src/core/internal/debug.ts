@@ -31,7 +31,7 @@ export default class Debug {
     this.frameInspector = new FrameInspector(this.root)
 
     this.console.registerCommand({ name: "ds", description: "Display debug statistics.", callback: this.toggleStats })
-    this.console.registerCommand({ name: "fi", description: "Display fram inspector.", callback: this.frameInspector.toggleVisible })
+    this.console.registerCommand({ name: "fi", description: "Display frame inspector.", callback: this.frameInspector.toggleVisible })
   }
 
   static initStats = () => {

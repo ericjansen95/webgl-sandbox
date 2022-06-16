@@ -1,4 +1,4 @@
-import Component from "./component";
+import Component from "../base/component";
 
 export default interface BoundingVolume extends Component {
   visible: boolean

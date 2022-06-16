@@ -1,5 +1,5 @@
-import Component from "./component"
-import { GL } from "../scene/renderer"
+import Component from "../base/component"
+import { GL } from "../../scene/renderer"
 
 export type MaterialType = "LAMBERT" | "TERRAIN" | "UNLIT"
 

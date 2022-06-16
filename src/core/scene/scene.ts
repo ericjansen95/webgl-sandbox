@@ -1,7 +1,7 @@
-import BoundingVolume from "../components/boundingVolume";
-import Camera from "../components/camera";
+import BoundingVolume from "../components/boundingVolume/boundingVolume";
+import Camera from "../components/base/camera";
 import Grid from "../components/geometry/grid";
-import UnlitMaterial from "../components/materials/unlitMaterial";
+import UnlitMaterial from "../components/material/unlitMaterial";
 import Debug from "../internal/debug";
 import Client from "../network/client";
 import GameNetworkController from "../network/gameNetworkController";
@@ -98,7 +98,7 @@ export default class Scene {
     const toggleBoundingVolume = (entity: Entity) => {
       const boundingVolume = entity.getComponent("BoundingVolume") as BoundingVolume
       if(!boundingVolume) return
-      
+
       boundingVolume.setVisible(!boundingVolume.visible)
     }
 
