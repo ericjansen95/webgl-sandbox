@@ -10,5 +10,5 @@ varying vec3 vVertexNormal;
 void main() {
   mat4 modelViewMatrix = uViewMatrix * uWorldMatrix;
   gl_Position = uProjectionMatrix * modelViewMatrix * aVertexPosition;
-  vVertexNormal = aVertexNormal;
+  vVertexNormal = mat3(uWorldMatrix) * aVertexNormal;
 }
