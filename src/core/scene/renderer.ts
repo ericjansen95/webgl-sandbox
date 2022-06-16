@@ -6,18 +6,15 @@ import Transform from "../components/base/transform"
 import { Component } from "../components/base/component"
 import Camera from "../components/base/camera"
 
-const DEFAULT_CLEAR_COLOR_LUMINANCE = 0.25
-
 export let GL: WebGL2RenderingContext;
 
 export default class Renderer {
   clearColor: vec3
+  
   drawCalls: number
   cullCount: number
-  sceneRoot: Entity
 
   constructor(canvas: HTMLCanvasElement) {
-    // ToDo(Eric) Use webgl2 here instead of webgl 1.0
     GL = canvas.getContext('webgl2') as WebGL2RenderingContext
     this.clearColor = vec3.fromValues(0.549, 0.745, 0.839)
 
@@ -45,15 +42,14 @@ export default class Renderer {
     GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(geometry.vertex.positions), GL.STATIC_DRAW)
     
     GL.bindBuffer(GL.ARRAY_BUFFER, geometry.buffer.normal)
-    // vertex normals => normalized vertex positions
     GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(geometry.vertex.normals), GL.STATIC_DRAW)
   
     return true
   }
 
   bindMaterial = (entity: Entity, viewMatrix: mat4, projectionMatrix: mat4, lightDir: vec3): boolean => {
-    const transform: Transform = entity.get(Component.TRANSFORM) as Transform
-    const material: Material = entity.get(Component.MATERIAL) as Material
+    const transform = entity.get(Component.TRANSFORM) as Transform
+    const material = entity.get(Component.MATERIAL) as Material
   
     if(!transform || !material) return false
 

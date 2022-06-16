@@ -4,20 +4,6 @@ export type GlftLoadResponse = {
   geometry: Array<Geometry>
 }
 
-// https://en.wikipedia.org/wiki/IEEE_754
-const float32Range = Math.pow(2, 31)
-
-const convertToFloatArray = (input: Uint8Array): Array<number> => {
-  var i, l = input.length;
-
-  var output = new Array<number>();
-
-  for (i = 0; i < l; i += 4)
-    output.push(((input[i] + input[i + 1] + input[i + 2] + input[i + 3]) - float32Range) / float32Range)
-
-  return output;
-}
-
 const parseGeometry = async (gltf: any, bufferData: Array<ArrayBuffer>): Promise<Array<Geometry>> => {
   const { meshes, accessors, bufferViews } = gltf
   const geometries = new Array<Geometry>()
@@ -45,6 +31,10 @@ const parseGeometry = async (gltf: any, bufferData: Array<ArrayBuffer>): Promise
 
       const indiciesArray = new Uint16Array(bufferData[buffer], byteOffset, count)
 
+      const geometry = new Geometry()
+      let positions = null
+      let normals = null
+
       for(const [key, value] of Object.entries(attributes as object)) {
         switch (key) {
           case "POSITION": {
@@ -65,17 +55,37 @@ const parseGeometry = async (gltf: any, bufferData: Array<ArrayBuffer>): Promise
               byteOffset,
             } = positionBufferView
 
-            const positions = new Float32Array(bufferData[buffer], byteOffset, count * 3)
+            positions = new Float32Array(bufferData[buffer], byteOffset, count * 3)
 
-            const geometry = new Geometry()
-            geometry.loadFromBuffer(parseUnindexedVertexPositions(indiciesArray, positions))
+            break
+          }
+          case "NORMAL": {
+            const normalAccessorIndex = value as number
 
-            geometries.push(geometry)
+            const normalAccessor = accessors[normalAccessorIndex]
+            const {
+              bufferView,
+              componentType,
+              count,
+              type,
+            } = normalAccessor
+
+            const normalBufferView = bufferViews[bufferView]
+            const {
+              buffer,
+              byteLength,
+              byteOffset,
+            } = normalBufferView
+
+            normals = new Float32Array(bufferData[buffer], byteOffset, count * 3)
 
             break
           }
         }
       }
+
+      geometry.setVertices(parseUnindexedVertexPositions(indiciesArray, positions), parseUnindexedVertexPositions(indiciesArray, normals))
+      geometries.push(geometry)
     }
   }
 
@@ -104,6 +114,7 @@ export default class GltfLoader {
       }
 
       const gltf = await gltfResponse.json() as any
+      console.log(gltf)
 
       const { buffers } = gltf
       const bufferData = new Array<ArrayBuffer>()

@@ -56,14 +56,25 @@ export default class Geometry implements ComponentInterface {
     }
   }
 
-  loadFromBuffer = (positions: Array<number>): boolean => {
-    if(!Array.isArray(positions) || !positions.length) return false
+  setVertexPositions = (positions: Array<number>): boolean => {
+    this.vertex.positions = positions
+    this.vertex.count = this.vertex.positions.length
+    return true
+  }
+
+  setVertexNormals = (normals: Array<number>): boolean => {
+    this.vertex.normals = normals
+    return true
+  }
+
+  setVertices = (positions: Array<number>, normals: Array<number> | null = null): boolean => {
+    if(!positions.length) return false
 
     this.vertex = this.createVertexObject()
 
-    this.vertex.positions = positions
-    this.vertex.count = this.vertex.positions.length
-    this.vertex.normals = calcNormals(this.vertex.positions)
+    this.setVertexPositions(positions)
+    if(normals) this.setVertexNormals(normals)
+    else this.vertex.normals = calcNormals(this.vertex.positions)
 
     this.vertex.min = [-1.0, -1.0, -1.0]
     this.vertex.max = [1.0, 1.0, 1.0]
@@ -118,7 +129,7 @@ export default class Geometry implements ComponentInterface {
   }
 }
 
-export const calcNormals = (positions: Array<number>, flat: boolean = false): Array<number> | null => {
+export const calcNormals = (positions: Array<number>, flat: boolean = true): Array<number> | null => {
 
   const normals: Array<number> = new Array<number>()
 

@@ -30,13 +30,14 @@
     ],
     "meshes" : [
         {
-            "name" : "dragon_vrip",
+            "name" : "dragon",
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 0
+                        "POSITION" : 0,
+                        "NORMAL" : 1
                     },
-                    "indices" : 1
+                    "indices" : 2
                 }
             ]
         },
@@ -45,9 +46,10 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 2
+                        "POSITION" : 3,
+                        "NORMAL" : 4
                     },
-                    "indices" : 3
+                    "indices" : 5
                 }
             ]
         },
@@ -56,9 +58,10 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 4
+                        "POSITION" : 6,
+                        "NORMAL" : 7
                     },
-                    "indices" : 5
+                    "indices" : 8
                 }
             ]
         }
@@ -82,12 +85,18 @@
         },
         {
             "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 8974,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
             "componentType" : 5123,
             "count" : 52284,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 2,
+            "bufferView" : 3,
             "componentType" : 5126,
             "count" : 2503,
             "max" : [
@@ -103,13 +112,19 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 3,
+            "bufferView" : 4,
+            "componentType" : 5126,
+            "count" : 2503,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 5,
             "componentType" : 5123,
             "count" : 14904,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 4,
+            "bufferView" : 6,
             "componentType" : 5126,
             "count" : 3644,
             "max" : [
@@ -125,7 +140,13 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 5,
+            "bufferView" : 7,
+            "componentType" : 5126,
+            "count" : 3644,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 8,
             "componentType" : 5123,
             "count" : 18960,
             "type" : "SCALAR"
@@ -139,33 +160,48 @@
         },
         {
             "buffer" : 0,
-            "byteLength" : 104568,
+            "byteLength" : 107688,
             "byteOffset" : 107688
         },
         {
             "buffer" : 0,
+            "byteLength" : 104568,
+            "byteOffset" : 215376
+        },
+        {
+            "buffer" : 0,
             "byteLength" : 30036,
-            "byteOffset" : 212256
+            "byteOffset" : 319944
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 30036,
+            "byteOffset" : 349980
         },
         {
             "buffer" : 0,
             "byteLength" : 29808,
-            "byteOffset" : 242292
+            "byteOffset" : 380016
         },
         {
             "buffer" : 0,
             "byteLength" : 43728,
-            "byteOffset" : 272100
+            "byteOffset" : 409824
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 43728,
+            "byteOffset" : 453552
         },
         {
             "buffer" : 0,
             "byteLength" : 37920,
-            "byteOffset" : 315828
+            "byteOffset" : 497280
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 353748,
+            "byteLength" : 535200,
             "uri" : "testGeo.bin"
         }
     ]

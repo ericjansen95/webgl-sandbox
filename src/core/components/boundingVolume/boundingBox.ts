@@ -90,7 +90,7 @@ export default class BoundingBox implements BoundingVolume {
     this.box = new Entity()
 
     const boxGeometry = new Geometry("LINE", true, false, false)
-    boxGeometry.loadFromBuffer(this.createBoxBuffer(this.min, this.max))
+    boxGeometry.setVertices(this.createBoxBuffer(this.min, this.max))
 
     this.box.add(boxGeometry)
     this.box.add(new UnlitMaterial([1.0, 0.0, 1.0]))

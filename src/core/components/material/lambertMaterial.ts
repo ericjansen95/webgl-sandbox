@@ -2,8 +2,8 @@ import { vec3 } from "gl-matrix";
 import Material, { compileProgram, MaterialType } from "./material";
 import { GL } from "../../scene/renderer"
 
-const vsDefaultSource: string = require('/public/res/shader/default.vs') as string
-const fsLambertSource: string = require('/public/res/shader/lambert.fs') as string
+const vsDefaultSource: string = require('/src/core/components/material/shader/default.vs') as string
+const fsLambertSource: string = require('/src/core/components/material/shader/lambert.fs') as string
 
 export default class LambertMaterial extends Material {
   color: vec3

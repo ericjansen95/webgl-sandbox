@@ -2,8 +2,8 @@ import { mat4, vec3 } from "gl-matrix";
 import Material, { compileProgram, MaterialType } from "./material";
 import { GL } from "../../scene/renderer"
 
-const vsTerrainSource: string = require('/public/res/shader/terrain.vs') as string
-const fsTerrainSorce: string = require('/public/res/shader/terrain.fs') as string
+const vsTerrainSource: string = require('/src/core/components/material/shader/terrain.vs') as string
+const fsTerrainSorce: string = require('/src/core/components/material/shader/terrain.fs') as string
 
 export default class TerrainMaterial extends Material {
   heightmap: WebGLTexture

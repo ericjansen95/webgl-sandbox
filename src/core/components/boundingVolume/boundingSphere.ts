@@ -63,7 +63,7 @@ export default class BoundingSphere implements BoundingVolume {
     if(!this.visible || this.sphere || !this.self) return false
 
     const sphereGeometry: Geometry = new Geometry("LINE", true, false, false)
-    sphereGeometry.loadFromBuffer(this.createSphereBuffer(this.radius));
+    sphereGeometry.setVertices(this.createSphereBuffer(this.radius));
 
     this.sphere = new Entity()
     this.sphere.add(sphereGeometry)
