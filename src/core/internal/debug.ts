@@ -1,4 +1,4 @@
-import { MainStats } from "../.."
+import { MainStats } from "../engine"
 import { RendererStats } from "../scene/renderer"
 import { SceneStats } from "../scene/scene"
 import Console from "./console"

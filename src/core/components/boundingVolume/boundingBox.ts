@@ -95,7 +95,7 @@ export default class BoundingBox implements BoundingVolume {
     this.box.add(boxGeometry)
     this.box.add(new UnlitMaterial([1.0, 0.0, 1.0]))
 
-    this.self.get(Component.TRANSFORM).addChild(this.box)
+    this.self.get(Component.TRANSFORM).add(this.box)
 
     return true
   }

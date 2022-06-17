@@ -69,7 +69,7 @@ export default class BoundingSphere implements BoundingVolume {
     this.sphere.add(sphereGeometry)
     this.sphere.add(new UnlitMaterial([1.0, 0.0, 1.0]))
 
-    this.self.get(Component.TRANSFORM).addChild(this.sphere)
+    this.self.get(Component.TRANSFORM).add(this.sphere)
 
     return true
   }

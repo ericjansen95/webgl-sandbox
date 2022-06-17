@@ -14,6 +14,7 @@ import UnlitMaterial from './core/components/material/unlitMaterial';
 import GltfLoader from './core/loader/gltfLoader';
 import { Component } from './core/components/base/component';
 import { Turntable as Turntable } from './core/components/scripts/turntable';
+import Engine from './core/engine';
 
 /*
 
@@ -56,23 +57,10 @@ import { Turntable as Turntable } from './core/components/scripts/turntable';
 
 */
 
-export type MainStats = {
-  frameTime: number
-  FPS: number
-}
-
 const main = async () => {
-  let stats: MainStats | null = null
-
-  Time.init()
-  Debug.init()
-  Input.init()
-
   const canvas = document.getElementById('glCanvas') as HTMLCanvasElement
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
-
-  const renderer = new Renderer(canvas)
 
   const sceneCamera: Entity = new Entity()
   sceneCamera.get(Component.TRANSFORM).setPosition([0.0, 0.0, 10.0])
@@ -83,8 +71,7 @@ const main = async () => {
   debugCamera.add(new FlyControls())
   debugCamera.add(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
-  //const client: Client = new Client(dynamicCamera)
-  const scene: Scene = new Scene()
+  const engine = new Engine(canvas, sceneCamera, debugCamera)
 
   // debug vis for camera frustrum
   const debugMaterial = new UnlitMaterial([1.0, 0.0, 1.0]) as Material
@@ -97,7 +84,7 @@ const main = async () => {
     frustrumPlane.add(new Quad(positions, true, false, false))
     frustrumPlane.add(debugMaterial)
 
-    sceneCamera.get(Component.TRANSFORM).addChild(frustrumPlane)
+    sceneCamera.get(Component.TRANSFORM).add(frustrumPlane)
   }
 
   const { geometry } = await new GltfLoader().load("http://localhost:8080/res/geo/testGeo.gltf")
@@ -111,39 +98,14 @@ const main = async () => {
     entity.add(new Turntable(1, [0, 1, 0]))
     entity.add(lambertMaterial)
 
-    scene.root.get(Component.TRANSFORM).addChild(entity)
+    engine.scene.add(entity)
   }
 
   const terrain: Entity = new Entity()
   terrain.add(new Terrain())
 
-  scene.root.get(Component.TRANSFORM).addChild(terrain)
-  scene.root.get(Component.TRANSFORM).addChild(sceneCamera)
-
-  const update = curTime => {
-    const startTime = Date.now()
-    Time.tick(curTime)
-
-    //const sceneCameraTransform = sceneCamera.getComponent("Transform")
-    //sceneCameraTransform.setRotation([0.0, Math.cos((Date.now() - Time.startTime) * 0.0005) * Math.PI * 0.25, 0.0])
-
-    scene.update(sceneCamera)
-    
-    debugCamera.get(Component.CONTROLS).onUpdate(debugCamera, debugCamera)
-    debugCamera.get(Component.TRANSFORM).onUpdate(debugCamera, debugCamera)
-    debugCamera.get(Component.CAMERA).onUpdate(debugCamera, debugCamera)
-
-    renderer.renderEntities(scene.getVisibleEntities(sceneCamera), debugCamera)
-
-    stats = {
-      frameTime: Math.ceil(Date.now() - startTime),
-      FPS: Math.ceil(1 / Time.deltaTime)
-    }
-    Debug.updateStats({main: stats})
-
-    requestAnimationFrame(update)
-  }
-  requestAnimationFrame(update)
+  engine.scene.add(terrain)
+  engine.scene.add(sceneCamera)
 }
 
 window.onload = main;

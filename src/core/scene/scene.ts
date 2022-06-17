@@ -7,6 +7,7 @@ import Client from "../network/client";
 import GameNetworkController from "../network/gameNetworkController";
 import Entity from "./entity";
 import { Component } from "../components/base/component";
+import Transform from "../components/base/transform";
 
 export type SceneStats = {
   updateTime: number
@@ -38,7 +39,7 @@ export default class Scene {
     grid.get(Component.TRANSFORM).setPosition([-5.0, 0.0, -5.0])
     grid.add(new Grid(10))
     grid.add(new UnlitMaterial([0.75, 0.75, 0.75]))
-    this.root.get(Component.TRANSFORM).addChild(grid)
+    this.root.get(Component.TRANSFORM).add(grid)
 
     Debug.console.registerCommand({ name: "bv", description: "Visualize bounding volumes.", callback: this.toggleBoundingVolumes })
 
@@ -102,6 +103,12 @@ export default class Scene {
 
   getEntities = (): Array<Entity> => {
     return this.entities
+  }
+
+  add = (entity: Entity): Entity => {
+    const rootTransform = this.root.get(Component.TRANSFORM) as Transform
+    rootTransform.add(entity)
+    return entity
   }
 
   toggleBoundingVolumes = (): string => {

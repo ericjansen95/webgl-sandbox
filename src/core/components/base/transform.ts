@@ -64,7 +64,7 @@ export default class Transform implements ComponentInterface {
     return mat4.getScaling(vec3.create(), this.worldMatrix)
   }
 
-  addChild = (entity: Entity) => {
+  add = (entity: Entity) => {
     (entity.get(Component.TRANSFORM) as Transform).parent = this
     this.children.push(entity)
   }

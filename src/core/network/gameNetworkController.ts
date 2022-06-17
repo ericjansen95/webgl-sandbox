@@ -165,7 +165,7 @@ export default class GameNetworkController {
     entity.add(humanGeometry)
     entity.add(lambertMaterial)
 
-    this.sceneRoot.get(Component.TRANSFORM).addChild(entity)
+    this.sceneRoot.get(Component.TRANSFORM).add(entity)
 
     const remoteClient: ClientCache = {
       clientId,
