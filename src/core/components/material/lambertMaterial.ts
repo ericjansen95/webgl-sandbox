@@ -1,6 +1,5 @@
-import { mat4, vec3 } from "gl-matrix";
+import { vec3 } from "gl-matrix";
 import Material, { compileProgram, LightData } from "./material";
-import { GL } from "../../scene/renderer"
 
 const vsDefaultSource: string = require('/src/core/components/material/shader/default.vs') as string
 const fsLambertSource: string = require('/src/core/components/material/shader/lambert.fs') as string
@@ -10,24 +9,35 @@ export default class LambertMaterial extends Material {
 
   constructor(color) {
     super()
+    this.color = color
+  }
 
-    const {program, attributeLocations, uniformLocations} = compileProgram(vsDefaultSource, fsLambertSource)
+  compile = (gl: WebGL2RenderingContext): boolean => {
+    if(this.program) return true
+
+    const {program, attributeLocations, uniformLocations} = compileProgram(gl, vsDefaultSource, fsLambertSource)
     
     this.program = program
     this.attributeLocations = attributeLocations
     this.uniformLocations = uniformLocations
 
-    this.color = color
-    this.uniformLocations.set('uColor', GL.getUniformLocation(program, 'uColor'))
+    this.uniformLocations.set('uColor', gl.getUniformLocation(program, 'uColor'))
 
-    this.uniformLocations.set('uAmbientLight', GL.getUniformLocation(program, 'uAmbientLight'))
-    this.uniformLocations.set('uLightDir', GL.getUniformLocation(program, 'uLightDir'))
+    this.uniformLocations.set('uAmbientLight', gl.getUniformLocation(program, 'uAmbientLight'))
+    this.uniformLocations.set('uLightDir', gl.getUniformLocation(program, 'uLightDir'))
+
+    return true
   }
 
-  bind = (light: LightData) => {
+  bind = (gl: WebGL2RenderingContext, light: LightData): boolean => {
+    this.compile(gl)
+
     const { mainDirection } = light
-    GL.uniform1f(this.uniformLocations.get('uAmbientLight'), 0.1)
-    GL.uniform3fv(this.uniformLocations.get('uLightDir'), mainDirection)
-    GL.uniform3fv(this.uniformLocations.get('uColor'), this.color)
+
+    gl.uniform1f(this.uniformLocations.get('uAmbientLight'), 0.1)
+    gl.uniform3fv(this.uniformLocations.get('uLightDir'), mainDirection)
+    gl.uniform3fv(this.uniformLocations.get('uColor'), this.color)
+
+    return true
   }
 }

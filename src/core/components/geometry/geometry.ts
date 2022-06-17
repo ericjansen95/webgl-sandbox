@@ -50,58 +50,62 @@ export default class Geometry implements ComponentInterface {
     this.boundingSphere = boundingSphere
   }
 
-  load = (GL: WebGL2RenderingContext) => {
+  load = (gl: WebGL2RenderingContext) => {
     if(this.buffer) return true
     if(!this.vertex.positions.length || !this.vertex.normals.length) return false
 
     this.buffer = {
-      position: GL.createBuffer(),
-      normal: GL.createBuffer()
+      position: gl.createBuffer(),
+      normal: gl.createBuffer()
     }
 
-    GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer.position)
-    GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(this.vertex.positions), GL.STATIC_DRAW)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.position)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.positions), gl.STATIC_DRAW)
     
-    GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer.normal)
-    GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(this.vertex.normals), GL.STATIC_DRAW)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normal)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.normals), gl.STATIC_DRAW)
     
     return true
   }
 
-  bind = (GL: WebGL2RenderingContext, material: Material) => {
+  bind = (gl: WebGL2RenderingContext, material: Material): boolean => {
+    if(!this.load(gl)) return false
+
     const numComponents: number = 3
-    const type: number = GL.FLOAT
+    const type: number = gl.FLOAT
     const normalize: boolean = false
     const stride: number = 0
     const offset: number = 0
 
     // POSITION
 
-    GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer.position)
-    GL.vertexAttribPointer(
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.position)
+    gl.vertexAttribPointer(
       material.attributeLocations.get('aVertexPosition'),
       numComponents,
       type,
       normalize,
       stride,
       offset)
-    GL.enableVertexAttribArray(
+    gl.enableVertexAttribArray(
       material.attributeLocations.get('aVertexPosition')
     )
  
     // NORMAL
 
-    GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer.normal)
-    GL.vertexAttribPointer(
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normal)
+    gl.vertexAttribPointer(
       material.attributeLocations.get('aVertexNormal'),
       numComponents,
       type,
       normalize,
       stride,
       offset)
-    GL.enableVertexAttribArray(
+    gl.enableVertexAttribArray(
       material.attributeLocations.get('aVertexNormal')
     )
+
+    return true
   }
 
   createVertexObject = () => {

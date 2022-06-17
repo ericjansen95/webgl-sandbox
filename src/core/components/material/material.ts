@@ -1,5 +1,4 @@
 import ComponentInterface, { Component } from "../base/component"
-import { GL } from "../../scene/renderer"
 import Entity from "../../scene/entity"
 import { mat4, vec3 } from "gl-matrix"
 import Transform from "../base/transform"
@@ -16,69 +15,70 @@ export default class Material implements ComponentInterface {
   attributeLocations: Map<string, number>
   uniformLocations: Map<string, WebGLUniformLocation>
 
-  bind: (light?: LightData, offsetMatrix?: mat4) => void
+  bind: (gl: WebGL2RenderingContext, light?: LightData, offsetMatrix?: mat4) => boolean
+  compile: (gl: WebGL2RenderingContext) => boolean
 
-  bindBase = (GL: WebGL2RenderingContext, entity: Entity, camera: Entity, light: LightData = { mainDirection: DEFAULT_MAIN_LIGHT_DIRECTION }) => {
-    const { mainDirection } = light
-
+  bindBase = (gl: WebGL2RenderingContext, entity: Entity, camera: Entity, light: LightData = { mainDirection: DEFAULT_MAIN_LIGHT_DIRECTION }): boolean => {
     const { modelMatrix, worldMatrix } = entity.get(Component.TRANSFORM) as Transform
     const material = entity.get(Component.MATERIAL) as any
     const { projectionMatrix, viewMatrix } = camera.get(Component.CAMERA) as Camera
 
-    GL.useProgram(material.program)
+    gl.useProgram(material.program)
 
-    GL.uniformMatrix4fv(
+    gl.uniformMatrix4fv(
       material.uniformLocations.get('uWorldMatrix'),
       false,
       worldMatrix
     )
 
-    GL.uniformMatrix4fv(
+    gl.uniformMatrix4fv(
       material.uniformLocations.get('uViewMatrix'),
       false,
       viewMatrix
     )
 
-    GL.uniformMatrix4fv(
+    gl.uniformMatrix4fv(
       material.uniformLocations.get('uProjectionMatrix'),
       false,
       projectionMatrix
     )
 
-    material.bind(light, modelMatrix)
+    return material.bind(gl, light, modelMatrix)
   }
 
   constructor() {
     this.type = Component.MATERIAL
+    this.program = null
+
     this.attributeLocations = new Map<string, number>()
     this.uniformLocations = new Map<string, WebGLUniformLocation>()
   }
 }
 
-export const compileProgram = (vsSource: string, fsSource: string): {program: Material["program"], uniformLocations: Material["uniformLocations"], attributeLocations: Material["attributeLocations"]} | null => {
-  const vertexShader = loadShader(GL.VERTEX_SHADER, vsSource)
-  const fragmentShader = loadShader(GL.FRAGMENT_SHADER, fsSource)
+export const compileProgram = (gl: WebGL2RenderingContext, vsSource: string, fsSource: string): {program: Material["program"], uniformLocations: Material["uniformLocations"], attributeLocations: Material["attributeLocations"]} | null => {
+  const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource)
+  const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource)
 
-  const program: WebGLProgram = GL.createProgram()
-  GL.attachShader(program, vertexShader)
-  GL.attachShader(program, fragmentShader)
-  GL.linkProgram(program)
+  const program: WebGLProgram = gl.createProgram()
+  gl.attachShader(program, vertexShader)
+  gl.attachShader(program, fragmentShader)
+  gl.linkProgram(program)
 
-  if(!GL.getProgramParameter(program, GL.LINK_STATUS)) {
-    Debug.error(`Failed to initialize shader program: ${GL.getProgramInfoLog(program)}`)
+  if(!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    Debug.error(`Failed to initialize shader program: ${gl.getProgramInfoLog(program)}`)
     return null
   }
 
   const attributeLocations: Map<string, number> = new Map<string, number>();
 
-  attributeLocations.set('aVertexPosition', GL.getAttribLocation(program, 'aVertexPosition'))
-  attributeLocations.set('aVertexNormal', GL.getAttribLocation(program, 'aVertexNormal'))
+  attributeLocations.set('aVertexPosition', gl.getAttribLocation(program, 'aVertexPosition'))
+  attributeLocations.set('aVertexNormal', gl.getAttribLocation(program, 'aVertexNormal'))
 
   const uniformLocations: Map<string, WebGLUniformLocation> = new Map<string, WebGLUniformLocation>();
 
-  uniformLocations.set('uWorldMatrix', GL.getUniformLocation(program, 'uWorldMatrix'))
-  uniformLocations.set('uViewMatrix', GL.getUniformLocation(program, 'uViewMatrix'))
-  uniformLocations.set('uProjectionMatrix', GL.getUniformLocation(program, 'uProjectionMatrix'))
+  uniformLocations.set('uWorldMatrix', gl.getUniformLocation(program, 'uWorldMatrix'))
+  uniformLocations.set('uViewMatrix', gl.getUniformLocation(program, 'uViewMatrix'))
+  uniformLocations.set('uProjectionMatrix', gl.getUniformLocation(program, 'uProjectionMatrix'))
       
   return {
     program,
@@ -87,16 +87,16 @@ export const compileProgram = (vsSource: string, fsSource: string): {program: Ma
   }
 }
 
-export const loadShader = (type: number, source: string): WebGLShader | null => {
+export const loadShader = (gl: WebGL2RenderingContext, type: number, source: string): WebGLShader | null => {
 
-  const shader: WebGLShader = GL.createShader(type)
+  const shader: WebGLShader = gl.createShader(type)
 
-  GL.shaderSource(shader, source)
-  GL.compileShader(shader)
+  gl.shaderSource(shader, source)
+  gl.compileShader(shader)
 
-  if(!GL.getShaderParameter(shader, GL.COMPILE_STATUS)) {
-    console.error(`Failed to compile shader: ${GL.getShaderInfoLog(shader)}`)
-    GL.deleteShader(shader)
+  if(!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    console.error(`Failed to compile shader: ${gl.getShaderInfoLog(shader)}`)
+    gl.deleteShader(shader)
     return null
   }
 
