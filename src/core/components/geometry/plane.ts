@@ -11,6 +11,7 @@ export default class Plane extends Geometry {
       componentCount: null,
       positions: new Array<number>(),
       normals: new Array<number>(),
+      uvs: null,
       min: vec3.create(),
       max: vec3.create()
     }

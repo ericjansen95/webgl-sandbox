@@ -34,6 +34,7 @@ const parseGeometry = async (gltf: any, bufferData: Array<ArrayBuffer>): Promise
       const geometry = new Geometry()
       let positions = null
       let normals = null
+      let uvs = null
 
       for(const [key, value] of Object.entries(attributes as object)) {
         switch (key) {
@@ -81,10 +82,32 @@ const parseGeometry = async (gltf: any, bufferData: Array<ArrayBuffer>): Promise
 
             break
           }
+          case "TEXCOORD_0": {
+            const uvAccessorIndex = value as number
+
+            const uvAccessor = accessors[uvAccessorIndex]
+            const {
+              bufferView,
+              componentType,
+              count,
+              type,
+            } = uvAccessor
+
+            const uvBufferView = bufferViews[bufferView]
+            const {
+              buffer,
+              byteLength,
+              byteOffset,
+            } = uvBufferView
+
+            uvs = new Float32Array(bufferData[buffer], byteOffset, count * 3)
+
+            break
+          }
         }
       }
 
-      geometry.setVertices(parseUnindexedVertexPositions(indiciesArray, positions), parseUnindexedVertexPositions(indiciesArray, normals))
+      geometry.setVertices(parseUnindexedVertexPositions(indiciesArray, positions), parseUnindexedVertexPositions(indiciesArray, normals), parseUnindexedVertexPositions(indiciesArray, uvs))
       geometries.push(geometry)
     }
   }

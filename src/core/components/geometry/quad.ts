@@ -12,6 +12,7 @@ export default class Quad extends Geometry {
       componentCount: 0,
       positions: new Array<number>(),
       normals: null,
+      uvs: null,
       min: vec3.create(),
       max: vec3.create()
     }

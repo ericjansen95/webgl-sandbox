@@ -11,6 +11,8 @@ import { Plane } from '../../../util/math/plane';
 import UnlitMaterial from '../material/unlitMaterial';
 import Geometry from '../geometry/geometry';
 import BoundingVolume from '../boundingVolume/boundingVolume';
+import Quad from '../geometry/quad';
+import Material from '../material/material';
 
 const DEFAULT_Z_NEAR: number = 0.05
 const DEFAULT_Z_FAR: number = 10000.0
@@ -236,7 +238,21 @@ export default class Camera implements Component {
 
   onAdd = (self: Entity) => {
     this.self = self
+
     this.updateProjection(this.fov, this.aspect)
+
+    const debugMaterial = new UnlitMaterial([1.0, 0.0, 1.0]) as Material
+
+    for(let posIndex = 0; posIndex < this.frustrum.positions.length; posIndex += 4) {  
+      const frustrumPlane = new Entity()
+  
+      const positions = this.frustrum.positions.slice(posIndex, posIndex + 4)
+  
+      frustrumPlane.add(new Quad(positions, false, false, false))
+      frustrumPlane.add(debugMaterial)
+  
+      this.self.get(ComponentEnum.TRANSFORM).add(frustrumPlane)
+    }
   }
 
   onUpdate = (self: Entity, camera: Entity) => {

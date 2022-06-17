@@ -8,6 +8,7 @@ import GameNetworkController from "../network/gameNetworkController";
 import Entity from "./entity";
 import { ComponentEnum } from "../components/base/component";
 import Transform from "../components/base/transform";
+import Geometry from "../components/geometry/geometry";
 
 export type SceneStats = {
   updateTime: number
@@ -17,9 +18,13 @@ export type SceneStats = {
 }
 
 export default class Scene {
-  root: Entity
-  entities: Array<Entity>
   stats: SceneStats
+
+  root: Entity
+  camera: Entity
+
+  entities: Array<Entity>
+
   networkController: GameNetworkController
 
   constructor(clientEntity: Entity | null = null, client: Client | null = null) {
@@ -50,6 +55,7 @@ export default class Scene {
 
   update = (camera: Entity) => {
     const startTime = Date.now()
+    this.camera = camera
 
     this.entities = []
     this.updateEntity(this.root, camera, true)
@@ -121,8 +127,16 @@ export default class Scene {
       boundingVolume.setVisible(!boundingVolume.visible)
     }
 
+    const toggleFrustrumPlane = (frustrumPlane: Entity) => {
+      const frustrumPlaneGeometry = frustrumPlane.get(ComponentEnum.GEOMETRY) as Geometry
+      frustrumPlaneGeometry.visible = !frustrumPlaneGeometry.visible
+    }
+
     for(const entity of this.entities)
       toggleBoundingVolume(entity)
+
+    for(const frustrumPlane of this.camera)
+      toggleFrustrumPlane(frustrumPlane)
 
     return "Renderer::toggleBondingVolumes(): Toggled bounding volumes."
   }

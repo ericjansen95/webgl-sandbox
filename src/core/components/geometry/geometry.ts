@@ -3,6 +3,7 @@ import Entity from "../../scene/entity"
 import BoundingSphere from "../boundingVolume/boundingSphere"
 import Component, { ComponentEnum } from "../base/component"
 import Material from "../material/material"
+import { toUSVString } from "util"
 
 export enum DrawMode {
   TRIANGLE = 4,
@@ -25,6 +26,7 @@ export default class Geometry implements Component {
     componentCount: number
     positions: Array<number>
     normals: Array<number>
+    uvs: Array<number>
     min: vec3
     max: vec3
   } | null
@@ -113,6 +115,7 @@ export default class Geometry implements Component {
       componentCount: 0,
       positions: new Array<number>(),
       normals: new Array<number>(),
+      uvs: new Array<number>(),
       min: vec3.create(),
       max: vec3.create()
     }
@@ -143,12 +146,18 @@ export default class Geometry implements Component {
     return true
   }
 
-  setVertices = (positions: Array<number>, normals: Array<number> | null = null): boolean => {
+  setVertexUvs = (uvs: Array<number>): boolean => {
+    this.vertex.uvs = uvs
+    return true
+  }
+
+  setVertices = (positions: Array<number>, normals: Array<number> | null = null, uvs: Array<number> | null = null): boolean => {
     if(!positions.length) return false
 
     this.vertex = this.createVertexObject()
 
     this.setVertexPositions(positions)
+    if(uvs) this.setVertexUvs(uvs)
     if(normals) this.setVertexNormals(normals)
     else this.vertex.normals = calcNormals(this.vertex.positions)
 

@@ -28,23 +28,27 @@ import PhongMaterial from './core/components/material/phongMaterial';
   - base-server, chat-server, scene-server
 
   ToDo:
-  - transform local vs global
+  - this in component callbacks
+  - indexed vertex pipeline
+  - transform local matrix
+  - transform rotation as quaternions
+  - reduce matrix multipications => cache bounding volume data
+  - make component state easily serializable by adding functions to interface
+  - canvas resize event
+  - namespaces that abstracts initialisation (and entity assemby?)
+  - abstract component constructor arguments into options objects
+
   - clientId
   - server network package verification => block unallowed
   - server client authentication
   - server append clientId
   - client do not send client id in packages
   - game network manager => create local and remote client compoents for entities
-  - reduce matrix multipications => cache bounding volume data
   - server connect with same client id after reload
   - come up with a dynamic networking model => check o3d engine talk (state, event, ...)
-  - make component state easily serializable by adding functions to interface
-  - canvas resize event
-  - namespaces that abstracts initialisation (and entity assemby?)
+
   - instanced mesh system
   - camera frustrum performance
-  - better material attrib pipeline
-  - abstract component constructor arguments into options objects
   - rename wording for channels to "SCENE" and "CHAT"
 
 */
@@ -58,26 +62,7 @@ const main = async () => {
   sceneCamera.get(Component.TRANSFORM).setPosition([0.0, 0.0, 10.0])
   const camera = sceneCamera.add(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
-  const debugCamera: Entity = new Entity()
-  debugCamera.get(Component.TRANSFORM).setPosition([0.0, 1.0, 4.0])
-  debugCamera.add(new FlyControls())
-  debugCamera.add(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
-
-  const engine = new Engine(canvas, sceneCamera, debugCamera)
-
-  // debug vis for camera frustrum
-  const debugMaterial = new UnlitMaterial([1.0, 0.0, 1.0]) as Material
-
-  for(let posIndex = 0; posIndex < camera.frustrum.positions.length; posIndex += 4) {  
-    const frustrumPlane = new Entity()
-
-    const positions = camera.frustrum.positions.slice(posIndex, posIndex + 4)
-
-    frustrumPlane.add(new Quad(positions, true, false, false))
-    frustrumPlane.add(debugMaterial)
-
-    sceneCamera.get(Component.TRANSFORM).add(frustrumPlane)
-  }
+  const engine = new Engine(canvas, sceneCamera)
 
   const { geometry } = await new GltfLoader().load("http://localhost:8080/res/geo/testGeo.gltf")
 
