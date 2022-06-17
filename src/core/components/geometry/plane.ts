@@ -1,14 +1,14 @@
 import { vec3 } from "gl-matrix";
 import entity from "../../scene/entity";
 import BoundingBox from "../boundingVolume/boundingBox";
-import Geometry, { calcNormals } from "./geometry";
+import Geometry, { calcNormals, DrawMode } from "./geometry";
 
 export default class Plane extends Geometry {
   constructor(subdivisions: number = 1) {
-    super("TRIANGLE", true, true, false)
+    super(DrawMode.TRIANGLE, true, true, false)
 
     this.vertex = {
-      count: null,
+      componentCount: null,
       positions: new Array<number>(),
       normals: new Array<number>(),
       min: vec3.create(),
@@ -29,11 +29,11 @@ export default class Plane extends Geometry {
       }
     }
 
-    this.vertex.count = this.vertex.positions.length
+    this.vertex.componentCount = this.vertex.positions.length
 
     let position: number[] = []
 
-    for(let posIndex = 0; posIndex < this.vertex.count; posIndex += 3) {
+    for(let posIndex = 0; posIndex < this.vertex.componentCount; posIndex += 3) {
       position = [this.vertex.positions[posIndex], this.vertex.positions[posIndex + 1], this.vertex.positions[posIndex + 2]]
 
       this.vertex.min = [Math.min(position[0], this.vertex.min[0]),

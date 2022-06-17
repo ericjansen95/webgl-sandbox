@@ -1,15 +1,15 @@
 import { vec3 } from "gl-matrix";
-import Geometry, { calcNormals } from "./geometry";
+import Geometry, { calcNormals, DrawMode } from "./geometry";
 
 export default class Quad extends Geometry {
   constructor(positions: Array<vec3>, visible: boolean = true, cull: boolean = true, boundingVolume: boolean = true) {
     if(positions.length !== 4) console.error("Quad::constructor(): Invalid arguments!")
 
     // TMP geo type
-    super("LINE", visible, cull, boundingVolume)
+    super(DrawMode.LINE, visible, cull, boundingVolume)
 
     this.vertex = {
-      count: 0,
+      componentCount: 0,
       positions: new Array<number>(),
       normals: null,
       min: vec3.create(),
@@ -28,7 +28,7 @@ export default class Quad extends Geometry {
     this.vertex.positions.push(...positions[3])    
     this.vertex.positions.push(...positions[0])
 
-    this.vertex.count = this.vertex.positions.length
+    this.vertex.componentCount = this.vertex.positions.length
     this.vertex.normals = calcNormals(this.vertex.positions, true)
   }
 }

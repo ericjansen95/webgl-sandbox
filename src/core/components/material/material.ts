@@ -1,5 +1,9 @@
 import ComponentInterface, { Component } from "../base/component"
 import { GL } from "../../scene/renderer"
+import Entity from "../../scene/entity"
+import { mat4, vec3 } from "gl-matrix"
+import Transform from "../base/transform"
+import Camera from "../base/camera"
 
 export type MaterialType = "LAMBERT" | "TERRAIN" | "UNLIT"
 
@@ -11,7 +15,58 @@ export default class Material implements ComponentInterface {
   attributeLocations: Map<string, number>
   uniformLocations: Map<string, WebGLUniformLocation>
 
-  bind: Function
+  bindBase = (GL: WebGL2RenderingContext, options: { entity: Entity, camera: Entity, lightDir: vec3 }): boolean => {
+    const {entity, camera, lightDir} = options
+
+    const transform = entity.get(Component.TRANSFORM) as Transform
+    const material = entity.get(Component.MATERIAL) as any
+  
+    if(!transform || !material) return false
+
+    // ToDo: Extract this data once at start of tick?
+    const viewMatrix = (camera.get(Component.TRANSFORM) as Transform).worldMatrix
+    const projectionMatrix = (camera.get(Component.CAMERA) as Camera).projectionMatrix
+
+    GL.useProgram(material.program)       
+
+    GL.uniformMatrix4fv(
+      material.uniformLocations.get('uWorldMatrix'),
+      false,
+      transform.worldMatrix
+    )
+
+    // ToDo: Cache inverted view matrix in camera?
+    GL.uniformMatrix4fv(
+      material.uniformLocations.get('uViewMatrix'),
+      false,
+      mat4.invert(mat4.create(), viewMatrix)
+    )
+
+    GL.uniformMatrix4fv(
+      material.uniformLocations.get('uProjectionMatrix'),
+      false,
+      projectionMatrix
+    )
+
+    switch(material.materialType) {
+      case "LAMBERT": {
+        material.bind(lightDir)
+        break
+      }
+      case "TERRAIN": {
+        material.bind(lightDir, transform.modelMatrix)
+        break
+      }
+      case "UNLIT": {
+        material.bind()
+        break
+      }
+      default:
+        throw new Error("Renderer::bindMaterial(): Invalid or unimplemented material type!")
+    }
+
+    return true
+  }
 
   constructor() {
     this.type = Component.MATERIAL

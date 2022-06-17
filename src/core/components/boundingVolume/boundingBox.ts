@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix";
 import Entity from "../../scene/entity";
 import { Component } from "../base/component";
-import Geometry from "../geometry/geometry";
+import Geometry, { DrawMode } from "../geometry/geometry";
 import UnlitMaterial from "../material/unlitMaterial";
 import BoundingVolume from "./boundingVolume";
 
@@ -89,7 +89,7 @@ export default class BoundingBox implements BoundingVolume {
 
     this.box = new Entity()
 
-    const boxGeometry = new Geometry("LINE", true, false, false)
+    const boxGeometry = new Geometry(DrawMode.LINE, true, false, false)
     boxGeometry.setVertices(this.createBoxBuffer(this.min, this.max))
 
     this.box.add(boxGeometry)

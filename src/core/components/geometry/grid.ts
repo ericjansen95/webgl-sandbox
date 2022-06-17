@@ -1,12 +1,12 @@
 import { vec3 } from "gl-matrix";
-import Geometry, { calcNormals } from "./geometry";
+import Geometry, { calcNormals, DrawMode } from "./geometry";
 
 export default class Grid extends Geometry {
   constructor(subdivisions: number = 1) {
-    super("LINE", true, false, false)
+    super(DrawMode.LINE, true, false, false)
 
     this.vertex = {
-      count: 2 * subdivisions * subdivisions + 8,
+      componentCount: 2 * subdivisions * subdivisions + 8,
       positions: new Array<number>(),
       normals: new Array<number>(),
       min: vec3.create(),

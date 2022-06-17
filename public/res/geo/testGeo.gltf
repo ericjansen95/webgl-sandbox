@@ -126,7 +126,7 @@
         {
             "bufferView" : 6,
             "componentType" : 5126,
-            "count" : 3525,
+            "count" : 3241,
             "max" : [
                 0.8444250226020813,
                 0.543729305267334,
@@ -142,7 +142,7 @@
         {
             "bufferView" : 7,
             "componentType" : 5126,
-            "count" : 3525,
+            "count" : 3241,
             "type" : "VEC3"
         },
         {
@@ -185,23 +185,23 @@
         },
         {
             "buffer" : 0,
-            "byteLength" : 42300,
+            "byteLength" : 38892,
             "byteOffset" : 1745592
         },
         {
             "buffer" : 0,
-            "byteLength" : 42300,
-            "byteOffset" : 1787892
+            "byteLength" : 38892,
+            "byteOffset" : 1784484
         },
         {
             "buffer" : 0,
             "byteLength" : 37920,
-            "byteOffset" : 1830192
+            "byteOffset" : 1823376
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 1868112,
+            "byteLength" : 1861296,
             "uri" : "testGeo.bin"
         }
     ]

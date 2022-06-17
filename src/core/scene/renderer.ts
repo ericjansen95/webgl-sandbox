@@ -29,135 +29,20 @@ export default class Renderer {
     GL.depthFunc(GL.LEQUAL)
   }
 
-  bindGeometry = (geometry: Geometry): boolean => {
-    if(!geometry) return false
-    if(geometry.buffer) return true
-
-    geometry.buffer = {
-      position: GL.createBuffer(),
-      normal: GL.createBuffer()
-    }
-
-    GL.bindBuffer(GL.ARRAY_BUFFER, geometry.buffer.position)
-    GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(geometry.vertex.positions), GL.STATIC_DRAW)
-    
-    GL.bindBuffer(GL.ARRAY_BUFFER, geometry.buffer.normal)
-    GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(geometry.vertex.normals), GL.STATIC_DRAW)
-  
-    return true
-  }
-
-  bindMaterial = (entity: Entity, viewMatrix: mat4, projectionMatrix: mat4, lightDir: vec3): boolean => {
-    const transform = entity.get(Component.TRANSFORM) as Transform
-    const material = entity.get(Component.MATERIAL) as Material
-  
-    if(!transform || !material) return false
-
-    GL.useProgram(material.program)       
-
-    GL.uniformMatrix4fv(
-      material.uniformLocations.get('uWorldMatrix'),
-      false,
-      transform.worldMatrix
-    )
-
-    // ToDo: Cache inverted view matrix in camera?
-    GL.uniformMatrix4fv(
-      material.uniformLocations.get('uViewMatrix'),
-      false,
-      mat4.invert(mat4.create(), viewMatrix)
-    )
-
-    GL.uniformMatrix4fv(
-      material.uniformLocations.get('uProjectionMatrix'),
-      false,
-      projectionMatrix
-    )
-
-    switch(material.materialType) {
-      case "LAMBERT": {
-        material.bind(lightDir)
-        break
-      }
-      case "TERRAIN": {
-        material.bind(lightDir, transform.modelMatrix)
-        break
-      }
-      case "UNLIT": {
-        material.bind()
-        break
-      }
-      default:
-        throw new Error("Renderer::bindMaterial(): Invalid or unimplemented material type!")
-    }
-
-    return true
-  }
-
   renderEntity = (entity: Entity, camera: Entity) => {
     const geometry = entity.get(Component.GEOMETRY) as Geometry
     const material = entity.get(Component.MATERIAL) as Material
 
-    if(!material || !this.bindGeometry(geometry)) return
+    if(!material || !geometry.load(GL)) return
 
     this.drawCalls++
+    geometry.bind(GL, material)
 
-    const numComponents: number = 3
-    const type: number = GL.FLOAT
-    const normalize: boolean = false
-    const stride: number = 0
-    const offset: number = 0
+    if(!material.bindBase(GL, {entity,
+                              camera,
+                              lightDir: vec3.normalize(vec3.create(), [0.75, 0.25, 0.0])})) return
 
-    // POSITION
-
-    GL.bindBuffer(GL.ARRAY_BUFFER, geometry.buffer.position)
-    GL.vertexAttribPointer(
-      material.attributeLocations.get('aVertexPosition'),
-      numComponents,
-      type,
-      normalize,
-      stride,
-      offset)
-    GL.enableVertexAttribArray(
-      material.attributeLocations.get('aVertexPosition')
-    )
- 
-    // NORMAL
-
-    GL.bindBuffer(GL.ARRAY_BUFFER, geometry.buffer.normal)
-    GL.vertexAttribPointer(
-      material.attributeLocations.get('aVertexNormal'),
-      numComponents,
-      type,
-      normalize,
-      stride,
-      offset)
-    GL.enableVertexAttribArray(
-      material.attributeLocations.get('aVertexNormal')
-    ) 
-
-    if(!this.bindMaterial(entity,
-                          (camera.get(Component.TRANSFORM) as Transform).worldMatrix,
-                          (camera.get(Component.CAMERA) as Camera).projectionMatrix,
-                          vec3.normalize(vec3.create(), [0.75, 0.25, 0.0]))) return
-
-    let mode: number | null = null
-    let count: number | null = null
-    
-    switch(geometry.geometryType) {
-      case "LINE":
-        mode = GL.LINES
-        count = geometry.vertex.count / 2.0
-        break
-      case "TRIANGLE":
-        mode = GL.TRIANGLES
-        count = geometry.vertex.count / 3.0
-        break
-      default:
-        throw new Error("renderer::renderEntity(): Invalid geometry type!")
-    }
-
-    GL.drawArrays(mode, offset, count)
+    GL.drawArrays(geometry.drawMode, 0, geometry.vertex.componentCount)
   }
 
   renderEntities = (entities: Array<Entity>, camera: Entity) => {

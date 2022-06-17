@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix";
 import Entity from "../../scene/entity";
 import BoundingVolume from "./boundingVolume";
-import Geometry from "../geometry/geometry";
+import Geometry, { DrawMode } from "../geometry/geometry";
 import UnlitMaterial from "../material/unlitMaterial";
 import { Component } from "../base/component";
 
@@ -62,7 +62,7 @@ export default class BoundingSphere implements BoundingVolume {
   createSphere = (): boolean => {
     if(!this.visible || this.sphere || !this.self) return false
 
-    const sphereGeometry: Geometry = new Geometry("LINE", true, false, false)
+    const sphereGeometry: Geometry = new Geometry(DrawMode.LINE, true, false, false)
     sphereGeometry.setVertices(this.createSphereBuffer(this.radius));
 
     this.sphere = new Entity()

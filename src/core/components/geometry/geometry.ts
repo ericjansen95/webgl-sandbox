@@ -2,8 +2,12 @@ import { vec3 } from "gl-matrix"
 import Entity from "../../scene/entity"
 import BoundingSphere from "../boundingVolume/boundingSphere"
 import ComponentInterface, { Component } from "../base/component"
+import Material from "../material/material"
 
-export type GeometryType = "TRIANGLE" | "LINE"
+export enum DrawMode {
+  TRIANGLE = 4,
+  LINE = 1,
+}
 
 export const parseUnindexedVertexPositions = (indices: Uint16Array, positions: Float32Array) => {
   const output = new Array<number>()
@@ -18,7 +22,7 @@ export default class Geometry implements ComponentInterface {
   type: Component
 
   vertex: {
-    count: number
+    componentCount: number
     positions: Array<number>
     normals: Array<number>
     min: vec3
@@ -30,25 +34,79 @@ export default class Geometry implements ComponentInterface {
     normal: WebGLBuffer
   } | null
 
-  geometryType: GeometryType
+  drawMode: DrawMode
   visible: boolean
 
   cull: boolean
   boundingSphere: boolean
 
-  constructor(geometryType: GeometryType = "TRIANGLE", visible: boolean = true, cull: boolean = true, boundingSphere: boolean = true) {
+  constructor(geometryType: DrawMode = DrawMode.TRIANGLE, visible: boolean = true, cull: boolean = true, boundingSphere: boolean = true) {
     this.type = Component.GEOMETRY
     this.vertex = null
     this.buffer = null
-    this.geometryType = geometryType
+    this.drawMode = geometryType
     this.visible = visible
     this.cull = cull
     this.boundingSphere = boundingSphere
   }
 
+  load = (GL: WebGL2RenderingContext) => {
+    if(this.buffer) return true
+    if(!this.vertex.positions.length || !this.vertex.normals.length) return false
+
+    this.buffer = {
+      position: GL.createBuffer(),
+      normal: GL.createBuffer()
+    }
+
+    GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer.position)
+    GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(this.vertex.positions), GL.STATIC_DRAW)
+    
+    GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer.normal)
+    GL.bufferData(GL.ARRAY_BUFFER, new Float32Array(this.vertex.normals), GL.STATIC_DRAW)
+    
+    return true
+  }
+
+  bind = (GL: WebGL2RenderingContext, material: Material) => {
+    const numComponents: number = 3
+    const type: number = GL.FLOAT
+    const normalize: boolean = false
+    const stride: number = 0
+    const offset: number = 0
+
+    // POSITION
+
+    GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer.position)
+    GL.vertexAttribPointer(
+      material.attributeLocations.get('aVertexPosition'),
+      numComponents,
+      type,
+      normalize,
+      stride,
+      offset)
+    GL.enableVertexAttribArray(
+      material.attributeLocations.get('aVertexPosition')
+    )
+ 
+    // NORMAL
+
+    GL.bindBuffer(GL.ARRAY_BUFFER, this.buffer.normal)
+    GL.vertexAttribPointer(
+      material.attributeLocations.get('aVertexNormal'),
+      numComponents,
+      type,
+      normalize,
+      stride,
+      offset)
+    GL.enableVertexAttribArray(
+      material.attributeLocations.get('aVertexNormal')
+    )
+  }
+
   createVertexObject = () => {
     return {
-      count: 0,
+      componentCount: 0,
       positions: new Array<number>(),
       normals: new Array<number>(),
       min: vec3.create(),
@@ -58,7 +116,21 @@ export default class Geometry implements ComponentInterface {
 
   setVertexPositions = (positions: Array<number>): boolean => {
     this.vertex.positions = positions
-    this.vertex.count = this.vertex.positions.length
+
+    const vertexCount = this.vertex.positions.length
+    let componentCount = null
+
+    switch (this.drawMode) {
+      case DrawMode.TRIANGLE:
+        componentCount = vertexCount / 3
+        break
+      case DrawMode.LINE:
+        componentCount = vertexCount / 2
+        break
+    }
+
+    this.vertex.componentCount = componentCount
+
     return true
   }
 
@@ -117,7 +189,7 @@ export default class Geometry implements ComponentInterface {
       }
     })
 
-    this.vertex.count = this.vertex.positions.length
+    this.vertex.componentCount = this.vertex.positions.length
     this.vertex.normals = calcNormals(this.vertex.positions)
   }
 
