@@ -3,27 +3,34 @@ import Material from "../components/material/material"
 import Entity from "./entity"
 import Geometry from "../components/geometry/geometry"
 import { Component } from "../components/base/component"
+import Debug from "../internal/debug"
+
+export type RendererStats = {
+  drawCalls: number
+}
+
+const DEFAULT_CLEAR_COLOR: vec3 = vec3.fromValues(0.549, 0.745, 0.839)
 
 export default class Renderer {
   gl: WebGL2RenderingContext
-  clearColor: vec3
-  
-  drawCalls: number
-  cullCount: number
+  stats: RendererStats
 
   constructor(canvas: HTMLCanvasElement) {
     this.gl = canvas.getContext('webgl2') as WebGL2RenderingContext
-    this.clearColor = vec3.fromValues(0.549, 0.745, 0.839)
+    this.stats = {
+      drawCalls: 0
+    }
 
     if(!this.gl) {
       console.error('Failed to initialize WebGL!') 
       return
     }
 
-    this.gl.clearColor(this.clearColor[0], this.clearColor[1], this.clearColor[2], 1.0)
-    this.gl.clearDepth(1.0)
     this.gl.enable(this.gl.DEPTH_TEST)
     this.gl.depthFunc(this.gl.LEQUAL)
+
+    this.gl.clearColor(DEFAULT_CLEAR_COLOR[0], DEFAULT_CLEAR_COLOR[1], DEFAULT_CLEAR_COLOR[2], 1.0)
+    this.gl.clearDepth(1.0)
   }
 
   renderEntity = (entity: Entity, camera: Entity) => {
@@ -34,16 +41,17 @@ export default class Renderer {
       !geometry?.bind(this.gl, material)) return
 
     this.gl.drawArrays(geometry.drawMode, 0, geometry.vertex.componentCount)
-    this.drawCalls++
+    this.stats.drawCalls++
   }
 
   renderEntities = (entities: Array<Entity>, camera: Entity) => {
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
-    this.drawCalls = 0
-    this.cullCount = 0
+    this.stats.drawCalls = 0
 
     for(const entity of entities)
       this.renderEntity(entity, camera)
+
+    Debug.updateStats({renderer: this.stats})
   }
 }

@@ -57,7 +57,14 @@ import { Component } from './core/components/base/component';
 
 */
 
+export type MainStats = {
+  frameTime: number
+  FPS: number
+}
+
 const main = async () => {
+  let stats: MainStats | null = null
+
   Time.init()
   Debug.init()
   Input.init()
@@ -114,6 +121,13 @@ const main = async () => {
   scene.root.get(Component.TRANSFORM).addChild(sceneCamera)
 
   const update = curTime => {
+    const frameTime = Math.round(Time.deltaTime * 1000)
+    stats = {
+      frameTime,
+      FPS: Math.round(1000 / frameTime)
+    }
+    Debug.updateStats({main: stats})
+
     Time.tick(curTime)
 
     //const sceneCameraTransform = sceneCamera.getComponent("Transform")

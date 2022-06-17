@@ -1,9 +1,13 @@
+import { MainStats } from "../.."
+import { RendererStats } from "../scene/renderer"
 import { SceneStats } from "../scene/scene"
 import Console from "./console"
 import FrameInspector from "./fameInspector"
 
 export type DebugStats = {
   scene?: SceneStats,
+  renderer?: RendererStats
+  main?: MainStats
   client?: {
     ping: number,
   }
