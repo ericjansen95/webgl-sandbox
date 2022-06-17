@@ -1,4 +1,4 @@
-import ComponentInterface, { Component } from "../base/component"
+import Component, { ComponentEnum } from "../base/component"
 import Entity from "../../scene/entity"
 import { mat4, vec3 } from "gl-matrix"
 import Transform from "../base/transform"
@@ -7,21 +7,22 @@ import Debug from "../../internal/debug"
 
 export type LightData = { mainDirection: vec3 }
 const DEFAULT_MAIN_LIGHT_DIRECTION: vec3 = vec3.normalize(vec3.create(), [0.75, 0.25, 0.0])
+export const DEFAULT_AMBIENT_LIGHT_INTENSITY: number = 0.25
 
-export default class Material implements ComponentInterface {
-  type: Component
+export default class Material implements Component {
+  type: ComponentEnum
   program: WebGLProgram
 
   attributeLocations: Map<string, number>
   uniformLocations: Map<string, WebGLUniformLocation>
 
-  bind: (gl: WebGL2RenderingContext, light?: LightData, offsetMatrix?: mat4) => boolean
+  bind: (gl: WebGL2RenderingContext, light?: LightData, viewDir?: vec3, offsetMatrix?: mat4) => boolean
   compile: (gl: WebGL2RenderingContext) => boolean
 
   bindBase = (gl: WebGL2RenderingContext, entity: Entity, camera: Entity, light: LightData = { mainDirection: DEFAULT_MAIN_LIGHT_DIRECTION }): boolean => {
-    const { modelMatrix, worldMatrix } = entity.get(Component.TRANSFORM) as Transform
-    const material = entity.get(Component.MATERIAL) as any
-    const { projectionMatrix, viewMatrix } = camera.get(Component.CAMERA) as Camera
+    const { modelMatrix, worldMatrix } = entity.get(ComponentEnum.TRANSFORM) as Transform
+    const material = entity.get(ComponentEnum.MATERIAL) as any
+    const { projectionMatrix, viewMatrix, viewDir } = camera.get(ComponentEnum.CAMERA) as Camera
 
     gl.useProgram(material.program)
 
@@ -43,11 +44,11 @@ export default class Material implements ComponentInterface {
       projectionMatrix
     )
 
-    return material.bind(gl, light, modelMatrix)
+    return material.bind(gl, light, viewDir, modelMatrix)
   }
 
   constructor() {
-    this.type = Component.MATERIAL
+    this.type = ComponentEnum.MATERIAL
     this.program = null
 
     this.attributeLocations = new Map<string, number>()

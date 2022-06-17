@@ -2,13 +2,15 @@ import { vec3 } from "gl-matrix"
 import Material from "../components/material/material"
 import Entity from "./entity"
 import Geometry from "../components/geometry/geometry"
-import { Component } from "../components/base/component"
+import { ComponentEnum } from "../components/base/component"
 import Debug from "../internal/debug"
 
 export type RendererStats = {
   drawTime: number
   drawCalls: number
 }
+
+export type RenderList = Array<Entity>
 
 const DEFAULT_CLEAR_COLOR: vec3 = vec3.fromValues(0.549, 0.745, 0.839)
 
@@ -36,8 +38,8 @@ export default class Renderer {
   }
 
   renderEntity = (entity: Entity, camera: Entity) => {
-    const geometry = entity.get(Component.GEOMETRY) as Geometry
-    const material = entity.get(Component.MATERIAL) as Material
+    const geometry = entity.get(ComponentEnum.GEOMETRY) as Geometry
+    const material = entity.get(ComponentEnum.MATERIAL) as Material
 
     if(!material?.bindBase(this.gl, entity, camera) || 
       !geometry?.bind(this.gl, material)) return
@@ -46,14 +48,14 @@ export default class Renderer {
     this.stats.drawCalls++
   }
 
-  renderEntities = (entities: Array<Entity>, camera: Entity) => {
+  renderEntities = (renderList: RenderList, camera: Entity) => {
     const startTime = Date.now()
 
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
     this.stats.drawCalls = 0
 
-    for(const entity of entities)
+    for(const entity of renderList)
       this.renderEntity(entity, camera)
 
     this.stats.drawTime = Math.ceil(Date.now() - startTime)

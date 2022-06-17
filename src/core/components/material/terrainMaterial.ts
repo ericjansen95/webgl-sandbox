@@ -1,5 +1,5 @@
-import { mat4 } from "gl-matrix";
-import Material, { compileProgram, LightData } from "./material";
+import { mat4, vec3 } from "gl-matrix";
+import Material, { compileProgram, DEFAULT_AMBIENT_LIGHT_INTENSITY, LightData } from "./material";
 
 const vsTerrainSource: string = require('/src/core/components/material/shader/terrain.vs') as string
 const fsTerrainSorce: string = require('/src/core/components/material/shader/terrain.fs') as string
@@ -72,12 +72,12 @@ export default class TerrainMaterial extends Material {
     return true
   }
 
-  bind = (gl: WebGL2RenderingContext, light: LightData, offsetMatrix: mat4): boolean => {
+  bind = (gl: WebGL2RenderingContext, light: LightData, viewDir: vec3, offsetMatrix: mat4): boolean => {
     this.compile(gl)
 
     const { mainDirection } = light
 
-    gl.uniform1f(this.uniformLocations.get('uAmbientLight'), 0.25)
+    gl.uniform1f(this.uniformLocations.get('uAmbientLight'), DEFAULT_AMBIENT_LIGHT_INTENSITY)
     gl.uniform3fv(this.uniformLocations.get('uLightDir'), mainDirection)
 
     gl.activeTexture(gl.TEXTURE0)

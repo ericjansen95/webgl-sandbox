@@ -1,4 +1,4 @@
-import { Component } from "./components/base/component"
+import { ComponentEnum } from "./components/base/component"
 import Debug from "./internal/debug"
 import Input from "./internal/input"
 import Time from "./internal/time"
@@ -35,9 +35,9 @@ export default class Engine {
   
       this.scene.update(sceneCamera)
       
-      debugCamera.get(Component.CONTROLS).onUpdate(debugCamera, debugCamera)
-      debugCamera.get(Component.TRANSFORM).onUpdate(debugCamera, debugCamera)
-      debugCamera.get(Component.CAMERA).onUpdate(debugCamera, debugCamera)
+      debugCamera.get(ComponentEnum.CONTROLS).onUpdate(debugCamera, debugCamera)
+      debugCamera.get(ComponentEnum.TRANSFORM).onUpdate(debugCamera, debugCamera)
+      debugCamera.get(ComponentEnum.CAMERA).onUpdate(debugCamera, debugCamera)
   
       this.renderer.renderEntities(this.scene.getVisibleEntities(sceneCamera), debugCamera)
   

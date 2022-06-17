@@ -1,6 +1,6 @@
 import { vec3, vec2, mat4, quat } from "gl-matrix"
 import Entity from "../../scene/entity"
-import ComponentInterface, { Component } from "../base/component"
+import Component, { ComponentEnum } from "../base/component"
 import Input from "../../internal/input"
 import Time from "../../internal/time"
 import clamp from "../../../util/math/clamp"
@@ -12,15 +12,15 @@ const ROTATE_SPEED: number = 150.0
 const TRANSLATE_SPEED: number = 14.0
 const TWO_PI: number = 2.0 * Math.PI
 
-export default class FlyControls implements ComponentInterface {
-  type: Component
+export default class FlyControls implements Component {
+  type: ComponentEnum
   angleRotation: vec2
   tmpAngleRotation: vec2
 
   position: vec3
 
   constructor() {
-    this.type = Component.CONTROLS
+    this.type = ComponentEnum.CONTROLS
     this.angleRotation = vec2.create()
     this.tmpAngleRotation = vec2.create()
   }
@@ -60,7 +60,7 @@ export default class FlyControls implements ComponentInterface {
 
     // TRANSLATION
 
-    this.position = self.get(Component.TRANSFORM).getPosition()
+    this.position = self.get(ComponentEnum.TRANSFORM).getPosition()
 
     const translateSpeed = TRANSLATE_SPEED * Time.deltaTime * (Input.isKeyDown('shift') ? 6.0 : 1.0)
     const inputDirection: vec3 = [Input.isKeyDown('a') ? 1.0 : Input.isKeyDown('d') ? -1.0 : 0.0,
@@ -78,10 +78,10 @@ export default class FlyControls implements ComponentInterface {
 
     // UPDATE ENTITY TRANSFORM
 
-    self.get(Component.TRANSFORM).worldMatrix = mat4.mul(mat4.create(), translationMatrix, rotationMatrix)
+    self.get(ComponentEnum.TRANSFORM).worldMatrix = mat4.mul(mat4.create(), translationMatrix, rotationMatrix)
   }
 
   onAdd = (self: Entity) => {
-    this.position = self.get(Component.TRANSFORM).position
+    this.position = self.get(ComponentEnum.TRANSFORM).position
   }
 }

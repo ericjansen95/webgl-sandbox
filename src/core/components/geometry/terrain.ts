@@ -2,7 +2,7 @@ import { mat4, vec2, vec3 } from "gl-matrix";
 import Entity from "../../scene/entity";
 import Material from "../material/material";
 import Plane from "./plane";
-import ComponentInterface, { Component } from "../base/component";
+import Component, { ComponentEnum } from "../base/component";
 import Geometry from "./geometry";
 import TerrainMaterial from "../material/terrainMaterial";
 import UnlitMaterial from "../material/unlitMaterial";
@@ -21,8 +21,8 @@ const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 128
 
 const TERRAIN_CHUNK_SIZE: number = 100.0
 
-export default class Terrain implements ComponentInterface {
-  type: Component
+export default class Terrain implements Component {
+  type: ComponentEnum
   size: number
   height: number
 
@@ -37,7 +37,7 @@ export default class Terrain implements ComponentInterface {
 
   // size is in units / m
   constructor(size: number = 1000) {
-    this.type = Component.TERRAIN
+    this.type = ComponentEnum.TERRAIN
     this.size = size
 
     this.height = 75.0
@@ -60,8 +60,8 @@ export default class Terrain implements ComponentInterface {
         chunkPos = vec3.fromValues(xPos, 0.0, zPos)
         const chunk: Entity = new Entity()
 
-        chunk.get(Component.TRANSFORM).setPosition(chunkPos)
-        chunk.get(Component.TRANSFORM).setScale(chunkScale)
+        chunk.get(ComponentEnum.TRANSFORM).setPosition(chunkPos)
+        chunk.get(ComponentEnum.TRANSFORM).setScale(chunkScale)
 
         chunk.add(this.highGeometry)
         chunk.add(this.highMaterial)
@@ -76,7 +76,7 @@ export default class Terrain implements ComponentInterface {
 
   onUpdate = (self: Entity, camera: Entity) => {
     return;
-    const cameraPos: vec3 = (camera.get(Component.TRANSFORM) as Transform).getPosition()
+    const cameraPos: vec3 = (camera.get(ComponentEnum.TRANSFORM) as Transform).getPosition()
     // ToDo(Eric) Check why we have to make this transform
     // => this seems wrong
     vec3.multiply(cameraPos, cameraPos, [-1.0, 1.0, -1.0])
@@ -88,7 +88,7 @@ export default class Terrain implements ComponentInterface {
       const chunk: Entity = this.chunks[chunkIndex]
 
       const chunkPos: vec3 = vec3.create()
-      mat4.getTranslation(chunkPos, chunk.get(Component.TRANSFORM).worldMatrix)
+      mat4.getTranslation(chunkPos, chunk.get(ComponentEnum.TRANSFORM).worldMatrix)
       
       // ToDo(Eric) Transform bb check in 0-1 range on both axis
       const chunkCornerLowerLeft: vec2 = [chunkPos[0] - 1.0 + this.size, chunkPos[2] + 1.0 + this.size]      
@@ -116,28 +116,28 @@ export default class Terrain implements ComponentInterface {
           // ToDo(Eric) Find a real solution
           // this is trash!
           try { 
-            this.chunks[chunkIndex - 1].components[1] = this.highGeometry as ComponentInterface
+            this.chunks[chunkIndex - 1].components[1] = this.highGeometry as Component
             //this.chunks[chunkIndex - 1].components[1] = this.highMaterial as Component
           } catch {}
           try { 
-            this.chunks[chunkIndex].components[0] = this.highGeometry as ComponentInterface
+            this.chunks[chunkIndex].components[0] = this.highGeometry as Component
             //this.chunks[chunkIndex].components[1] = this.highMaterial as Component
           } catch {}
           try { 
-            this.chunks[chunkIndex + 1].components[0] = this.highGeometry as ComponentInterface
+            this.chunks[chunkIndex + 1].components[0] = this.highGeometry as Component
             //this.chunks[chunkIndex + 1].components[1] = this.highMaterial as Component
           } catch {}
         }
       }
     }
 
-    this.chunks.forEach(chunk => {chunk.components[0] = this.lowGeometry as ComponentInterface })
+    this.chunks.forEach(chunk => {chunk.components[0] = this.lowGeometry as Component })
     this.activeChunkIndex = null
   }
 
   onAdd = (self: Entity) => {
-    this.chunks.forEach(chunk => self.get(Component.TRANSFORM).add(chunk))
-    self.get(Component.TRANSFORM).setScale([this.size, 1.0, this.size])
-    self.get(Component.TRANSFORM).setPosition([this.size * -0.5, -100, this.size * -1.0])
+    this.chunks.forEach(chunk => self.get(ComponentEnum.TRANSFORM).add(chunk))
+    self.get(ComponentEnum.TRANSFORM).setScale([this.size, 1.0, this.size])
+    self.get(ComponentEnum.TRANSFORM).setPosition([this.size * -0.5, -100, this.size * -1.0])
   }
 }

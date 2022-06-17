@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix"
 import Entity from "../../scene/entity"
 import BoundingSphere from "../boundingVolume/boundingSphere"
-import ComponentInterface, { Component } from "../base/component"
+import Component, { ComponentEnum } from "../base/component"
 import Material from "../material/material"
 
 export enum DrawMode {
@@ -18,8 +18,8 @@ export const parseUnindexedVertexPositions = (indices: Uint16Array, positions: F
   return output
 }
 
-export default class Geometry implements ComponentInterface {
-  type: Component
+export default class Geometry implements Component {
+  type: ComponentEnum
 
   vertex: {
     componentCount: number
@@ -41,7 +41,7 @@ export default class Geometry implements ComponentInterface {
   boundingSphere: boolean
 
   constructor(geometryType: DrawMode = DrawMode.TRIANGLE, visible: boolean = true, cull: boolean = true, boundingSphere: boolean = true) {
-    this.type = Component.GEOMETRY
+    this.type = ComponentEnum.GEOMETRY
     this.vertex = null
     this.buffer = null
     this.drawMode = geometryType

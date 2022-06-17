@@ -1,10 +1,10 @@
 import { mat4, quat, vec3 } from "gl-matrix";
 import Camera from "./camera";
 import Entity from "../../scene/entity";
-import ComponentInterface, { Component } from "./component";
+import Component, { ComponentEnum } from "./component";
 
-export default class Transform implements ComponentInterface {
-  type: Component
+export default class Transform implements Component {
+  type: ComponentEnum
   position: vec3
   rotation: vec3
   scale: vec3
@@ -20,7 +20,7 @@ export default class Transform implements ComponentInterface {
   children: Array<Entity>
   
   constructor() {
-    this.type = Component.TRANSFORM
+    this.type = ComponentEnum.TRANSFORM
 
     this.position = vec3.create()
     this.rotation = vec3.create()
@@ -65,7 +65,7 @@ export default class Transform implements ComponentInterface {
   }
 
   add = (entity: Entity) => {
-    (entity.get(Component.TRANSFORM) as Transform).parent = this
+    (entity.get(ComponentEnum.TRANSFORM) as Transform).parent = this
     this.children.push(entity)
   }
 

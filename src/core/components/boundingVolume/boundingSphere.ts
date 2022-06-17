@@ -3,10 +3,10 @@ import Entity from "../../scene/entity";
 import BoundingVolume from "./boundingVolume";
 import Geometry, { DrawMode } from "../geometry/geometry";
 import UnlitMaterial from "../material/unlitMaterial";
-import { Component } from "../base/component";
+import { ComponentEnum } from "../base/component";
 
 export default class BoundingSphere implements BoundingVolume {
-  type: Component
+  type: ComponentEnum
   sphere: Entity | null
 
   radius: number
@@ -17,7 +17,7 @@ export default class BoundingSphere implements BoundingVolume {
   visible: boolean
   
   constructor(visible: boolean = false) {
-    this.type = Component.BOUNDING_VOLUME
+    this.type = ComponentEnum.BOUNDING_VOLUME
     this.visible = visible
   }
 
@@ -26,7 +26,7 @@ export default class BoundingSphere implements BoundingVolume {
 
     this.createSphere()
 
-    const geometry = this.sphere.get(Component.GEOMETRY)
+    const geometry = this.sphere.get(ComponentEnum.GEOMETRY)
     geometry.visible = visible
   }
 
@@ -69,7 +69,7 @@ export default class BoundingSphere implements BoundingVolume {
     this.sphere.add(sphereGeometry)
     this.sphere.add(new UnlitMaterial([1.0, 0.0, 1.0]))
 
-    this.self.get(Component.TRANSFORM).add(this.sphere)
+    this.self.get(ComponentEnum.TRANSFORM).add(this.sphere)
 
     return true
   }
@@ -77,7 +77,7 @@ export default class BoundingSphere implements BoundingVolume {
   onAdd = (self: Entity) => {
     this.self = self
 
-    const geometry: Geometry = self.get(Component.GEOMETRY)
+    const geometry: Geometry = self.get(ComponentEnum.GEOMETRY)
 
     this.min = geometry.vertex.min
     this.max = geometry.vertex.max

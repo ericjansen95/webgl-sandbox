@@ -1,11 +1,11 @@
-import ComponentInterface, { Component } from "../components/base/component";
+import Component, { ComponentEnum } from "../components/base/component";
 import Transform from "../components/base/transform";
 
 export default class Entity {
-  components: Array<ComponentInterface>
+  components: Array<Component>
 
   constructor() {
-    this.components = new Array<ComponentInterface>()
+    this.components = new Array<Component>()
     this.add(new Transform())
   }
 
@@ -13,7 +13,7 @@ export default class Entity {
     const entities = new Array<Entity>()
 
     const traverse = (parent: Entity) => {
-      for (const child of (parent.get(Component.TRANSFORM) as Transform).children)
+      for (const child of (parent.get(ComponentEnum.TRANSFORM) as Transform).children)
         traverse(child)
 
       if(this === parent) return
@@ -27,8 +27,8 @@ export default class Entity {
       yield entity
   }
 
-  add = (component: any): any | null => {
-    const { type } = component as ComponentInterface
+  add = (component: Component): any | null => {
+    const { type } = component as Component
 
     if(this.components[type]) return null
 
@@ -38,14 +38,14 @@ export default class Entity {
     return component
   }
 
-  remove = (type: Component): boolean => {
+  remove = (type: ComponentEnum): boolean => {
     if(!this.components[type]) return false
  
     this.components[type] = null
     return true
   }
 
-  get = (type: Component): any | null => {
+  get = (type: ComponentEnum): any | null => {
     return this.components[type] || null
   }
 }

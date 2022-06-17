@@ -1,6 +1,6 @@
 
 import { mat4, quat, vec3 } from 'gl-matrix';
-import ComponentInterface, { Component } from './component';
+import Component, { ComponentEnum } from './component';
 import createFrustrum, { Frustrum, PlaneIndex } from '../../../util/math/frustrum'
 import Entity from '../../scene/entity';
 import { createPlaneFromPoints } from '../../../util/math/plane';
@@ -18,11 +18,11 @@ const DEFAULT_Z_FAR: number = 10000.0
 const VECTOR_FORWARD: vec3 = vec3.fromValues(0.0, 0.0, -1.0)
 const VECTOR_UP: vec3 = vec3.fromValues(0.0, 1.0, 0.0)
 
-export default class Camera implements ComponentInterface {
-  type: Component
+export default class Camera implements Component {
+  type: ComponentEnum
   self: Entity
 
-  forward: vec3
+  viewDir: vec3
   up: vec3
   side: vec3
 
@@ -34,12 +34,12 @@ export default class Camera implements ComponentInterface {
   aspect: number
 
   constructor(fov: number, aspect: number) {
-    this.type = Component.CAMERA
+    this.type = ComponentEnum.CAMERA
     this.projectionMatrix = mat4.create()
     this.viewMatrix = mat4.create()
     this.frustrum = createFrustrum()
 
-    this.forward = vec3.fromValues(0.0, 0.0, -1.0)
+    this.viewDir = vec3.fromValues(0.0, 0.0, -1.0)
     this.up = vec3.fromValues(0.0, 1.0, 0.0)
     this.side = vec3.fromValues(1.0, 0.0, 0.0)
 
@@ -104,28 +104,28 @@ export default class Camera implements ComponentInterface {
   }
 
   isEntityInFrustrum = (entity: Entity): boolean => {
-    const geometry: Geometry | null = entity.get(Component.GEOMETRY)
+    const geometry: Geometry | null = entity.get(ComponentEnum.GEOMETRY)
 
     if(!this.frustrum || !geometry?.visible) return false
     if(!geometry.cull) return true
 
     let isInFrustrum: boolean | null = null
 
-    const point: vec3 = (entity.get(Component.TRANSFORM) as Transform).getPosition()
+    const point: vec3 = (entity.get(ComponentEnum.TRANSFORM) as Transform).getPosition()
 
     // ToDo: Abstract bounding volumes with base class and type to improve component query and code flow
 
-    const boundingVolume = entity.get(Component.BOUNDING_VOLUME) as BoundingBox & BoundingSphere
+    const boundingVolume = entity.get(ComponentEnum.BOUNDING_VOLUME) as BoundingBox & BoundingSphere
 
     if(boundingVolume.radius) {
-      const scale: vec3 = (entity.get(Component.TRANSFORM) as Transform).getScale()
+      const scale: vec3 = (entity.get(ComponentEnum.TRANSFORM) as Transform).getScale()
       // ToDo: Chache this!
       const radiusScalar: number = Math.max(scale[0], Math.max(scale[1], scale[2])) 
       isInFrustrum = this.isSphereInFrustrum(point, boundingVolume.radius * radiusScalar)
     }
 
     if(boundingVolume.corners) {
-      const worldMatrix: mat4 = (entity.get(Component.TRANSFORM) as Transform).worldMatrix
+      const worldMatrix: mat4 = (entity.get(ComponentEnum.TRANSFORM) as Transform).worldMatrix
       isInFrustrum = this.isBoxInFrustrum(boundingVolume.corners, worldMatrix)
     }
 
@@ -137,7 +137,7 @@ export default class Camera implements ComponentInterface {
   updateFrustrum = () => {
     // ToDo: Optimize this!
 
-    const position = this.self.get(Component.TRANSFORM).getPosition()
+    const position = this.self.get(ComponentEnum.TRANSFORM).getPosition()
 
     // see: http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-extracting-the-planes/
 
@@ -154,7 +154,7 @@ export default class Camera implements ComponentInterface {
     const nearUpOffset: vec3 = vec3.scale(vec3.create(), this.up, hNear * 0.5)
     const nearSideOffset: vec3 = vec3.scale(vec3.create(), this.side, wNear * 0.5)
 
-    const nearCenter: vec3 = vec3.scaleAndAdd(vec3.create(), position, this.forward, DEFAULT_Z_NEAR)
+    const nearCenter: vec3 = vec3.scaleAndAdd(vec3.create(), position, this.viewDir, DEFAULT_Z_NEAR)
 
     /*
     console.log("near up offset =", nearUpOffset.toString())
@@ -187,7 +187,7 @@ export default class Camera implements ComponentInterface {
     const farUpOffset: vec3 = vec3.scale(vec3.create(), this.up, hFar * 0.5)
     const farSideOffset: vec3 = vec3.scale(vec3.create(), this.side, wFar * 0.5)
 
-    const farCenter: vec3 = vec3.scaleAndAdd(vec3.create(), position, this.forward, DEFAULT_Z_FAR)
+    const farCenter: vec3 = vec3.scaleAndAdd(vec3.create(), position, this.viewDir, DEFAULT_Z_FAR)
 
     /*
     console.log("far up offset =", farUpOffset.toString())
@@ -240,14 +240,14 @@ export default class Camera implements ComponentInterface {
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
-    const worldMatrix = (self.get(Component.TRANSFORM) as Transform).worldMatrix
+    const worldMatrix = (self.get(ComponentEnum.TRANSFORM) as Transform).worldMatrix
     this.viewMatrix = mat4.invert(mat4.create(), worldMatrix)
 
     const rotation: quat = mat4.getRotation(quat.create(), worldMatrix)
 
-    vec3.transformQuat(this.forward, VECTOR_FORWARD, rotation)
-    vec3.cross(this.side, VECTOR_UP, this.forward)
-    vec3.cross(this.up, this.side, this.forward)
+    vec3.transformQuat(this.viewDir, VECTOR_FORWARD, rotation)
+    vec3.cross(this.side, VECTOR_UP, this.viewDir)
+    vec3.cross(this.up, this.side, this.viewDir)
 
     this.updateFrustrum()
   }

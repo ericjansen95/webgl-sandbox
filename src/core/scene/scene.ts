@@ -6,7 +6,7 @@ import Debug from "../internal/debug";
 import Client from "../network/client";
 import GameNetworkController from "../network/gameNetworkController";
 import Entity from "./entity";
-import { Component } from "../components/base/component";
+import { ComponentEnum } from "../components/base/component";
 import Transform from "../components/base/transform";
 
 export type SceneStats = {
@@ -35,11 +35,11 @@ export default class Scene {
     }
 
     const grid: Entity = new Entity()
-    grid.get(Component.TRANSFORM).setScale([10.0, 10.0, 10.0])
-    grid.get(Component.TRANSFORM).setPosition([-5.0, 0.0, -5.0])
+    grid.get(ComponentEnum.TRANSFORM).setScale([10.0, 10.0, 10.0])
+    grid.get(ComponentEnum.TRANSFORM).setPosition([-5.0, 0.0, -5.0])
     grid.add(new Grid(10))
     grid.add(new UnlitMaterial([0.75, 0.75, 0.75]))
-    this.root.get(Component.TRANSFORM).add(grid)
+    this.root.get(ComponentEnum.TRANSFORM).add(grid)
 
     Debug.console.registerCommand({ name: "bv", description: "Visualize bounding volumes.", callback: this.toggleBoundingVolumes })
 
@@ -75,12 +75,12 @@ export default class Scene {
   }
 
   updateEntityTransform = (entity: Entity): void => {
-    entity.get(Component.TRANSFORM).onUpdate()
+    entity.get(ComponentEnum.TRANSFORM).onUpdate()
   }
 
   updateEntityComponents = (entity: Entity, camera: Entity): void => {
     entity.components.forEach((component) => {
-      if(component.onUpdate && component.type !== Component.TRANSFORM)
+      if(component.onUpdate && component.type !== ComponentEnum.TRANSFORM)
         component.onUpdate(entity, camera)
     })
   }
@@ -89,7 +89,7 @@ export default class Scene {
   getVisibleEntities = (camera: Entity): Array<Entity> => {
     const startTime = Date.now()
 
-    const cameraComponent = camera.get(Component.CAMERA) as Camera
+    const cameraComponent = camera.get(ComponentEnum.CAMERA) as Camera
 
     const visibleEnties = this.getEntities().filter(entity => cameraComponent.isEntityInFrustrum(entity))
 
@@ -106,7 +106,7 @@ export default class Scene {
   }
 
   add = (entity: Entity): Entity => {
-    const rootTransform = this.root.get(Component.TRANSFORM) as Transform
+    const rootTransform = this.root.get(ComponentEnum.TRANSFORM) as Transform
     rootTransform.add(entity)
     return entity
   }
@@ -115,7 +115,7 @@ export default class Scene {
     if(!this.root) return "Failed toggeling bounding volumes = no scene root found!"
 
     const toggleBoundingVolume = (entity: Entity) => {
-      const boundingVolume = entity.get(Component.BOUNDING_VOLUME) as BoundingVolume
+      const boundingVolume = entity.get(ComponentEnum.BOUNDING_VOLUME) as BoundingVolume
       if(!boundingVolume) return
 
       boundingVolume.setVisible(!boundingVolume.visible)
