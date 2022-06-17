@@ -7,7 +7,8 @@ export enum Component {
   BOUNDING_VOLUME,
   MATERIAL,
   CONTROLS,
-  TERRAIN
+  TERRAIN,
+  SCRIPT
 }
 
 export default interface ComponentInterface {

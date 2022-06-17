@@ -8,13 +8,12 @@ import Time from './core/internal/time';
 import Material from './core/components/material/material';
 import FlyControls from './core/components/controls/flyControls';
 import Terrain from './core/components/geometry/terrain';
-import Client from './core/network/client';
 import Scene from './core/scene/scene';
 import Quad from './core/components/geometry/quad';
 import UnlitMaterial from './core/components/material/unlitMaterial';
 import GltfLoader from './core/loader/gltfLoader';
-import Transform from './core/components/base/transform';
 import { Component } from './core/components/base/component';
+import { Turntable as Turntable } from './core/components/scripts/turntable';
 
 /*
 
@@ -107,8 +106,9 @@ const main = async () => {
 
   for(let geoIndex = 0; geoIndex < geometry.length; geoIndex++) {
     const entity: Entity = new Entity()
-    entity.get(Component.TRANSFORM).setPosition([0.0, 1.0, -2.0 * geoIndex])
+    entity.get(Component.TRANSFORM).setPosition([geoIndex - 3 + geoIndex, 0.5, 0.0])
     entity.add(geometry[geoIndex])
+    entity.add(new Turntable(1, [0, 1, 0]))
     entity.add(lambertMaterial)
 
     scene.root.get(Component.TRANSFORM).addChild(entity)

@@ -10,7 +10,8 @@
             "nodes" : [
                 0,
                 1,
-                2
+                2,
+                3
             ]
         }
     ],
@@ -26,6 +27,10 @@
         {
             "mesh" : 2,
             "name" : "teapot"
+        },
+        {
+            "mesh" : 3,
+            "name" : "torus"
         }
     ],
     "meshes" : [
@@ -62,6 +67,18 @@
                         "NORMAL" : 7
                     },
                     "indices" : 8
+                }
+            ]
+        },
+        {
+            "name" : "torus",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 9,
+                        "NORMAL" : 10
+                    },
+                    "indices" : 11
                 }
             ]
         }
@@ -150,6 +167,34 @@
             "componentType" : 5123,
             "count" : 18960,
             "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 9,
+            "componentType" : 5126,
+            "count" : 10240,
+            "max" : [
+                0.6039190292358398,
+                0.35814380645751953,
+                0.7572860717773438
+            ],
+            "min" : [
+                -0.8179531097412109,
+                -0.36239147186279297,
+                -0.7574653625488281
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 10,
+            "componentType" : 5126,
+            "count" : 10240,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 11,
+            "componentType" : 5123,
+            "count" : 61440,
+            "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
@@ -197,11 +242,26 @@
             "buffer" : 0,
             "byteLength" : 37920,
             "byteOffset" : 1823376
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 122880,
+            "byteOffset" : 1861296
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 122880,
+            "byteOffset" : 1984176
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 122880,
+            "byteOffset" : 2107056
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 1861296,
+            "byteLength" : 2229936,
             "uri" : "testGeo.bin"
         }
     ]
