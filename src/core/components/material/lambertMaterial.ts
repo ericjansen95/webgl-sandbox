@@ -1,5 +1,5 @@
-import { vec3 } from "gl-matrix";
-import Material, { compileProgram, MaterialType } from "./material";
+import { mat4, vec3 } from "gl-matrix";
+import Material, { compileProgram, LightData } from "./material";
 import { GL } from "../../scene/renderer"
 
 const vsDefaultSource: string = require('/src/core/components/material/shader/default.vs') as string
@@ -10,8 +10,6 @@ export default class LambertMaterial extends Material {
 
   constructor(color) {
     super()
-
-    this.materialType = "LAMBERT"
 
     const {program, attributeLocations, uniformLocations} = compileProgram(vsDefaultSource, fsLambertSource)
     
@@ -26,9 +24,10 @@ export default class LambertMaterial extends Material {
     this.uniformLocations.set('uLightDir', GL.getUniformLocation(program, 'uLightDir'))
   }
 
-  bind = (lightDir: vec3) => {
+  bind = (light: LightData) => {
+    const { mainDirection } = light
     GL.uniform1f(this.uniformLocations.get('uAmbientLight'), 0.1)
-    GL.uniform3fv(this.uniformLocations.get('uLightDir'), lightDir)
+    GL.uniform3fv(this.uniformLocations.get('uLightDir'), mainDirection)
     GL.uniform3fv(this.uniformLocations.get('uColor'), this.color)
   }
 }

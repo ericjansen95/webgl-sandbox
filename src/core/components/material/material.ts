@@ -4,42 +4,39 @@ import Entity from "../../scene/entity"
 import { mat4, vec3 } from "gl-matrix"
 import Transform from "../base/transform"
 import Camera from "../base/camera"
+import Debug from "../../internal/debug"
 
-export type MaterialType = "LAMBERT" | "TERRAIN" | "UNLIT"
+export type LightData = { mainDirection: vec3 }
+const DEFAULT_MAIN_LIGHT_DIRECTION: vec3 = vec3.normalize(vec3.create(), [0.75, 0.25, 0.0])
 
 export default class Material implements ComponentInterface {
   type: Component
-  materialType: MaterialType
   program: WebGLProgram
 
   attributeLocations: Map<string, number>
   uniformLocations: Map<string, WebGLUniformLocation>
 
-  bindBase = (GL: WebGL2RenderingContext, options: { entity: Entity, camera: Entity, lightDir: vec3 }): boolean => {
-    const {entity, camera, lightDir} = options
+  bind: (light?: LightData, offsetMatrix?: mat4) => void
 
-    const transform = entity.get(Component.TRANSFORM) as Transform
+  bindBase = (GL: WebGL2RenderingContext, entity: Entity, camera: Entity, light: LightData = { mainDirection: DEFAULT_MAIN_LIGHT_DIRECTION }) => {
+    const { mainDirection } = light
+
+    const { modelMatrix, worldMatrix } = entity.get(Component.TRANSFORM) as Transform
     const material = entity.get(Component.MATERIAL) as any
-  
-    if(!transform || !material) return false
+    const { projectionMatrix, viewMatrix } = camera.get(Component.CAMERA) as Camera
 
-    // ToDo: Extract this data once at start of tick?
-    const viewMatrix = (camera.get(Component.TRANSFORM) as Transform).worldMatrix
-    const projectionMatrix = (camera.get(Component.CAMERA) as Camera).projectionMatrix
-
-    GL.useProgram(material.program)       
+    GL.useProgram(material.program)
 
     GL.uniformMatrix4fv(
       material.uniformLocations.get('uWorldMatrix'),
       false,
-      transform.worldMatrix
+      worldMatrix
     )
 
-    // ToDo: Cache inverted view matrix in camera?
     GL.uniformMatrix4fv(
       material.uniformLocations.get('uViewMatrix'),
       false,
-      mat4.invert(mat4.create(), viewMatrix)
+      viewMatrix
     )
 
     GL.uniformMatrix4fv(
@@ -48,24 +45,7 @@ export default class Material implements ComponentInterface {
       projectionMatrix
     )
 
-    switch(material.materialType) {
-      case "LAMBERT": {
-        material.bind(lightDir)
-        break
-      }
-      case "TERRAIN": {
-        material.bind(lightDir, transform.modelMatrix)
-        break
-      }
-      case "UNLIT": {
-        material.bind()
-        break
-      }
-      default:
-        throw new Error("Renderer::bindMaterial(): Invalid or unimplemented material type!")
-    }
-
-    return true
+    material.bind(light, modelMatrix)
   }
 
   constructor() {
@@ -85,7 +65,7 @@ export const compileProgram = (vsSource: string, fsSource: string): {program: Ma
   GL.linkProgram(program)
 
   if(!GL.getProgramParameter(program, GL.LINK_STATUS)) {
-    console.error(`Failed to initialize shader program: ${GL.getProgramInfoLog(program)}`)
+    Debug.error(`Failed to initialize shader program: ${GL.getProgramInfoLog(program)}`)
     return null
   }
 

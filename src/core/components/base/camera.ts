@@ -27,6 +27,7 @@ export default class Camera implements ComponentInterface {
   side: vec3
 
   projectionMatrix: mat4
+  viewMatrix: mat4
   frustrum: Frustrum
 
   fov: number
@@ -35,6 +36,7 @@ export default class Camera implements ComponentInterface {
   constructor(fov: number, aspect: number) {
     this.type = Component.CAMERA
     this.projectionMatrix = mat4.create()
+    this.viewMatrix = mat4.create()
     this.frustrum = createFrustrum()
 
     this.forward = vec3.fromValues(0.0, 0.0, -1.0)
@@ -239,6 +241,8 @@ export default class Camera implements ComponentInterface {
 
   onUpdate = (self: Entity, camera: Entity) => {
     const worldMatrix = (self.get(Component.TRANSFORM) as Transform).worldMatrix
+    this.viewMatrix = mat4.invert(mat4.create(), worldMatrix)
+
     const rotation: quat = mat4.getRotation(quat.create(), worldMatrix)
 
     vec3.transformQuat(this.forward, VECTOR_FORWARD, rotation)

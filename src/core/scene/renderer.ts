@@ -35,14 +35,11 @@ export default class Renderer {
 
     if(!material || !geometry.load(GL)) return
 
-    this.drawCalls++
+    material.bindBase(GL, entity, camera)
     geometry.bind(GL, material)
 
-    if(!material.bindBase(GL, {entity,
-                              camera,
-                              lightDir: vec3.normalize(vec3.create(), [0.75, 0.25, 0.0])})) return
-
     GL.drawArrays(geometry.drawMode, 0, geometry.vertex.componentCount)
+    this.drawCalls++
   }
 
   renderEntities = (entities: Array<Entity>, camera: Entity) => {

@@ -1,5 +1,5 @@
 import { mat4, vec3 } from "gl-matrix";
-import Material, { compileProgram, MaterialType } from "./material";
+import Material, { compileProgram, LightData } from "./material";
 import { GL } from "../../scene/renderer"
 
 const vsTerrainSource: string = require('/src/core/components/material/shader/terrain.vs') as string
@@ -16,7 +16,6 @@ export default class TerrainMaterial extends Material {
     super()
 
     this.height = height
-    this.materialType = "TERRAIN"
 
     const {program, attributeLocations, uniformLocations} = compileProgram(vsTerrainSource, fsTerrainSorce)
     
@@ -63,9 +62,11 @@ export default class TerrainMaterial extends Material {
     });
   }
 
-  bind = (lightDir: vec3, offsetMatrix: mat4) => {
+  bind = (light: LightData, offsetMatrix: mat4) => {
+    const { mainDirection } = light
+
     GL.uniform1f(this.uniformLocations.get('uAmbientLight'), 0.25)
-    GL.uniform3fv(this.uniformLocations.get('uLightDir'), lightDir)
+    GL.uniform3fv(this.uniformLocations.get('uLightDir'), mainDirection)
 
     GL.activeTexture(GL.TEXTURE0)
     GL.bindTexture(GL.TEXTURE_2D, this.heightmap)

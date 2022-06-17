@@ -1,5 +1,5 @@
-import { vec3 } from "gl-matrix";
-import Material, { compileProgram, MaterialType } from "./material";
+import { mat4, vec3 } from "gl-matrix";
+import Material, { compileProgram, LightData } from "./material";
 import { GL } from "../../scene/renderer"
 
 const vsDefaultSource: string = require('/src/core/components/material/shader/default.vs') as string
@@ -10,8 +10,6 @@ export default class UnlitMaterial extends Material {
 
   constructor(color) {
     super()
-
-    this.materialType = "UNLIT"
 
     const {program, attributeLocations, uniformLocations} = compileProgram(vsDefaultSource, fsUnlitSource)
     
