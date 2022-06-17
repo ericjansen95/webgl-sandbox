@@ -59,14 +59,14 @@ const main = async () => {
   canvas.height = window.innerHeight
 
   const sceneCamera: Entity = new Entity()
-  sceneCamera.get(Component.TRANSFORM).setPosition([0.0, 0.0, 10.0])
-  const camera = sceneCamera.add(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
+  sceneCamera.get(Component.TRANSFORM).setPosition([0.0, 1.0, 6.0])
+  sceneCamera.add(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
   const engine = new Engine(canvas, sceneCamera)
 
   const { geometry } = await new GltfLoader().load("http://localhost:8080/res/geo/testGeo.gltf")
 
-  const phongMaterial = new PhongMaterial([0.698, 0.133, 0.133]) as Material
+  const phongMaterial = new PhongMaterial([0.9, 0.75, 0.0]) as Material
 
   for(let geoIndex = 0; geoIndex < geometry.length; geoIndex++) {
     const entity: Entity = new Entity()

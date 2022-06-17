@@ -8,6 +8,7 @@ import Debug from "../internal/debug"
 export type RendererStats = {
   drawTime: number
   drawCalls: number
+  vertexCount: number
 }
 
 export type RenderList = Array<Entity>
@@ -22,7 +23,8 @@ export default class Renderer {
     this.gl = canvas.getContext('webgl2') as WebGL2RenderingContext
     this.stats = {
       drawTime: 0,
-      drawCalls: 0
+      drawCalls: 0,
+      vertexCount: 0
     }
 
     if(!this.gl) {
@@ -46,6 +48,7 @@ export default class Renderer {
 
     this.gl.drawArrays(geometry.drawMode, 0, geometry.vertex.componentCount)
     this.stats.drawCalls++
+    this.stats.vertexCount += geometry.vertex.componentCount
   }
 
   renderEntities = (renderList: RenderList, camera: Entity) => {
@@ -54,6 +57,7 @@ export default class Renderer {
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
     this.stats.drawCalls = 0
+    this.stats.vertexCount = 0
 
     for(const entity of renderList)
       this.renderEntity(entity, camera)

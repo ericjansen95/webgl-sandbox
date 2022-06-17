@@ -43,13 +43,13 @@ export default class Engine {
     this.debugCameraEnabled = false
     Debug.console.registerCommand({name: "dc", description: "Toggle debug fly camera.", callback: this.toggleDebugCamera})
 
+    const sceneCameraTransform = sceneCamera.get(ComponentEnum.TRANSFORM) as Transform
+
     const update = curTime => {
       const startTime = Date.now()
       Time.tick(curTime)
   
-      //const sceneCameraTransform = sceneCamera.getComponent("Transform")
-      //sceneCameraTransform.setRotation([0.0, Math.cos((Date.now() - Time.startTime) * 0.0005) * Math.PI * 0.25, 0.0])
-  
+      sceneCameraTransform.setRotation([0.0, Math.cos((Date.now() - Time.startTime) * 0.00075) * Math.PI * 0.05, 0.0])
       this.scene.update(sceneCamera)
 
       if(this.debugCameraEnabled)

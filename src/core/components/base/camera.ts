@@ -241,7 +241,7 @@ export default class Camera implements Component {
 
     this.updateProjection(this.fov, this.aspect)
 
-    const debugMaterial = new UnlitMaterial([1.0, 0.0, 1.0]) as Material
+    const debugMaterial = new UnlitMaterial([0.0, 1.0, 1.0]) as Material
 
     for(let posIndex = 0; posIndex < this.frustrum.positions.length; posIndex += 4) {  
       const frustrumPlane = new Entity()
