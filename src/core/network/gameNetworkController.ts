@@ -11,8 +11,6 @@ import Entity from "../scene/entity";
 import Client, { GameConnectPackage, GameDeltaStatePackage, GameDisconnectPackage, GameTransformPackage, GlobalConnectPackage } from "./client";
 import { Component } from "../components/base/component";
 
-const humanObj: string = require('/public/res/geo/human.txt') as string
-
 type ClientTransform = {
   currentPosition: Array<number>,
   targetPosition: Array<number>
@@ -163,7 +161,6 @@ export default class GameNetworkController {
     transform.setRotation(vec3.fromValues(0.0, rotation, 0.0))
 
     const humanGeometry = new Geometry()
-    humanGeometry.loadFromObj(humanObj)
     
     entity.add(humanGeometry)
     entity.add(lambertMaterial)

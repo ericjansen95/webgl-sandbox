@@ -6,6 +6,7 @@ import { Component } from "../components/base/component"
 import Debug from "../internal/debug"
 
 export type RendererStats = {
+  drawTime: number
   drawCalls: number
 }
 
@@ -18,6 +19,7 @@ export default class Renderer {
   constructor(canvas: HTMLCanvasElement) {
     this.gl = canvas.getContext('webgl2') as WebGL2RenderingContext
     this.stats = {
+      drawTime: 0,
       drawCalls: 0
     }
 
@@ -45,6 +47,8 @@ export default class Renderer {
   }
 
   renderEntities = (entities: Array<Entity>, camera: Entity) => {
+    const startTime = Date.now()
+
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
     this.stats.drawCalls = 0
@@ -52,6 +56,7 @@ export default class Renderer {
     for(const entity of entities)
       this.renderEntity(entity, camera)
 
+    this.stats.drawTime = Math.ceil(Date.now() - startTime)
     Debug.updateStats({renderer: this.stats})
   }
 }

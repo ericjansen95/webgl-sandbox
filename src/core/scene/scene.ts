@@ -9,7 +9,9 @@ import Entity from "./entity";
 import { Component } from "../components/base/component";
 
 export type SceneStats = {
+  updateTime: number
   entityCount: number
+  cullTime: number
   cullCount: number
 }
 
@@ -25,7 +27,9 @@ export default class Scene {
     // handle entity passing with integer id?
     this.entities = new Array<Entity>()
     this.stats = {
+      updateTime: 0,
       entityCount: 0,
+      cullTime: 0,
       cullCount: 0
     }
 
@@ -44,8 +48,13 @@ export default class Scene {
   }
 
   update = (camera: Entity) => {
+    const startTime = Date.now()
+
     this.entities = []
     this.updateEntity(this.root, camera, true)
+
+    this.stats.updateTime = Math.ceil(Date.now() - startTime)
+    this.stats.entityCount = this.entities.length
 
     if(!this.networkController) return
 
@@ -77,19 +86,21 @@ export default class Scene {
 
   // this returns a "display list" for all visible entities that are in the camera frustrum
   getVisibleEntities = (camera: Entity): Array<Entity> => {
+    const startTime = Date.now()
+
     const cameraComponent = camera.get(Component.CAMERA) as Camera
 
     const visibleEnties = this.getEntities().filter(entity => cameraComponent.isEntityInFrustrum(entity))
 
+    this.stats.cullTime = Math.ceil(Date.now() - startTime)
     this.stats.cullCount = this.stats.entityCount - visibleEnties.length
+
     Debug.updateStats({scene: this.stats})
 
     return visibleEnties
   }
 
   getEntities = (): Array<Entity> => {
-    this.stats.entityCount = this.entities.length
-
     return this.entities
   }
 

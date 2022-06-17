@@ -2,12 +2,12 @@ import Entity from "../../scene/entity"
 
 export enum Component {
   TRANSFORM = 0,
-  CAMERA,
   GEOMETRY,
   BOUNDING_VOLUME,
   MATERIAL,
-  CONTROLS,
+  CAMERA,
   TERRAIN,
+  CONTROLS,
   SCRIPT
 }
 

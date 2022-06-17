@@ -58,7 +58,7 @@ export default class Debug {
     let output: string = ""
 
     for(const [statSectionName, statSectionValue] of Object.entries(this.stats)) {
-      output += statSectionName + ':\r\n\r\n'
+      output += statSectionName + ':\r\n'
 
       for(const [statName, statValue] of Object.entries(statSectionValue))
         output += '  ' + statName + ' = ' + statValue.toString() + '\r\n'

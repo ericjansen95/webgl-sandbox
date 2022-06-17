@@ -121,13 +121,7 @@ const main = async () => {
   scene.root.get(Component.TRANSFORM).addChild(sceneCamera)
 
   const update = curTime => {
-    const frameTime = Math.round(Time.deltaTime * 1000)
-    stats = {
-      frameTime,
-      FPS: Math.round(1000 / frameTime)
-    }
-    Debug.updateStats({main: stats})
-
+    const startTime = Date.now()
     Time.tick(curTime)
 
     //const sceneCameraTransform = sceneCamera.getComponent("Transform")
@@ -140,6 +134,12 @@ const main = async () => {
     debugCamera.get(Component.CAMERA).onUpdate(debugCamera, debugCamera)
 
     renderer.renderEntities(scene.getVisibleEntities(sceneCamera), debugCamera)
+
+    stats = {
+      frameTime: Math.ceil(Date.now() - startTime),
+      FPS: Math.ceil(1 / Time.deltaTime)
+    }
+    Debug.updateStats({main: stats})
 
     requestAnimationFrame(update)
   }

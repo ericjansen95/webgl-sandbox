@@ -6,32 +6,21 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
+        test: /\.ts?$/,
         use: 'ts-loader',
         exclude: /node_modules/,
       },
       {
         test: /\.(glsl|vs|fs)$/,
         loader: 'shader-loader',
-      },
-      {
-        test: /\.txt$/i,
-        use: [
-          {
-            loader: 'raw-loader',
-            options: {
-              esModule: false,
-            },
-          },
-        ],
-      },
+      }
     ],
   },
   resolve: {
     extensions: ['.ts', '.js'],
   },
   output: {
-    filename: 'bundle.js',
+    filename: 'ps-engine.js',
     path: path.resolve(__dirname, 'public'),
   },
   optimization: {
