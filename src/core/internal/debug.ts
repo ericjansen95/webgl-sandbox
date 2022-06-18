@@ -3,6 +3,8 @@ import Camera from "../components/base/camera"
 import { ComponentEnum } from "../components/base/component"
 import Transform from "../components/base/transform"
 import FlyControls from "../components/controls/flyControls"
+import Material from "../components/material/material"
+import UnlitMaterial from "../components/material/unlitMaterial"
 import { MainStats } from "../engine"
 import Entity from "../scene/entity"
 import { RendererStats } from "../scene/renderer"
@@ -25,6 +27,9 @@ export default class Debug {
 
   static cameraEnabled: boolean
   static camera: Entity
+
+  static material: Material
+
   private static sceneCamera: Entity
 
   private static root: HTMLDivElement
@@ -46,6 +51,8 @@ export default class Debug {
 
     this.cameraEnabled = false
     this.sceneCamera = sceneCamera
+
+    this.material = new UnlitMaterial([1.0, 0.0, 1.0])
 
     this.console.registerCommand({ name: "ds", description: "Display debug statistics.", callback: this.toggleStats })
     this.console.registerCommand({ name: "fi", description: "Display frame inspector.", callback: this.frameInspector.toggleVisible })
