@@ -91,8 +91,6 @@ export default class BoundingBox extends BoundingVolume {
     const boxGeometry = new Geometry(DrawMode.LINE, true, false, false)
     const positions = this.createBoxBuffer(this.min, this.max)
     boxGeometry.setVertices({
-      count: positions.length,
-      indices: new Uint16Array(),
       positions
     })
 

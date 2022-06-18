@@ -22,8 +22,6 @@ export default class Quad extends Geometry {
     positions.push(...input[0])
 
     this.setVertices({
-      count: positions.length,
-      indices: new Uint16Array(),
       positions: new Float32Array(positions),
     })
   }

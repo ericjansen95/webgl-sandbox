@@ -29,12 +29,12 @@ export const parseUnindexedVertexUvs = (indices: Uint16Array, uvs: Float32Array)
 }
 
 export type VertexObject = {
-  count: number
+  count?: number
 
-  indices: Uint16Array
   positions: Float32Array
   normals?: Float32Array
 
+  indices?: Uint16Array
   uvs?: Float32Array
   
   min?: vec3
@@ -42,22 +42,21 @@ export type VertexObject = {
 }
 
 export type VertexBufferObject = {
-  indices: WebGLBuffer
-
   positions: WebGLBuffer
   normals: WebGLBuffer
 
-  uvs: WebGLBuffer
+  indices?: WebGLBuffer
+  uvs?: WebGLBuffer
 }
 
 export const createVertexObject = (): VertexObject => {
   return {
     count: 0,
 
-    indices: new Uint16Array,
     positions: new Float32Array,
     normals: null,
 
+    indices: null,
     uvs: null,
 
     min: vec3.create(),
@@ -67,12 +66,8 @@ export const createVertexObject = (): VertexObject => {
 
 export const createVertexBufferObject = (gl: WebGL2RenderingContext): VertexBufferObject => {
   return {
-    indices: gl.createBuffer(),
-
     positions: gl.createBuffer(),
-    normals: gl.createBuffer(),
-
-    uvs: gl.createBuffer()
+    normals: gl.createBuffer()
   }
 }
 
@@ -109,19 +104,25 @@ export default class Geometry implements Component {
 
     this.buffer = createVertexBufferObject(gl)
 
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer.indices)
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.vertex.indices), gl.STATIC_DRAW)
-
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.positions)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.positions), gl.STATIC_DRAW)
     
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normals)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.normals), gl.STATIC_DRAW)
     
-    if(!this.vertex.uvs) return
+    if(this.vertex.indices) {
+      this.buffer.indices = gl.createBuffer()
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.uvs)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.uvs), gl.STATIC_DRAW)
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer.indices)
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.vertex.indices), gl.STATIC_DRAW)  
+    }
+
+    if(this.vertex.uvs) {
+      this.buffer.uvs = gl.createBuffer()
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.uvs)
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.uvs), gl.STATIC_DRAW) 
+    }
 
     return true
   }
@@ -133,10 +134,6 @@ export default class Geometry implements Component {
     const normalize: boolean = false
     const stride: number = 0
     const offset: number = 0
-
-    // INDICES
-
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer.indices)
 
     // POSITION
 
@@ -166,27 +163,34 @@ export default class Geometry implements Component {
       material.attributeLocations.get('aVertexNormal')
     )
 
-    if(!this.vertex.uvs) return true
+    // INDICES
+    
+    if(this.buffer.indices)
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer.indices)
 
     // UV
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.uvs)
-    gl.vertexAttribPointer(
-      material.attributeLocations.get('aVertexUv'),
-      2,
-      type,
-      normalize,
-      stride,
-      offset)
-    gl.enableVertexAttribArray(
-      material.attributeLocations.get('aVertexUv')
-    )
+    if(this.buffer.uvs) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.uvs)
+      gl.vertexAttribPointer(
+        material.attributeLocations.get('aVertexUv'),
+        2,
+        type,
+        normalize,
+        stride,
+        offset)
+      gl.enableVertexAttribArray(
+        material.attributeLocations.get('aVertexUv')
+      )
+    }
 
     return true
   }
 
   setVertices = (vertex: VertexObject): boolean => {
     this.vertex = vertex
+    this.vertex.count = this.vertex.positions.length
+
     if(!this.vertex.normals) this.vertex.normals = calcNormals(this.vertex.positions)
 
     if(!this.vertex.min) this.vertex.min = [-1.0, -1.0, -1.0]

@@ -62,8 +62,6 @@ export default class BoundingSphere extends BoundingVolume {
     const sphereGeometry: Geometry = new Geometry(DrawMode.LINE, true, false, false)
     const positions = this.createSphereBuffer(this.radius)
     sphereGeometry.setVertices({
-      count: positions.length,
-      indices: new Uint16Array(),
       positions
     });
 

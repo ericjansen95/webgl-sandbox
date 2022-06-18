@@ -108,11 +108,10 @@ const parseGeometry = async (gltf: any, bufferData: Array<ArrayBuffer>): Promise
       }
 
       geometry.setVertices({
-        count,
         indices: indiciesArray,
-        positions: parseUnindexedVertexPositions(indiciesArray, positions), 
-        normals: parseUnindexedVertexPositions(indiciesArray, normals), 
-        uvs: parseUnindexedVertexUvs(indiciesArray, uvs)
+        positions: positions, 
+        normals: normals, 
+        uvs: uvs
       })
       geometries.push(geometry)
     }

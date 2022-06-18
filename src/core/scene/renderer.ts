@@ -41,12 +41,19 @@ export default class Renderer {
 
   renderEntity = (entity: Entity, camera: Entity) => {
     const geometry = entity.get(ComponentEnum.GEOMETRY) as Geometry
+
+    if(!geometry) return
+
     const material = entity.get(ComponentEnum.MATERIAL) as Material
 
-    if(!material?.bindBase(this.gl, entity, camera) || 
-      !geometry?.bind(this.gl, material)) return
+    if(!material) Debug.material.bindBase(this.gl, entity, camera)
+    else material.bindBase(this.gl, entity, camera)
 
-    this.gl.drawArrays(geometry.drawMode, 0, geometry.vertex.count)
+    if(!geometry.bind(this.gl, material)) return
+
+    if(geometry.buffer.indices) this.gl.drawElements(geometry.drawMode, geometry.vertex.indices.length, this.gl.UNSIGNED_SHORT, 0)
+    else this.gl.drawArrays(geometry.drawMode, 0, geometry.vertex.count)
+
     this.stats.drawCalls++
     this.stats.vertexCount += geometry.vertex.count
   }

@@ -17,8 +17,6 @@ export default class Grid extends Geometry {
     }
 
     this.setVertices({
-      count: positions.length,
-      indices: new Uint16Array(),
       positions: new Float32Array(positions)
     })
   }
