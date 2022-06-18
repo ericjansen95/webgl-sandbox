@@ -1,4 +1,4 @@
-import Geometry, { parseUnindexedVertexPositions } from "../components/geometry/geometry";
+import Geometry, { parseUnindexedVertexPositions, parseUnindexedVertexUvs } from "../components/geometry/geometry";
 
 export type GlftLoadResponse = {
   geometry: Array<Geometry>
@@ -100,14 +100,14 @@ const parseGeometry = async (gltf: any, bufferData: Array<ArrayBuffer>): Promise
               byteOffset,
             } = uvBufferView
 
-            uvs = new Float32Array(bufferData[buffer], byteOffset, count * 3)
+            uvs = new Float32Array(bufferData[buffer], byteOffset, count * 2)
 
             break
           }
         }
       }
 
-      geometry.setVertices(parseUnindexedVertexPositions(indiciesArray, positions), parseUnindexedVertexPositions(indiciesArray, normals), parseUnindexedVertexPositions(indiciesArray, uvs))
+      geometry.setVertices(parseUnindexedVertexPositions(indiciesArray, positions), parseUnindexedVertexPositions(indiciesArray, normals), parseUnindexedVertexUvs(indiciesArray, uvs))
       geometries.push(geometry)
     }
   }

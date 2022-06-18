@@ -19,24 +19,58 @@ export const parseUnindexedVertexPositions = (indices: Uint16Array, positions: F
   return output
 }
 
+export const parseUnindexedVertexUvs = (indices: Uint16Array, uvs: Float32Array) => {
+  const output = new Array<number>()
+  for(const index of indices) {
+    const correctedIndex = index * 2
+    output.push(uvs[correctedIndex], uvs[correctedIndex + 1])
+  }
+  return output
+}
+
+export type VertexObject = {
+  count: number
+  positions: Array<number>
+  normals: Array<number>
+  uvs: Array<number>
+  
+  min: vec3
+  max: vec3
+}
+
+export type VertexBufferObject = {
+  positions: WebGLBuffer
+  normals: WebGLBuffer
+  uvs: WebGLBuffer
+}
+
+export const createVertexObject = (): VertexObject => {
+  return {
+    count: 0,
+    positions: new Array<number>(),
+    normals: new Array<number>(),
+    uvs: new Array<number>(),
+    min: vec3.create(),
+    max: vec3.create()
+  }
+}
+
+export const createVertexBufferObject = (gl: WebGL2RenderingContext): VertexBufferObject => {
+  return {
+    positions: gl.createBuffer(),
+    normals: gl.createBuffer(),
+    uvs: gl.createBuffer()
+  }
+}
+
 export default class Geometry implements Component {
   type: ComponentEnum
-
-  vertex: {
-    componentCount: number
-    positions: Array<number>
-    normals: Array<number>
-    uvs: Array<number>
-    min: vec3
-    max: vec3
-  } | null
-
-  buffer: {
-    position: WebGLBuffer
-    normal: WebGLBuffer
-  } | null
-
   drawMode: DrawMode
+
+  vertex: VertexObject | null
+
+  buffer: VertexBufferObject | null
+
   visible: boolean
 
   cull: boolean
@@ -44,8 +78,10 @@ export default class Geometry implements Component {
 
   constructor(geometryType: DrawMode = DrawMode.TRIANGLE, visible: boolean = true, cull: boolean = true, boundingSphere: boolean = true) {
     this.type = ComponentEnum.GEOMETRY
+
     this.vertex = null
     this.buffer = null
+
     this.drawMode = geometryType
     this.visible = visible
     this.cull = cull
@@ -56,17 +92,18 @@ export default class Geometry implements Component {
     if(this.buffer) return true
     if(!this.vertex.positions.length || !this.vertex.normals.length) return false
 
-    this.buffer = {
-      position: gl.createBuffer(),
-      normal: gl.createBuffer()
-    }
+    this.buffer = createVertexBufferObject(gl)
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.position)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.positions)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.positions), gl.STATIC_DRAW)
     
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normal)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normals)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.normals), gl.STATIC_DRAW)
     
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.uvs)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.uvs), gl.STATIC_DRAW)
+
     return true
   }
 
@@ -81,7 +118,7 @@ export default class Geometry implements Component {
 
     // POSITION
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.position)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.positions)
     gl.vertexAttribPointer(
       material.attributeLocations.get('aVertexPosition'),
       numComponents,
@@ -95,7 +132,7 @@ export default class Geometry implements Component {
  
     // NORMAL
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normal)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normals)
     gl.vertexAttribPointer(
       material.attributeLocations.get('aVertexNormal'),
       numComponents,
@@ -107,18 +144,21 @@ export default class Geometry implements Component {
       material.attributeLocations.get('aVertexNormal')
     )
 
-    return true
-  }
+    // UV
 
-  createVertexObject = () => {
-    return {
-      componentCount: 0,
-      positions: new Array<number>(),
-      normals: new Array<number>(),
-      uvs: new Array<number>(),
-      min: vec3.create(),
-      max: vec3.create()
-    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.uvs)
+    gl.vertexAttribPointer(
+      material.attributeLocations.get('aVertexUv'),
+      2,
+      type,
+      normalize,
+      stride,
+      offset)
+    gl.enableVertexAttribArray(
+      material.attributeLocations.get('aVertexUv')
+    )
+
+    return true
   }
 
   setVertexPositions = (positions: Array<number>): boolean => {
@@ -136,7 +176,7 @@ export default class Geometry implements Component {
         break
     }
 
-    this.vertex.componentCount = componentCount
+    this.vertex.count = componentCount
 
     return true
   }
@@ -154,10 +194,11 @@ export default class Geometry implements Component {
   setVertices = (positions: Array<number>, normals: Array<number> | null = null, uvs: Array<number> | null = null): boolean => {
     if(!positions.length) return false
 
-    this.vertex = this.createVertexObject()
+    this.vertex = createVertexObject()
 
     this.setVertexPositions(positions)
-    if(uvs) this.setVertexUvs(uvs)
+    this.setVertexUvs(uvs)
+
     if(normals) this.setVertexNormals(normals)
     else this.vertex.normals = calcNormals(this.vertex.positions)
 
@@ -166,46 +207,7 @@ export default class Geometry implements Component {
 
     return true
   }
-
-  loadFromObj = (obj: string) => {
-    this.vertex = this.createVertexObject()
-
-    const objLines: Array<string> = obj.split('\n')
-    const vertexPositions: Array<Array<number>> = []
-
-    objLines.forEach(line => {
-      const components: Array<string> = line.split(' ')
-      const prefix: string = components[0]
   
-      if(prefix === "#" || prefix === "s") return
-  
-      components.shift();
-  
-      const values: Array<number> = components.map(value => parseFloat(value))                  
-
-      if(prefix === "v") {
-        vertexPositions.push(values)
-
-        // optimize this
-        this.vertex.min = [Math.min(values[0], this.vertex.min[0]),
-                           Math.min(values[1], this.vertex.min[1]),
-                           Math.min(values[2], this.vertex.min[2])]
-
-        this.vertex.max = [Math.max(values[0], this.vertex.max[0]),
-                           Math.max(values[1], this.vertex.max[1]),
-                           Math.max(values[2], this.vertex.max[2])] 
-      }
-      else if(prefix === "f") {
-        this.vertex.positions.push(...vertexPositions[values[0] - 1], 
-                                   ...vertexPositions[values[1] - 1], 
-                                   ...vertexPositions[values[2] - 1])
-      }
-    })
-
-    this.vertex.componentCount = this.vertex.positions.length
-    this.vertex.normals = calcNormals(this.vertex.positions)
-  }
-
   onAdd = (self: Entity) => {
     if(!this.boundingSphere) return
     

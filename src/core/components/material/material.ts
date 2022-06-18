@@ -74,6 +74,7 @@ export const compileProgram = (gl: WebGL2RenderingContext, vsSource: string, fsS
 
   attributeLocations.set('aVertexPosition', gl.getAttribLocation(program, 'aVertexPosition'))
   attributeLocations.set('aVertexNormal', gl.getAttribLocation(program, 'aVertexNormal'))
+  attributeLocations.set('aVertexUv', gl.getAttribLocation(program, 'aVertexUv'))
 
   const uniformLocations: Map<string, WebGLUniformLocation> = new Map<string, WebGLUniformLocation>();
 

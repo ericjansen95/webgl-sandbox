@@ -6,7 +6,7 @@ export default class Grid extends Geometry {
     super(DrawMode.LINE, true, false, false)
 
     this.vertex = {
-      componentCount: 2 * subdivisions * subdivisions + 8,
+      count: 2 * subdivisions * subdivisions + 8,
       positions: new Array<number>(),
       normals: new Array<number>(),
       uvs: null,

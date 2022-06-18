@@ -8,7 +8,7 @@ export default class Plane extends Geometry {
     super(DrawMode.TRIANGLE, true, true, false)
 
     this.vertex = {
-      componentCount: null,
+      count: null,
       positions: new Array<number>(),
       normals: new Array<number>(),
       uvs: null,
@@ -30,11 +30,11 @@ export default class Plane extends Geometry {
       }
     }
 
-    this.vertex.componentCount = this.vertex.positions.length
+    this.vertex.count = this.vertex.positions.length
 
     let position: number[] = []
 
-    for(let posIndex = 0; posIndex < this.vertex.componentCount; posIndex += 3) {
+    for(let posIndex = 0; posIndex < this.vertex.count; posIndex += 3) {
       position = [this.vertex.positions[posIndex], this.vertex.positions[posIndex + 1], this.vertex.positions[posIndex + 2]]
 
       this.vertex.min = [Math.min(position[0], this.vertex.min[0]),

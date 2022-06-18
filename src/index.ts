@@ -11,6 +11,7 @@ import { ComponentEnum as Component } from './core/components/base/component';
 import Turntable from './core/components/scripts/turntable';
 import Engine from './core/engine';
 import PhongMaterial from './core/components/material/phongMaterial';
+import UvMaterial from './core/components/material/uvMaterial';
 
 /*
 
@@ -28,9 +29,11 @@ import PhongMaterial from './core/components/material/phongMaterial';
   - base-server, chat-server, scene-server
 
   ToDo:
-  - this in component callbacks
   - indexed vertex pipeline
   - transform local matrix
+  - fix shader pipeline bind order
+
+  - this in component callbacks
   - transform rotation as quaternions
   - reduce matrix multipications => cache bounding volume data
   - make component state easily serializable by adding functions to interface
@@ -64,9 +67,18 @@ const main = async () => {
 
   const engine = new Engine(canvas, sceneCamera)
 
-  const { geometry } = await new GltfLoader().load("http://localhost:8080/res/geo/testGeo.gltf")
+  const { geometry } = await new GltfLoader().load("http://localhost:8080/res/geo/cube.gltf")
 
-  const phongMaterial = new PhongMaterial([0.9, 0.75, 0.0]) as Material
+  const uvMaterial = new UvMaterial() as Material
+
+  const cube: Entity = new Entity()
+  cube.add(geometry[0])
+  cube.add(uvMaterial)
+
+  engine.scene.add(cube)
+
+  /*
+  const phongMaterial = new PhongMaterial([1.0, 1.0, 1.0]) as Material
 
   for(let geoIndex = 0; geoIndex < geometry.length; geoIndex++) {
     const entity: Entity = new Entity()
@@ -82,6 +94,8 @@ const main = async () => {
   terrain.add(new Terrain())
 
   engine.scene.add(terrain)
+  */
+  
   engine.scene.add(sceneCamera)
 }
 

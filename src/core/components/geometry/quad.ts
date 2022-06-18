@@ -9,7 +9,7 @@ export default class Quad extends Geometry {
     super(DrawMode.LINE, visible, cull, boundingVolume)
 
     this.vertex = {
-      componentCount: 0,
+      count: 0,
       positions: new Array<number>(),
       normals: null,
       uvs: null,
@@ -29,7 +29,7 @@ export default class Quad extends Geometry {
     this.vertex.positions.push(...positions[3])    
     this.vertex.positions.push(...positions[0])
 
-    this.vertex.componentCount = this.vertex.positions.length
+    this.vertex.count = this.vertex.positions.length
     this.vertex.normals = calcNormals(this.vertex.positions, true)
   }
 }
