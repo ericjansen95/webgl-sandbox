@@ -31,7 +31,7 @@ export default class BoundingBox extends BoundingVolume {
     geometry.visible = visible
   }
 
-  createBoxBuffer = (min: vec3, max: vec3): Array<number> => {
+  createBoxBuffer = (min: vec3, max: vec3): Float32Array => {
     const positions: Array<number> = new Array<number>()
     
     // order clockwise from view outside
@@ -80,7 +80,7 @@ export default class BoundingBox extends BoundingVolume {
     positions.push(max[0], min[1], min[2])
     positions.push(max[0], min[1], max[2])
    
-    return positions
+    return new Float32Array(positions)
   }
 
   createBox = (): boolean => {
@@ -92,7 +92,7 @@ export default class BoundingBox extends BoundingVolume {
     const positions = this.createBoxBuffer(this.min, this.max)
     boxGeometry.setVertices({
       count: positions.length,
-      indices: new Array<number>(),
+      indices: new Uint16Array(),
       positions
     })
 

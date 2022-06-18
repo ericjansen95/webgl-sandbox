@@ -16,7 +16,7 @@ export const parseUnindexedVertexPositions = (indices: Uint16Array, positions: F
     const correctedIndex = index * 3
     output.push(positions[correctedIndex], positions[correctedIndex + 1], positions[correctedIndex + 2])
   }
-  return output
+  return new Float32Array(output)
 }
 
 export const parseUnindexedVertexUvs = (indices: Uint16Array, uvs: Float32Array) => {
@@ -25,17 +25,17 @@ export const parseUnindexedVertexUvs = (indices: Uint16Array, uvs: Float32Array)
     const correctedIndex = index * 2
     output.push(uvs[correctedIndex], uvs[correctedIndex + 1])
   }
-  return output
+  return new Float32Array(output)
 }
 
 export type VertexObject = {
   count: number
 
-  indices: Array<number>
-  positions: Array<number>
-  normals?: Array<number>
+  indices: Uint16Array
+  positions: Float32Array
+  normals?: Float32Array
 
-  uvs?: Array<number>
+  uvs?: Float32Array
   
   min?: vec3
   max?: vec3
@@ -54,8 +54,8 @@ export const createVertexObject = (): VertexObject => {
   return {
     count: 0,
 
-    indices: new Array<number>(),
-    positions: new Array<number>(),
+    indices: new Uint16Array,
+    positions: new Float32Array,
     normals: null,
 
     uvs: null,
@@ -185,42 +185,12 @@ export default class Geometry implements Component {
     return true
   }
 
-  setVertexPositions = (positions: Array<number>): boolean => {
-    this.vertex.positions = positions
-
-    const vertexCount = this.vertex.positions.length
-    let componentCount = null
-
-    switch (this.drawMode) {
-      case DrawMode.TRIANGLE:
-        componentCount = vertexCount / 3
-        break
-      case DrawMode.LINE:
-        componentCount = vertexCount / 2
-        break
-    }
-
-    this.vertex.count = componentCount
-
-    return true
-  }
-
-  setVertexNormals = (normals: Array<number>): boolean => {
-    this.vertex.normals = normals
-    return true
-  }
-
-  setVertexUvs = (uvs: Array<number>): boolean => {
-    this.vertex.uvs = uvs
-    return true
-  }
-
   setVertices = (vertex: VertexObject): boolean => {
     this.vertex = vertex
     if(!this.vertex.normals) this.vertex.normals = calcNormals(this.vertex.positions)
 
-    this.vertex.min = [-1.0, -1.0, -1.0]
-    this.vertex.max = [1.0, 1.0, 1.0]
+    if(!this.vertex.min) this.vertex.min = [-1.0, -1.0, -1.0]
+    if(!this.vertex.max) this.vertex.max = [1.0, 1.0, 1.0]
 
     return true
   }
@@ -233,7 +203,7 @@ export default class Geometry implements Component {
   }
 }
 
-export const calcNormals = (positions: Array<number>): Array<number> | null => {
+export const calcNormals = (positions: Float32Array): Float32Array => {
   const normals: Array<number> = new Array<number>()
 
   for(let positionIndex = 0; positionIndex < positions.length; positionIndex += 9) {
@@ -255,5 +225,5 @@ export const calcNormals = (positions: Array<number>): Array<number> | null => {
     normals.push(...normal, ...normal, ...normal)
   }
 
-  return normals
+  return new Float32Array(normals)
 }

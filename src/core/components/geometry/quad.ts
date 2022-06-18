@@ -2,24 +2,29 @@ import { vec3 } from "gl-matrix";
 import Geometry, { calcNormals, createVertexObject, DrawMode } from "./geometry";
 
 export default class Quad extends Geometry {
-  constructor(positions: Array<vec3>, visible: boolean = true, cull: boolean = true, boundingVolume: boolean = true) {
-    if(positions.length !== 4) console.error("Quad::constructor(): Invalid arguments!")
+  constructor(input: Array<vec3>, visible: boolean = true, cull: boolean = true, boundingVolume: boolean = true) {
+    if(input.length !== 4) console.error("Quad::constructor(): Invalid arguments!")
 
     super(DrawMode.LINE, visible, cull, boundingVolume)
 
-    this.vertex.positions.push(...positions[0])
-    this.vertex.positions.push(...positions[1])   
+    const positions = new Array<number>()
 
-    this.vertex.positions.push(...positions[1])
-    this.vertex.positions.push(...positions[2])
+    positions.push(...input[0])
+    positions.push(...input[1])   
 
-    this.vertex.positions.push(...positions[2])
-    this.vertex.positions.push(...positions[3])
-    
-    this.vertex.positions.push(...positions[3])    
-    this.vertex.positions.push(...positions[0])
+    positions.push(...input[1])
+    positions.push(...input[2])
 
-    this.vertex.count = this.vertex.positions.length
-    this.vertex.normals = calcNormals(this.vertex.positions)
+    positions.push(...input[2])
+    positions.push(...input[3])
+  
+    positions.push(...input[3])    
+    positions.push(...input[0])
+
+    this.setVertices({
+      count: positions.length,
+      indices: new Uint16Array(),
+      positions: new Float32Array(positions),
+    })
   }
 }

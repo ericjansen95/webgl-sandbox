@@ -27,7 +27,7 @@ export default class BoundingSphere extends BoundingVolume {
     geometry.visible = visible
   }
 
-  createSphereBuffer = (radius: number): Array<number> => {
+  createSphereBuffer = (radius: number): Float32Array => {
     const positions: Array<number> = new Array<number>()
     
     const UNIT_CIRCUMFERENCE = 2 * Math.PI
@@ -53,7 +53,7 @@ export default class BoundingSphere extends BoundingVolume {
       positions.push(pos3, yOffset, pos4)
     }
 
-    return positions
+    return new Float32Array(positions)
   }
 
   createSphere = (): boolean => {
@@ -63,7 +63,7 @@ export default class BoundingSphere extends BoundingVolume {
     const positions = this.createSphereBuffer(this.radius)
     sphereGeometry.setVertices({
       count: positions.length,
-      indices: new Array<number>(),
+      indices: new Uint16Array(),
       positions
     });
 
