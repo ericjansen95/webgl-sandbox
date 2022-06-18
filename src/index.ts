@@ -69,12 +69,10 @@ const main = async () => {
 
   const { geometry } = await new GltfLoader().load("http://localhost:8080/res/geo/cube.gltf")
 
-  const uvMaterial = new UvMaterial() as Material
-
   const cube: Entity = new Entity()
   cube.add(geometry[0])
-  cube.add(uvMaterial)
-
+  cube.add(new UvMaterial())
+  cube.add(new Turntable(1, [0, 1, 0]))
   engine.scene.add(cube)
 
   /*
@@ -89,12 +87,11 @@ const main = async () => {
 
     engine.scene.add(entity)
   }
+  */
 
   const terrain: Entity = new Entity()
   terrain.add(new Terrain())
-
   engine.scene.add(terrain)
-  */
   
   engine.scene.add(sceneCamera)
 }

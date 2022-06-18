@@ -23,23 +23,17 @@ export default class TerrainMaterial extends Material {
   }
 
   compile = (gl: WebGL2RenderingContext): boolean => {
-    if(this.program) return true
+    if(!this.compileBase(gl, fsTerrainSorce, vsTerrainSource)) return true
 
-    const {program, attributeLocations, uniformLocations} = compileProgram(gl, vsTerrainSource, fsTerrainSorce)
-    
-    this.program = program
-    this.attributeLocations = attributeLocations
-    this.uniformLocations = uniformLocations
+    this.uniformLocations.set('uOffsetMatrix', gl.getUniformLocation(this.program, 'uOffsetMatrix'))
 
-    this.uniformLocations.set('uOffsetMatrix', gl.getUniformLocation(program, 'uOffsetMatrix'))
+    this.uniformLocations.set('uAmbientLight', gl.getUniformLocation(this.program, 'uAmbientLight'))
+    this.uniformLocations.set('uLightDir', gl.getUniformLocation(this.program, 'uLightDir'))
 
-    this.uniformLocations.set('uAmbientLight', gl.getUniformLocation(program, 'uAmbientLight'))
-    this.uniformLocations.set('uLightDir', gl.getUniformLocation(program, 'uLightDir'))
+    this.uniformLocations.set('uHeightmap', gl.getUniformLocation(this.program, 'uHeightmap'))
+    this.uniformLocations.set('uTerrain', gl.getUniformLocation(this.program, 'uTerrain'))
 
-    this.uniformLocations.set('uHeightmap', gl.getUniformLocation(program, 'uHeightmap'))
-    this.uniformLocations.set('uTerrain', gl.getUniformLocation(program, 'uTerrain'))
-
-    this.uniformLocations.set('uHeight', gl.getUniformLocation(program, 'uHeight'))
+    this.uniformLocations.set('uHeight', gl.getUniformLocation(this.program, 'uHeight'))
 
     // ToDo Abstract this into function
 
@@ -73,8 +67,6 @@ export default class TerrainMaterial extends Material {
   }
 
   bind = (gl: WebGL2RenderingContext, light: LightData, viewDir: vec3, offsetMatrix: mat4): boolean => {
-    this.compile(gl)
-
     const { mainDirection } = light
 
     gl.uniform1f(this.uniformLocations.get('uAmbientLight'), DEFAULT_AMBIENT_LIGHT_INTENSITY)

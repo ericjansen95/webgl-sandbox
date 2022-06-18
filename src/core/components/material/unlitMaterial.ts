@@ -1,7 +1,6 @@
 import { vec3 } from "gl-matrix";
-import Material, { compileProgram, LightData } from "./material";
+import Material from "./material";
 
-const vsDefaultSource: string = require('/src/core/components/material/shader/default.vs') as string
 const fsUnlitSource: string = require('/src/core/components/material/shader/unlit.fs') as string
 
 export default class UnlitMaterial extends Material {
@@ -13,24 +12,15 @@ export default class UnlitMaterial extends Material {
   }
 
   compile = (gl: WebGL2RenderingContext): boolean => {
-    if(this.program) return true
+    if(!this.compileBase(gl, fsUnlitSource)) return true
 
-    const {program, attributeLocations, uniformLocations} = compileProgram(gl, vsDefaultSource, fsUnlitSource)
-    
-    this.program = program
-    this.attributeLocations = attributeLocations
-    this.uniformLocations = uniformLocations
-
-    this.uniformLocations.set('uColor', gl.getUniformLocation(program, 'uColor'))
+    this.uniformLocations.set('uColor', gl.getUniformLocation(this.program, 'uColor'))
 
     return true
   }
 
   bind = (gl: WebGL2RenderingContext): boolean => {
-    this.compile(gl)
-
     gl.uniform3fv(this.uniformLocations.get('uColor'), this.color)
-
     return true
   }
 }

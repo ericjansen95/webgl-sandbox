@@ -30,6 +30,6 @@ export default class Quad extends Geometry {
     this.vertex.positions.push(...positions[0])
 
     this.vertex.count = this.vertex.positions.length
-    this.vertex.normals = calcNormals(this.vertex.positions, true)
+    this.vertex.normals = calcNormals(this.vertex.positions)
   }
 }

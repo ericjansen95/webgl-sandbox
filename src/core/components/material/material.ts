@@ -4,6 +4,9 @@ import { mat4, vec3 } from "gl-matrix"
 import Transform from "../base/transform"
 import Camera from "../base/camera"
 import Debug from "../../internal/debug"
+import round from "../../../util/math/round"
+
+const vsDefaultSource: string = require('/src/core/components/material/shader/default.vs') as string
 
 export type LightData = { mainDirection: vec3 }
 const DEFAULT_MAIN_LIGHT_DIRECTION: vec3 = vec3.normalize(vec3.create(), [0.75, 0.25, 0.0])
@@ -16,43 +19,67 @@ export default class Material implements Component {
   attributeLocations: Map<string, number>
   uniformLocations: Map<string, WebGLUniformLocation>
 
-  bind: (gl: WebGL2RenderingContext, light?: LightData, viewDir?: vec3, offsetMatrix?: mat4) => boolean
+  bind: (gl?: WebGL2RenderingContext, light?: LightData, viewDir?: vec3, offsetMatrix?: mat4) => void
   compile: (gl: WebGL2RenderingContext) => boolean
 
   bindBase = (gl: WebGL2RenderingContext, entity: Entity, camera: Entity, light: LightData = { mainDirection: DEFAULT_MAIN_LIGHT_DIRECTION }): boolean => {
     const { modelMatrix, worldMatrix } = entity.get(ComponentEnum.TRANSFORM) as Transform
-    const material = entity.get(ComponentEnum.MATERIAL) as any
     const { projectionMatrix, viewMatrix, viewDir } = camera.get(ComponentEnum.CAMERA) as Camera
 
-    gl.useProgram(material.program)
+    if(!this.compile(gl)) return false
+    gl.useProgram(this.program)
+
+    this.bind(gl, light, viewDir, modelMatrix)
 
     gl.uniformMatrix4fv(
-      material.uniformLocations.get('uWorldMatrix'),
+      this.uniformLocations.get('uWorldMatrix'),
       false,
       worldMatrix
     )
 
     gl.uniformMatrix4fv(
-      material.uniformLocations.get('uViewMatrix'),
+      this.uniformLocations.get('uViewMatrix'),
       false,
       viewMatrix
     )
 
     gl.uniformMatrix4fv(
-      material.uniformLocations.get('uProjectionMatrix'),
+      this.uniformLocations.get('uProjectionMatrix'),
       false,
       projectionMatrix
     )
 
-    return material.bind(gl, light, viewDir, modelMatrix)
+    return true
+  }
+  compileBase = (gl: WebGL2RenderingContext, fsSource: string, vsSource: string = vsDefaultSource): boolean => {
+    if(this.program) return false
+
+    const startTime = performance.now()
+    
+    const result = compileProgram(gl, vsSource, fsSource)
+    if(!result) {
+      Debug.info(`Material::compileBase(): Failed to compile program!`)
+      return null
+    }
+
+    const {program, attributeLocations, uniformLocations} = result
+    
+    this.program = program
+    this.attributeLocations = attributeLocations
+    this.uniformLocations = uniformLocations
+
+    const compileTime = round(performance.now() - startTime)
+    Debug.info(`Material::compileBase(): Compiled program in = ${compileTime} ms`)
+
+    return true
   }
 
   constructor() {
     this.type = ComponentEnum.MATERIAL
     this.program = null
 
-    this.attributeLocations = new Map<string, number>()
-    this.uniformLocations = new Map<string, WebGLUniformLocation>()
+    this.attributeLocations = null
+    this.uniformLocations = null
   }
 }
 

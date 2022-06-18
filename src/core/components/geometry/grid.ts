@@ -24,6 +24,6 @@ export default class Grid extends Geometry {
       this.vertex.positions.push(1.0, 0.0, pos)
     }
 
-    this.vertex.normals = calcNormals(this.vertex.positions, true)
+    this.vertex.normals = calcNormals(this.vertex.positions)
   }
 }

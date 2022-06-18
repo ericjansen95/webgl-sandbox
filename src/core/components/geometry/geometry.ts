@@ -207,7 +207,7 @@ export default class Geometry implements Component {
 
     return true
   }
-  
+
   onAdd = (self: Entity) => {
     if(!this.boundingSphere) return
     
@@ -216,38 +216,26 @@ export default class Geometry implements Component {
   }
 }
 
-export const calcNormals = (positions: Array<number>, flat: boolean = true): Array<number> | null => {
-
+export const calcNormals = (positions: Array<number>): Array<number> | null => {
   const normals: Array<number> = new Array<number>()
 
-  if(flat) {
-    for(let positionIndex = 0; positionIndex < positions.length; positionIndex += 9) {
-      const p1: vec3 = [positions[positionIndex], positions[positionIndex + 1], positions[positionIndex + 2]]
-      const p2: vec3 = [positions[positionIndex + 3], positions[positionIndex + 4], positions[positionIndex + 5]]    
-      const p3: vec3 = [positions[positionIndex + 6], positions[positionIndex + 7], positions[positionIndex + 8]]
-      
-      const vecA: vec3 = vec3.create()
-      vec3.sub(vecA, p2, p1)
-  
-      const vecB: vec3 = vec3.create()
-      vec3.sub(vecB, p3, p1)
-  
-      let normal: vec3 = vec3.create()
-  
-      vec3.cross(normal, vecA, vecB)
-      vec3.normalize(normal, normal)
-  
-      normals.push(...normal, ...normal, ...normal)
-    }
+  for(let positionIndex = 0; positionIndex < positions.length; positionIndex += 9) {
+    const p1: vec3 = [positions[positionIndex], positions[positionIndex + 1], positions[positionIndex + 2]]
+    const p2: vec3 = [positions[positionIndex + 3], positions[positionIndex + 4], positions[positionIndex + 5]]    
+    const p3: vec3 = [positions[positionIndex + 6], positions[positionIndex + 7], positions[positionIndex + 8]]
+    
+    const vecA: vec3 = vec3.create()
+    vec3.sub(vecA, p2, p1)
 
-    return normals
-  }
+    const vecB: vec3 = vec3.create()
+    vec3.sub(vecB, p3, p1)
 
-  for(let positionIndex = 0; positionIndex < positions.length; positionIndex += 3) {
-    const normal: vec3 = [positions[positionIndex], positions[positionIndex + 1], positions[positionIndex + 2]]
+    let normal: vec3 = vec3.create()
+
+    vec3.cross(normal, vecA, vecB)
     vec3.normalize(normal, normal)
 
-    normals.push(...normal)
+    normals.push(...normal, ...normal, ...normal)
   }
 
   return normals

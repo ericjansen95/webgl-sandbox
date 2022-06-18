@@ -50,7 +50,7 @@ export default class Plane extends Geometry {
     this.vertex.min[1] = 0
     this.vertex.max[1] = 150
 
-    this.vertex.normals = calcNormals(this.vertex.positions, true)
+    this.vertex.normals = calcNormals(this.vertex.positions)
   }
 
   onAdd = (self: entity) => { 
