@@ -5,8 +5,7 @@ import { ComponentEnum } from "../base/component";
 import Geometry, { DrawMode } from "../geometry/geometry";
 import BoundingVolume from "./boundingVolume";
 
-export default class BoundingBox implements BoundingVolume {
-  type: ComponentEnum
+export default class BoundingBox extends BoundingVolume {
   box: Entity | null
 
   min: vec3 
@@ -18,8 +17,8 @@ export default class BoundingBox implements BoundingVolume {
   visible: boolean
   
   constructor(visible: boolean = false) {
-    this.type = ComponentEnum.BOUNDING_VOLUME
-    this.visible = visible
+    super(visible)
+
     this.corners = new Array<vec3>()
   }
 
@@ -28,7 +27,7 @@ export default class BoundingBox implements BoundingVolume {
 
     this.createBox()
 
-    const geometry = this.box.get(ComponentEnum.GEOMETRY)
+    const geometry = this.box.get(ComponentEnum.GEOMETRY) as Geometry
     geometry.visible = visible
   }
 
@@ -103,7 +102,7 @@ export default class BoundingBox implements BoundingVolume {
   onAdd = (self: Entity) => {
     this.self = self
 
-    const geometry = self.get(ComponentEnum.GEOMETRY)
+    const geometry = self.get(ComponentEnum.GEOMETRY) as Geometry
 
     this.min = geometry.vertex.min
     this.max = geometry.vertex.max

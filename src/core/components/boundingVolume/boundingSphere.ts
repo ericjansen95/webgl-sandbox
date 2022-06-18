@@ -5,8 +5,7 @@ import Geometry, { DrawMode } from "../geometry/geometry";
 import UnlitMaterial from "../material/unlitMaterial";
 import { ComponentEnum } from "../base/component";
 
-export default class BoundingSphere implements BoundingVolume {
-  type: ComponentEnum
+export default class BoundingSphere extends BoundingVolume {
   sphere: Entity | null
 
   radius: number
@@ -14,11 +13,9 @@ export default class BoundingSphere implements BoundingVolume {
   max: vec3
 
   self: Entity | null
-  visible: boolean
   
   constructor(visible: boolean = false) {
-    this.type = ComponentEnum.BOUNDING_VOLUME
-    this.visible = visible
+    super(visible)
   }
 
   setVisible = (visible: boolean) => {
@@ -26,7 +23,7 @@ export default class BoundingSphere implements BoundingVolume {
 
     this.createSphere()
 
-    const geometry = this.sphere.get(ComponentEnum.GEOMETRY)
+    const geometry = this.sphere.get(ComponentEnum.GEOMETRY) as Geometry
     geometry.visible = visible
   }
 
