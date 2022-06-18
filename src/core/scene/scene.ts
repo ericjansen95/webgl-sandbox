@@ -27,8 +27,9 @@ export default class Scene {
 
   networkController: GameNetworkController
 
-  constructor(clientEntity: Entity | null = null, client: Client | null = null) {
+  constructor(camera: Entity, clientEntity: Entity | null = null, client: Client | null = null) {
     this.root = new Entity()
+    this.camera = camera
     // ToDo: Add entities with scene.add() instead while update loop?
     // handle entity passing with integer id?
     this.entities = new Array<Entity>()
@@ -53,12 +54,11 @@ export default class Scene {
     this.networkController = new GameNetworkController(client, this.root, clientEntity)
   }
 
-  update = (camera: Entity) => {
+  update = () => {
     const startTime = Date.now()
-    this.camera = camera
 
     this.entities = []
-    this.updateEntity(this.root, camera, true)
+    this.updateEntity(this.root, this.camera, true)
 
     this.stats.updateTime = Math.ceil(Date.now() - startTime)
     this.stats.entityCount = this.entities.length
@@ -92,10 +92,10 @@ export default class Scene {
   }
 
   // this returns a "display list" for all visible entities that are in the camera frustrum
-  getVisibleEntities = (camera: Entity): Array<Entity> => {
+  getVisibleEntities = (): Array<Entity> => {
     const startTime = Date.now()
 
-    const cameraComponent = camera.get(ComponentEnum.CAMERA) as Camera
+    const cameraComponent = this.camera.get(ComponentEnum.CAMERA) as Camera
 
     const visibleEnties = this.getEntities().filter(entity => cameraComponent.isEntityInFrustrum(entity))
 
