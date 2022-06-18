@@ -17,7 +17,7 @@ export default class Grid extends Geometry {
     }
 
     this.setVertices({
-      positions: new Float32Array(positions)
+      position: new Float32Array(positions)
     })
   }
 }

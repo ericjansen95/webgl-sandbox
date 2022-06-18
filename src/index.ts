@@ -69,13 +69,17 @@ const main = async () => {
 
   const { geometry } = await new GltfLoader().load("http://localhost:8080/res/geo/cube.gltf")
 
-  const cube: Entity = new Entity()
-  cube.add(geometry[0])
-  cube.add(new UvMaterial())
-  cube.add(new Turntable(1, [0, 1, 0]))
-  engine.scene.add(cube)
+  const lambertMaterial = new LambertMaterial([1.0, 1.0, 1.0]) as Material
+
+  const entity: Entity = new Entity()
+  entity.add(geometry[0])
+  entity.add(lambertMaterial)
+
+  engine.scene.add(entity)
 
   /*
+  const { geometry } = await new GltfLoader().load("http://localhost:8080/res/geo/testGeo.gltf")
+
   const phongMaterial = new PhongMaterial([1.0, 1.0, 1.0]) as Material
 
   for(let geoIndex = 0; geoIndex < geometry.length; geoIndex++) {

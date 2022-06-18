@@ -3,8 +3,17 @@ import Entity from "../../scene/entity"
 import BoundingSphere from "../boundingVolume/boundingSphere"
 import Component, { ComponentEnum } from "../base/component"
 import Material from "../material/material"
-import { toUSVString } from "util"
 
+// https://www.khronos.org/registry/webgl/specs/latest/1.0/
+/*
+  const GLenum POINTS         = 0x0000;
+  const GLenum LINES          = 0x0001;
+  const GLenum LINE_LOOP      = 0x0002;
+  const GLenum LINE_STRIP     = 0x0003;
+  const GLenum TRIANGLES      = 0x0004;
+  const GLenum TRIANGLE_STRIP = 0x0005;
+  const GLenum TRIANGLE_FAN   = 0x0006;
+*/
 export enum DrawMode {
   TRIANGLE = 4,
   LINE = 1,
@@ -31,33 +40,33 @@ export const parseUnindexedVertexUvs = (indices: Uint16Array, uvs: Float32Array)
 export type VertexObject = {
   count?: number
 
-  positions: Float32Array
-  normals?: Float32Array
+  position: Float32Array
+  normal?: Float32Array
 
   indices?: Uint16Array
-  uvs?: Float32Array
+  texcoord?: Float32Array
   
   min?: vec3
   max?: vec3
 }
 
 export type VertexBufferObject = {
-  positions: WebGLBuffer
-  normals: WebGLBuffer
+  position: WebGLBuffer
+  normal: WebGLBuffer
 
   indices?: WebGLBuffer
-  uvs?: WebGLBuffer
+  texcoord?: WebGLBuffer
 }
 
 export const createVertexObject = (): VertexObject => {
   return {
     count: 0,
 
-    positions: new Float32Array,
-    normals: null,
+    position: new Float32Array,
+    normal: null,
 
     indices: null,
-    uvs: null,
+    texcoord: null,
 
     min: vec3.create(),
     max: vec3.create()
@@ -66,8 +75,8 @@ export const createVertexObject = (): VertexObject => {
 
 export const createVertexBufferObject = (gl: WebGL2RenderingContext): VertexBufferObject => {
   return {
-    positions: gl.createBuffer(),
-    normals: gl.createBuffer()
+    position: gl.createBuffer(),
+    normal: gl.createBuffer()
   }
 }
 
@@ -75,8 +84,7 @@ export default class Geometry implements Component {
   type: ComponentEnum
   drawMode: DrawMode
 
-  vertex: VertexObject | null
-
+  vertex: VertexObject
   buffer: VertexBufferObject | null
 
   visible: boolean
@@ -104,11 +112,11 @@ export default class Geometry implements Component {
 
     this.buffer = createVertexBufferObject(gl)
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.positions)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.positions), gl.STATIC_DRAW)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.position)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.position), gl.STATIC_DRAW)
     
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normals)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.normals), gl.STATIC_DRAW)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normal)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.normal), gl.STATIC_DRAW)
     
     if(this.vertex.indices) {
       this.buffer.indices = gl.createBuffer()
@@ -117,11 +125,11 @@ export default class Geometry implements Component {
       gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.vertex.indices), gl.STATIC_DRAW)  
     }
 
-    if(this.vertex.uvs) {
-      this.buffer.uvs = gl.createBuffer()
+    if(this.vertex.texcoord) {
+      this.buffer.texcoord = gl.createBuffer()
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.uvs)
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.uvs), gl.STATIC_DRAW) 
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.texcoord)
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.texcoord), gl.STATIC_DRAW) 
     }
 
     return true
@@ -137,7 +145,7 @@ export default class Geometry implements Component {
 
     // POSITION
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.positions)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.position)
     gl.vertexAttribPointer(
       material.attributeLocations.get('aVertexPosition'),
       3,
@@ -151,7 +159,7 @@ export default class Geometry implements Component {
  
     // NORMAL
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normals)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normal)
     gl.vertexAttribPointer(
       material.attributeLocations.get('aVertexNormal'),
       3,
@@ -170,8 +178,8 @@ export default class Geometry implements Component {
 
     // UV
 
-    if(this.buffer.uvs) {
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.uvs)
+    if(this.buffer.texcoord) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.texcoord)
       gl.vertexAttribPointer(
         material.attributeLocations.get('aVertexUv'),
         2,
@@ -189,9 +197,9 @@ export default class Geometry implements Component {
 
   setVertices = (vertex: VertexObject): boolean => {
     this.vertex = vertex
-    this.vertex.count = this.vertex.positions.length
+    this.vertex.count = this.vertex.position.length
 
-    if(!this.vertex.normals) this.vertex.normals = calcNormals(this.vertex.positions)
+    if(!this.vertex.normal) this.vertex.normal = calcNormals(this.vertex.position)
 
     if(!this.vertex.min) this.vertex.min = [-1.0, -1.0, -1.0]
     if(!this.vertex.max) this.vertex.max = [1.0, 1.0, 1.0]

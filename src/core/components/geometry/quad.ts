@@ -22,7 +22,7 @@ export default class Quad extends Geometry {
     positions.push(...input[0])
 
     this.setVertices({
-      positions: new Float32Array(positions),
+      position: new Float32Array(positions),
     })
   }
 }
