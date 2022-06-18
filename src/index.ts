@@ -67,7 +67,7 @@ const main = async () => {
 
   const engine = new Engine(canvas, sceneCamera)
 
-  const { geometry } = await new GltfLoader().load("http://localhost:8080/res/geo/cube.gltf")
+  const { geometry } = await new GltfLoader().load("http://localhost:8080/res/geo/testAnimGeo.gltf")
 
   const lambertMaterial = new LambertMaterial([1.0, 1.0, 1.0]) as Material
 
