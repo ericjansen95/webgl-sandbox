@@ -30,26 +30,36 @@ export const parseUnindexedVertexUvs = (indices: Uint16Array, uvs: Float32Array)
 
 export type VertexObject = {
   count: number
+
+  indices: Array<number>
   positions: Array<number>
-  normals: Array<number>
-  uvs: Array<number>
+  normals?: Array<number>
+
+  uvs?: Array<number>
   
-  min: vec3
-  max: vec3
+  min?: vec3
+  max?: vec3
 }
 
 export type VertexBufferObject = {
+  indices: WebGLBuffer
+
   positions: WebGLBuffer
   normals: WebGLBuffer
+
   uvs: WebGLBuffer
 }
 
 export const createVertexObject = (): VertexObject => {
   return {
     count: 0,
+
+    indices: new Array<number>(),
     positions: new Array<number>(),
-    normals: new Array<number>(),
-    uvs: new Array<number>(),
+    normals: null,
+
+    uvs: null,
+
     min: vec3.create(),
     max: vec3.create()
   }
@@ -57,8 +67,11 @@ export const createVertexObject = (): VertexObject => {
 
 export const createVertexBufferObject = (gl: WebGL2RenderingContext): VertexBufferObject => {
   return {
+    indices: gl.createBuffer(),
+
     positions: gl.createBuffer(),
     normals: gl.createBuffer(),
+
     uvs: gl.createBuffer()
   }
 }
@@ -76,23 +89,28 @@ export default class Geometry implements Component {
   cull: boolean
   boundingSphere: boolean
 
-  constructor(geometryType: DrawMode = DrawMode.TRIANGLE, visible: boolean = true, cull: boolean = true, boundingSphere: boolean = true) {
+  constructor(drawMode: DrawMode = DrawMode.TRIANGLE, visible: boolean = true, cull: boolean = true, boundingSphere: boolean = true) {
     this.type = ComponentEnum.GEOMETRY
+    this.drawMode = drawMode
 
-    this.vertex = null
+    this.vertex = createVertexObject()
     this.buffer = null
 
-    this.drawMode = geometryType
     this.visible = visible
+
     this.cull = cull
     this.boundingSphere = boundingSphere
   }
 
   load = (gl: WebGL2RenderingContext) => {
     if(this.buffer) return true
-    if(!this.vertex.positions.length || !this.vertex.normals.length) return false
+
+    if(!this.vertex.count) return false
 
     this.buffer = createVertexBufferObject(gl)
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer.indices)
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.vertex.indices), gl.STATIC_DRAW)
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.positions)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.positions), gl.STATIC_DRAW)
@@ -100,6 +118,7 @@ export default class Geometry implements Component {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normals)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.normals), gl.STATIC_DRAW)
     
+    if(!this.vertex.uvs) return
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.uvs)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.uvs), gl.STATIC_DRAW)
@@ -110,18 +129,21 @@ export default class Geometry implements Component {
   bind = (gl: WebGL2RenderingContext, material: Material): boolean => {
     if(!this.load(gl)) return false
 
-    const numComponents: number = 3
     const type: number = gl.FLOAT
     const normalize: boolean = false
     const stride: number = 0
     const offset: number = 0
+
+    // INDICES
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer.indices)
 
     // POSITION
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.positions)
     gl.vertexAttribPointer(
       material.attributeLocations.get('aVertexPosition'),
-      numComponents,
+      3,
       type,
       normalize,
       stride,
@@ -135,7 +157,7 @@ export default class Geometry implements Component {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normals)
     gl.vertexAttribPointer(
       material.attributeLocations.get('aVertexNormal'),
-      numComponents,
+      3,
       type,
       normalize,
       stride,
@@ -143,6 +165,8 @@ export default class Geometry implements Component {
     gl.enableVertexAttribArray(
       material.attributeLocations.get('aVertexNormal')
     )
+
+    if(!this.vertex.uvs) return true
 
     // UV
 
@@ -191,16 +215,9 @@ export default class Geometry implements Component {
     return true
   }
 
-  setVertices = (positions: Array<number>, normals: Array<number> | null = null, uvs: Array<number> | null = null): boolean => {
-    if(!positions.length) return false
-
-    this.vertex = createVertexObject()
-
-    this.setVertexPositions(positions)
-    this.setVertexUvs(uvs)
-
-    if(normals) this.setVertexNormals(normals)
-    else this.vertex.normals = calcNormals(this.vertex.positions)
+  setVertices = (vertex: VertexObject): boolean => {
+    this.vertex = vertex
+    if(!this.vertex.normals) this.vertex.normals = calcNormals(this.vertex.positions)
 
     this.vertex.min = [-1.0, -1.0, -1.0]
     this.vertex.max = [1.0, 1.0, 1.0]

@@ -1,20 +1,11 @@
 import { vec3 } from "gl-matrix";
 import entity from "../../scene/entity";
 import BoundingBox from "../boundingVolume/boundingBox";
-import Geometry, { calcNormals, DrawMode } from "./geometry";
+import Geometry, { calcNormals, createVertexObject, DrawMode } from "./geometry";
 
 export default class Plane extends Geometry {
   constructor(subdivisions: number = 1) {
     super(DrawMode.TRIANGLE, true, true, false)
-
-    this.vertex = {
-      count: null,
-      positions: new Array<number>(),
-      normals: new Array<number>(),
-      uvs: null,
-      min: vec3.create(),
-      max: vec3.create()
-    }
 
     const step: number = 2.0 / subdivisions
 

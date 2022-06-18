@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix";
 import Entity from "../../scene/entity";
 import BoundingVolume from "./boundingVolume";
-import Geometry, { DrawMode } from "../geometry/geometry";
+import Geometry, { DrawMode, parseUnindexedVertexPositions } from "../geometry/geometry";
 import UnlitMaterial from "../material/unlitMaterial";
 import { ComponentEnum } from "../base/component";
 
@@ -60,7 +60,12 @@ export default class BoundingSphere extends BoundingVolume {
     if(!this.visible || this.sphere || !this.self) return false
 
     const sphereGeometry: Geometry = new Geometry(DrawMode.LINE, true, false, false)
-    sphereGeometry.setVertices(this.createSphereBuffer(this.radius));
+    const positions = this.createSphereBuffer(this.radius)
+    sphereGeometry.setVertices({
+      count: positions.length,
+      indices: new Array<number>(),
+      positions
+    });
 
     this.sphere = new Entity()
     this.sphere.add(sphereGeometry)
