@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix";
 import Entity from "../../scene/entity";
 import BoundingVolume from "./boundingVolume";
-import Geometry, { DrawMode, parseUnindexedVertexPositions } from "../geometry/geometry";
+import Geometry, { DrawMode } from "../geometry/geometry";
 import UnlitMaterial from "../material/unlitMaterial";
 import { ComponentEnum } from "../base/component";
 

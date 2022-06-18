@@ -19,24 +19,6 @@ export enum DrawMode {
   LINE = 1,
 }
 
-export const parseUnindexedVertexPositions = (indices: Uint16Array, positions: Float32Array) => {
-  const output = new Array<number>()
-  for(const index of indices) {
-    const correctedIndex = index * 3
-    output.push(positions[correctedIndex], positions[correctedIndex + 1], positions[correctedIndex + 2])
-  }
-  return new Float32Array(output)
-}
-
-export const parseUnindexedVertexUvs = (indices: Uint16Array, uvs: Float32Array) => {
-  const output = new Array<number>()
-  for(const index of indices) {
-    const correctedIndex = index * 2
-    output.push(uvs[correctedIndex], uvs[correctedIndex + 1])
-  }
-  return new Float32Array(output)
-}
-
 export type VertexObject = {
   count?: number
 
@@ -62,7 +44,7 @@ export const createVertexObject = (): VertexObject => {
   return {
     count: 0,
 
-    position: new Float32Array,
+    position: new Float32Array(),
     normal: null,
 
     indices: null,
@@ -76,7 +58,10 @@ export const createVertexObject = (): VertexObject => {
 export const createVertexBufferObject = (gl: WebGL2RenderingContext): VertexBufferObject => {
   return {
     position: gl.createBuffer(),
-    normal: gl.createBuffer()
+    normal: gl.createBuffer(),
+
+    indices: null,
+    texcoord: null
   }
 }
 
@@ -146,6 +131,9 @@ export default class Geometry implements Component {
     // POSITION
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.position)
+    gl.enableVertexAttribArray(
+      material.attributeLocations.get('aVertexPosition')
+    )
     gl.vertexAttribPointer(
       material.attributeLocations.get('aVertexPosition'),
       3,
@@ -153,13 +141,13 @@ export default class Geometry implements Component {
       normalize,
       stride,
       offset)
-    gl.enableVertexAttribArray(
-      material.attributeLocations.get('aVertexPosition')
-    )
  
     // NORMAL
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normal)
+    gl.enableVertexAttribArray(
+      material.attributeLocations.get('aVertexNormal')
+    )
     gl.vertexAttribPointer(
       material.attributeLocations.get('aVertexNormal'),
       3,
@@ -167,12 +155,10 @@ export default class Geometry implements Component {
       normalize,
       stride,
       offset)
-    gl.enableVertexAttribArray(
-      material.attributeLocations.get('aVertexNormal')
-    )
+
 
     // INDICES
-    
+
     if(this.buffer.indices)
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer.indices)
 
@@ -180,6 +166,9 @@ export default class Geometry implements Component {
 
     if(this.buffer.texcoord) {
       gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.texcoord)
+      gl.enableVertexAttribArray(
+        material.attributeLocations.get('aVertexUv')
+      )
       gl.vertexAttribPointer(
         material.attributeLocations.get('aVertexUv'),
         2,
@@ -187,9 +176,6 @@ export default class Geometry implements Component {
         normalize,
         stride,
         offset)
-      gl.enableVertexAttribArray(
-        material.attributeLocations.get('aVertexUv')
-      )
     }
 
     return true

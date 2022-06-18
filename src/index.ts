@@ -12,6 +12,10 @@ import Turntable from './core/components/scripts/turntable';
 import Engine from './core/engine';
 import PhongMaterial from './core/components/material/phongMaterial';
 import UvMaterial from './core/components/material/uvMaterial';
+import loadGltf from './core/loader/gltfLoader';
+import Debug from './core/internal/debug';
+import NormalMaterial from './core/components/material/normalMaterial';
+import PositionMaterial from './core/components/material/positionMaterial';
 
 /*
 
@@ -29,9 +33,8 @@ import UvMaterial from './core/components/material/uvMaterial';
   - base-server, chat-server, scene-server
 
   ToDo:
-  - indexed vertex pipeline
   - transform local matrix
-  - fix shader pipeline bind order
+  - min max from gltf and fallback calculation
 
   - this in component callbacks
   - transform rotation as quaternions
@@ -56,7 +59,17 @@ import UvMaterial from './core/components/material/uvMaterial';
 
 */
 
-const main = async () => {
+/*
+  ### Skinning ###
+
+  Components:
+  
+  - Animator => keyframe, animation 
+  - SkinnedGeometry => joint, rig 
+*/
+
+
+const main = () => {
   const canvas = document.getElementById('glCanvas') as HTMLCanvasElement
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
@@ -67,31 +80,29 @@ const main = async () => {
 
   const engine = new Engine(canvas, sceneCamera)
 
-  const { geometry } = await new GltfLoader().load("http://localhost:8080/res/geo/testAnimGeo.gltf")
+  loadGltf("http://localhost:8080/res/geo/testAnimGeo.gltf").then(({geometry}) => {
+    const lambertMaterial = new LambertMaterial([1.0, 1.0, 1.0]) as Material
 
-  const lambertMaterial = new LambertMaterial([1.0, 1.0, 1.0]) as Material
-
-  const entity: Entity = new Entity()
-  entity.add(geometry[0])
-  entity.add(lambertMaterial)
-
-  engine.scene.add(entity)
-
-  /*
-  const { geometry } = await new GltfLoader().load("http://localhost:8080/res/geo/testGeo.gltf")
-
-  const phongMaterial = new PhongMaterial([1.0, 1.0, 1.0]) as Material
-
-  for(let geoIndex = 0; geoIndex < geometry.length; geoIndex++) {
     const entity: Entity = new Entity()
-    entity.get(Component.TRANSFORM).setPosition([geoIndex - 3 + geoIndex, 0.5, 0.0])
-    entity.add(geometry[geoIndex])
-    entity.add(new Turntable(1, [0, 1, 0]))
-    entity.add(phongMaterial)
-
+    entity.add(geometry[0])
+    entity.add(lambertMaterial)
+  
     engine.scene.add(entity)
-  }
-  */
+  }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test animation geometry = ${error}`))
+
+  loadGltf("http://localhost:8080/res/geo/testGeo.gltf").then(({geometry}) => {
+    const material = new PositionMaterial() as Material
+
+    for(let geoIndex = 0; geoIndex < geometry.length; geoIndex++) {
+      const entity: Entity = new Entity()
+      entity.get(Component.TRANSFORM).setPosition([geoIndex - 3 + geoIndex, 0, -4])
+      entity.add(geometry[geoIndex])
+      entity.add(new Turntable(1, [0, 1, 0]))
+      entity.add(material)
+
+      engine.scene.add(entity)
+    }
+  }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test geometry = ${error}`))
 
   const terrain: Entity = new Entity()
   terrain.add(new Terrain())

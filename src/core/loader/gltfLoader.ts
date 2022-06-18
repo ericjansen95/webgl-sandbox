@@ -1,13 +1,13 @@
-import Geometry, { parseUnindexedVertexPositions, parseUnindexedVertexUvs } from "../components/geometry/geometry";
+import Geometry from "../components/geometry/geometry"
 
 export type GlftLoadResponse = {
   geometry: Array<Geometry>
 }
 
 enum ComponentType {
-  VEC3 = 3,
-  VEC2 = 2,
-  SCALAR = 1
+  SCALAR = 1,
+  VEC2,
+  VEC3
 }
 
 const parseGeometry = async (gltf: any, bufferData: Array<ArrayBuffer>): Promise<Array<Geometry>> => {
@@ -31,12 +31,10 @@ const parseGeometry = async (gltf: any, bufferData: Array<ArrayBuffer>): Promise
     } = bufferViewEntry
 
     switch(component) {
-      case ComponentType.VEC3:
-        return new Float32Array(bufferData[buffer], byteOffset, count * 3)
-      case ComponentType.VEC2:
-        return new Float32Array(bufferData[buffer], byteOffset, count * 2)
       case ComponentType.SCALAR:
         return new Uint16Array(bufferData[buffer], byteOffset, count)
+      default:
+        return new Float32Array(bufferData[buffer], byteOffset, count * component)
     }    
   }
 
@@ -77,12 +75,13 @@ const parseGeometry = async (gltf: any, bufferData: Array<ArrayBuffer>): Promise
       }
 
       geometry.setVertices({
-        indices,
         position, 
-        normal, 
+        normal,
+
+        indices,
         texcoord
       })
-      
+
       geometries.push(geometry)
     }
   }
@@ -90,51 +89,46 @@ const parseGeometry = async (gltf: any, bufferData: Array<ArrayBuffer>): Promise
   return geometries
 }
 
-export default class GltfLoader {
-  constructor() {
 
-  }
+export default function loadGltf(uri: string): Promise<GlftLoadResponse> {
+  return new Promise(async (resolve, reject) => {
+    const uriParts = uri.split('/')
+    uriParts.pop()
 
-  load = (uri: string): Promise<GlftLoadResponse> => {
-    return new Promise(async (resolve, reject) => {
-      const uriParts = uri.split('/')
-      uriParts.pop()
+    const baseUri = uriParts.join('/')
 
-      const baseUri = uriParts.join('/')
+    const gltfResponse: Response = await fetch(uri, {
+      method: 'GET'
+    })
 
-      const gltfResponse: Response = await fetch(uri, {
+    if(!gltfResponse.ok) {
+      reject(new Error(`gltfLoader::load(): Failed to load from uri = ${uri}`))
+      return
+    }
+
+    const gltf = await gltfResponse.json() as any
+    console.log(gltf)
+
+    const { buffers } = gltf
+    const bufferData = new Array<ArrayBuffer>()
+
+    for(const buffer of buffers) {
+      const { size, uri } = buffer as any
+
+      const bufferResponse: Response = await fetch(`${baseUri}/${uri}`, {
         method: 'GET'
       })
 
-      if(!gltfResponse.ok) {
+      if(!bufferResponse.ok) {
         reject(new Error(`gltfLoader::load(): Failed to load from uri = ${uri}`))
         return
       }
 
-      const gltf = await gltfResponse.json() as any
-      console.log(gltf)
+      bufferData.push(await bufferResponse.arrayBuffer())
+    }
 
-      const { buffers } = gltf
-      const bufferData = new Array<ArrayBuffer>()
-
-      for(const buffer of buffers) {
-        const { size, uri } = buffer as any
-
-        const bufferResponse: Response = await fetch(`${baseUri}/${uri}`, {
-          method: 'GET'
-        })
-  
-        if(!bufferResponse.ok) {
-          reject(new Error(`gltfLoader::load(): Failed to load from uri = ${uri}`))
-          return
-        }
-
-        bufferData.push(await bufferResponse.arrayBuffer())
-      }
-
-      resolve({
-        geometry: await parseGeometry(gltf, bufferData)
-      })
+    resolve({
+      geometry: await parseGeometry(gltf, bufferData)
     })
-  }
+  })
 }
