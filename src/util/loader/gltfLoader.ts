@@ -1,10 +1,11 @@
-import { mat4 } from "gl-matrix"
+import { mat4, quat, vec3 } from "gl-matrix"
+import Animator, { Animation, JointTransfrom, KeyFrame } from "../../core/components/animation/animator"
 import { ComponentEnum } from "../../core/components/base/component"
 import Transform from "../../core/components/base/transform"
 import Bone from "../../core/components/geometry/bone"
 import Geometry from "../../core/components/geometry/geometry"
 import SkinnedGeometry, { Skeleton } from "../../core/components/geometry/skinnedGeometry"
-import SkinnedUnlitMaterial from "../../core/components/material/skinnedUnlitMaterial"
+import UnlitMaterial from "../../core/components/material/unlitMaterial"
 import Entity from "../../core/scene/entity"
 
 export type GlftLoadResponse = Array<Entity>
@@ -24,59 +25,155 @@ const componentPrimitiveType = {
   FLOAT_32: 5126
 }
 
-const parseEntity = (gltf: any, bufferData: Array<ArrayBuffer>, node: any): Entity | null => {
-  const { mesh, skin } = node
+const parseEntity = (gltf: any, bufferData: Array<ArrayBuffer>, nodeIndex: any): Entity | null => {
+  const { mesh, skin } = gltf.nodes[nodeIndex]
   if(mesh == null) return null
+
+  const isSkinnedEntity = skin != undefined
 
   const entity = new Entity()
   entity.add(parseGeometry(gltf, bufferData, mesh, skin))
 
+  if(isSkinnedEntity) {
+    const animator = new Animator()
+    animator.setAnimations(parseAnimations(gltf, bufferData, skin))
+
+    entity.add(animator)
+
+    /*
+    // TMP: test input animation data
+    const { skeleton: { bones } } = entity.get(ComponentEnum.GEOMETRY) as SkinnedGeometry
+    
+    const bone = bones[1]
+    const boneTransform = bone.get(ComponentEnum.TRANSFORM) as Transform
+
+    const rotation = animator.animations[0][15][1].rotation
+    console.log(rotation)
+    boneTransform.setLocalRotation(rotation)
+    */
+  }
+
   return entity
 }
 
-// ToDo: Validate this data
-const parseInverseBindPose = (gltf: any, bufferData: Array<ArrayBuffer>, inverseBindMatricesAccessorIndex: number): Skeleton["inverseBindPose"] => {
-  const inverseBindPose = new Array<mat4>()
+const parseAnimations = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: number): Array<Animation> => {
+  const parsedAnimations = new Array<Animation>()
 
-  const uniformMatrixBuffer = getBufferViewFromAccessorIndex(gltf, bufferData, inverseBindMatricesAccessorIndex) as Float32Array
-  for(let matrixIndex = 0; matrixIndex < uniformMatrixBuffer.length / 16; matrixIndex++) {
-    inverseBindPose.push(new Float32Array(uniformMatrixBuffer.buffer, 64 * matrixIndex, 16) as mat4)
+  const { animations, skins } = gltf
+  const { joints } = skins[skinIndex]
+
+  for(const animation of animations) {
+    const { channels, name, samplers } = animation
+    const keyframeArrays = Array<Array<quat>>()
+
+    for(const channel of channels) {
+      const { sampler, target: { node, path} } = channel
+
+      // TMP: check if animation corresponds to one joint of the skin and only use rotation channels
+      if(!joints.includes(node)) break
+      if(path !== 'rotation') continue
+
+      const { output } = samplers[sampler]
+      keyframeArrays.push(parseBufferToQuaternionArray(gltf, bufferData, output))
+    }
+
+    const currentAnimation: Animation = new Array<KeyFrame>()
+
+    const keyframeCount = keyframeArrays[0].length
+    for(let keyframeIndex = 0; keyframeIndex < keyframeCount; keyframeIndex++) {
+      const keyframe: KeyFrame = new Array<JointTransfrom>()
+
+      for(let jointIndex = 0; jointIndex < keyframeArrays.length; jointIndex++)
+        keyframe[jointIndex] = {
+          rotation: keyframeArrays[jointIndex][keyframeIndex]
+        }
+
+      currentAnimation.push(keyframe)  
+    }
+
+    parsedAnimations.push(currentAnimation)
   }
 
-  return inverseBindPose
+  return parsedAnimations
+}
+
+const parseBufferToQuaternionArray = (gltf: any, bufferData: Array<ArrayBuffer>, accessorIndex: number): Array<quat> => {
+  const quaternions = new Array<quat>()
+
+  const uniformQuaterionBuffer = getBufferViewFromAccessorIndex(gltf, bufferData, accessorIndex) as Float32Array
+  const uniformQuaterionArray = Array.from(uniformQuaterionBuffer.values()) as Array<number>
+
+  for(let quaternionIndex = 0; quaternionIndex < uniformQuaterionArray.length; quaternionIndex += 4) {
+    quaternions.push(quat.fromValues(
+      uniformQuaterionArray[quaternionIndex],
+      uniformQuaterionArray[quaternionIndex + 1],
+      uniformQuaterionArray[quaternionIndex + 2],
+      uniformQuaterionArray[quaternionIndex + 3]
+    ))
+  }
+
+  return quaternions
+}
+
+const parseBufferToMatrixArray = (gltf: any, bufferData: Array<ArrayBuffer>, accessorIndex: number): Array<mat4> => {
+  const matrices = new Array<mat4>()
+
+  const uniformMatrixBuffer = getBufferViewFromAccessorIndex(gltf, bufferData, accessorIndex) as Float32Array
+  const uniformMatrixArray = Array.from(uniformMatrixBuffer.values()) as Array<number>
+
+  for(let matrixIndex = 0; matrixIndex < uniformMatrixArray.length; matrixIndex += 16) {
+    // deep copy to avoid issues with inversing
+    matrices.push(mat4.fromValues(
+      uniformMatrixArray[matrixIndex],
+      uniformMatrixArray[matrixIndex + 1],
+      uniformMatrixArray[matrixIndex + 2],
+      uniformMatrixArray[matrixIndex + 3],
+      uniformMatrixArray[matrixIndex + 4],
+      uniformMatrixArray[matrixIndex + 5],
+      uniformMatrixArray[matrixIndex + 6],
+      uniformMatrixArray[matrixIndex + 7],
+      uniformMatrixArray[matrixIndex + 8],
+      uniformMatrixArray[matrixIndex + 9],
+      uniformMatrixArray[matrixIndex + 10],
+      uniformMatrixArray[matrixIndex + 11],
+      uniformMatrixArray[matrixIndex + 12],
+      uniformMatrixArray[matrixIndex + 13],
+      uniformMatrixArray[matrixIndex + 14],
+      uniformMatrixArray[matrixIndex + 15]
+    ))
+  }
+
+  return matrices
 }
 
 const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: number): Skeleton => {
   const { inverseBindMatrices, joints } = gltf.skins[skinIndex]
   const { nodes } = gltf
 
-  const inverseBindPose = parseInverseBindPose(gltf, bufferData, inverseBindMatrices)
+  const inverseBindPose = parseBufferToMatrixArray(gltf, bufferData, inverseBindMatrices)
+  const bindPose = inverseBindPose.map(inverseBindMatrix => mat4.invert(mat4.create(), inverseBindMatrix))
 
-  const addJointEntityToParent = (nodeIndex, parentEntity) => {
-    const { children, translation } = nodes[nodeIndex]
+  const bones = new Array<Entity>()
 
-    const joint = new Entity()
-    const jointTransform = joint.get(ComponentEnum.TRANSFORM) as Transform
-    if(translation) jointTransform.setLocalPosition(translation)
-    joint.add(new Bone())
-    joint.add(new SkinnedUnlitMaterial([1.0, 0.0, 1.0]))
+  const boneGeometry = new Bone()
+  const boneMaterial = new UnlitMaterial([1.0, 0.0, 1.0])
 
-    const parentTransform = parentEntity.get(ComponentEnum.TRANSFORM) as Transform
-    parentTransform.add(joint)
+  for(const jointMatrix of bindPose) {
+    const bone = new Entity()
+    bone.add(boneGeometry)
+    bone.add(boneMaterial)
 
-    if(!children) return
+    const boneTransform = bone.get(ComponentEnum.TRANSFORM) as Transform
+    boneTransform.setLocalPosition(mat4.getTranslation(vec3.create(), jointMatrix))
+    boneTransform.setLocalRotation(mat4.getRotation(quat.create(), jointMatrix))
 
-    for(const childNodeIndex of children) 
-      addJointEntityToParent(childNodeIndex, joint)
+    bones.push(bone)
   }
-  
-  const skeletonRoot = new Entity()
-  addJointEntityToParent(joints[0], skeletonRoot)
 
   const skeleton: Skeleton = {
-    root: skeletonRoot,
+    bones,
+    bindPose,
     inverseBindPose,
-    joints: new Array<mat4>()
   }
 
   return skeleton
@@ -135,7 +232,7 @@ const parseGeometry = (gltf: any, bufferData: Array<ArrayBuffer>, meshIndex: num
   if(!isSkinnedGeometry)
     geometry = new Geometry()
   else {
-    geometry = new SkinnedGeometry()
+    geometry = new SkinnedGeometry(false)
     geometry.setSkeleton(parseSkeleton(gltf, bufferData, skinIndex))
   }
 
@@ -184,8 +281,8 @@ export default function loadGltf(uri: string): Promise<GlftLoadResponse> {
     const entities = new Array<Entity>()
 
     const { nodes } = gltf
-    for(const node of nodes) {
-      const entity = parseEntity(gltf, bufferData, node)
+    for(const nodeIndex of Object.keys(nodes)) {
+      const entity = parseEntity(gltf, bufferData, parseInt(nodeIndex, 10))
       if(!entity) continue
 
       entities.push(entity)

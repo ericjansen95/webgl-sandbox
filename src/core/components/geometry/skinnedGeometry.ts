@@ -1,6 +1,7 @@
 import { mat4 } from "gl-matrix"
 import Entity from "../../scene/entity"
 import { ComponentEnum } from "../base/component"
+import Transform from "../base/transform"
 import Material from "../material/material"
 import Geometry, { createVBO, createVAO, DrawMode, VBO, VAO } from "./geometry"
 
@@ -31,10 +32,9 @@ export const createSVBO = (gl: WebGL2RenderingContext): SVBO => {
 }
 
 export type Skeleton = {
-  root: Entity
+  bones: Array<Entity>
+  bindPose: Array<mat4>
   inverseBindPose: Array<mat4>
-
-  joints: Array<mat4>
 }
 
 export default class SkinnedGeometry extends Geometry {
@@ -125,7 +125,11 @@ export default class SkinnedGeometry extends Geometry {
 
     this.self = self
 
-    if(this.skeleton)
-      this.self.get(ComponentEnum.TRANSFORM).add(this.skeleton.root)
+    if(this.skeleton) {
+      const transformCompoent = this.self.get(ComponentEnum.TRANSFORM) as Transform
+      
+      for(const bone of this.skeleton.bones)
+        transformCompoent.add(bone)
+    }      
   }
 }

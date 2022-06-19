@@ -3,14 +3,13 @@ import Entity from "../../scene/entity"
 export enum ComponentEnum {
   TRANSFORM = 0,
   GEOMETRY,
-  BOUNDING_VOLUME,
   MATERIAL,
+  BOUNDING_VOLUME,
   CAMERA,
-  SKINNED_GEOMETRY,
-  ANIMATOR,
   TERRAIN,
   CONTROLS,
-  SCRIPT
+  SCRIPT,
+  ANIMATOR
 }
 
 export default interface Component {
