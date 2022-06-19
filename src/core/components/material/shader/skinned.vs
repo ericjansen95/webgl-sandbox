@@ -5,6 +5,8 @@ attribute vec2 aVertexUv;
 attribute vec4 aJointWeight;
 attribute vec4 aJointIndices;
 
+uniform mat4 uBonesMatrix[24];
+
 uniform mat4 uWorldMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;

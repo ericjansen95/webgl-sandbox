@@ -1,3 +1,4 @@
+import { mat4 } from "gl-matrix"
 import Material from "../material/material"
 import Geometry, { createVBO, createVAO, DrawMode, VBO, VAO } from "./geometry"
 
@@ -27,9 +28,17 @@ export const createSVBO = (gl: WebGL2RenderingContext): SVBO => {
   }
 }
 
+export type Skeleton = {
+  bindPose: Array<mat4>
+
+  joints: Array<mat4>
+}
+
 export default class SkinnedGeometry extends Geometry {
   vao: SVAO
   vbo: SVBO | null
+
+  skeleton: Skeleton
 
   constructor(visible: boolean = true, cull: boolean = true, boundingSphere: boolean = true) {
     super(DrawMode.TRIANGLE, visible, cull, boundingSphere)
@@ -101,5 +110,9 @@ export default class SkinnedGeometry extends Geometry {
     this.vao.WEIGHTS_0 = vao.WEIGHTS_0
 
     return true
+  }
+
+  setSkeleton = (skeleton: Skeleton) => {
+    this.skeleton = skeleton
   }
 }

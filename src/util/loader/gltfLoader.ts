@@ -1,9 +1,9 @@
+import { mat4 } from "gl-matrix"
 import Geometry from "../../core/components/geometry/geometry"
-import SkinnedGeometry from "../../core/components/geometry/skinnedGeometry"
+import SkinnedGeometry, { Skeleton } from "../../core/components/geometry/skinnedGeometry"
+import Entity from "../../core/scene/entity"
 
-export type GlftLoadResponse = {
-  geometry: Array<Geometry>
-}
+export type GlftLoadResponse = Array<Entity>
 
 const componentByteCount = {
   SCALAR: 1,
@@ -19,9 +19,29 @@ const componentPrimitiveType = {
   FLOAT_32: 5126
 }
 
-const parseGeometry = async (gltf: any, bufferData: Array<ArrayBuffer>): Promise<Array<Geometry>> => {
+const parseEntity = (gltf: any, bufferData: Array<ArrayBuffer>, node: any): Entity | null => {
+  const { mesh, skin } = node
+  if(mesh == null) return null
+
+  const entity = new Entity()
+  entity.add(parseGeometry(gltf, bufferData, mesh, skin))
+
+  return entity
+}
+
+const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: number): Skeleton => {
+  const { inverseBindMatrices, joints } = gltf.skins[skinIndex]
+  
+  const skeleton: Skeleton = {
+    bindPose: new Array<mat4>(),
+    joints: new Array<mat4>()
+  }
+
+  return skeleton
+}
+
+const parseGeometry = (gltf: any, bufferData: Array<ArrayBuffer>, meshIndex: number, skinIndex: number | undefined = undefined): Geometry => {
   const { meshes, accessors, bufferViews } = gltf
-  const geometries = new Array<Geometry>()
 
   const getBufferViewFromAccessorIndex = (accessorIndex: number) => {
     const {
@@ -49,32 +69,35 @@ const parseGeometry = async (gltf: any, bufferData: Array<ArrayBuffer>): Promise
     }    
   }
 
-  for(const mesh of meshes) {
-    const { primitives, name } = mesh
+  const { primitives } = meshes[meshIndex]
 
-    for(const primitive of primitives) {
-      const { attributes } = primitive
+  const primitive = primitives[0]
+  const { attributes } = primitive
 
-      const vertex = {} as any
+  const isSkinnedGeometry = skinIndex != undefined && gltf.skins[skinIndex]
 
-      const indicesAccessorIndex = primitive.indices as number
-      vertex.INDICES = getBufferViewFromAccessorIndex(indicesAccessorIndex) as Uint16Array
+  const vertex = {} as any
 
-      for(const [key, value] of Object.entries(attributes as object)) {
-        const accessorIndex = value as number
-        vertex[key] = getBufferViewFromAccessorIndex(accessorIndex)
-      }
+  const indicesAccessorIndex = primitive.indices as number
+  vertex.INDICES = getBufferViewFromAccessorIndex(indicesAccessorIndex) as Uint16Array
 
-      const isSkinnedGeometry = vertex.JOINTS_0
-
-      const geometry = isSkinnedGeometry ? new SkinnedGeometry() : new Geometry()
-      geometry.setVAO(vertex)
-  
-      geometries.push(geometry)
-    }
+  for(const [key, value] of Object.entries(attributes as object)) {
+    const accessorIndex = value as number
+    vertex[key] = getBufferViewFromAccessorIndex(accessorIndex)
   }
 
-  return geometries
+  let geometry = null
+  
+  if(!isSkinnedGeometry)
+    geometry = new Geometry()
+  else {
+    geometry = new SkinnedGeometry()
+    geometry.setSkeleton(parseSkeleton(gltf, bufferData, skinIndex))
+  }
+
+  geometry.setVAO(vertex)
+
+  return geometry
 }
 
 
@@ -115,8 +138,16 @@ export default function loadGltf(uri: string): Promise<GlftLoadResponse> {
       bufferData.push(await bufferResponse.arrayBuffer())
     }
 
-    resolve({
-      geometry: await parseGeometry(gltf, bufferData)
-    })
+    const entities = new Array<Entity>()
+
+    const { nodes } = gltf
+    for(const node of nodes) {
+      const entity = parseEntity(gltf, bufferData, node)
+      if(!entity) continue
+
+      entities.push(entity)
+    }
+
+    resolve(entities)
   })
 }

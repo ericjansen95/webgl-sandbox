@@ -109,23 +109,22 @@ const main = () => {
 
   engine.scene.add(rootBone)
 
-  loadGltf("http://localhost:8080/res/geo/testAnimGeo.gltf").then(({geometry}) => {
+  loadGltf("http://localhost:8080/res/geo/testAnimGeo.gltf").then((entities) => {
     const unlitMaterial = new SkinnedUnlitMaterial([1.0, 1.0, 1.0]) as Material
 
-    const entity: Entity = new Entity()
-    entity.add(geometry[0])
-    entity.add(unlitMaterial)
-  
-    engine.scene.add(entity)
+    for(const entity of entities) {
+      entity.add(unlitMaterial)
+
+      engine.scene.add(entity)
+    }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test animation geometry = ${error}`))
 
-  loadGltf("http://localhost:8080/res/geo/testGeo.gltf").then(({geometry}) => {
+  loadGltf("http://localhost:8080/res/geo/testGeo.gltf").then((entities) => {
     const material = new FresnelMaterial([1.0, 1.0, 1.0]) as Material
 
-    for(let geoIndex = 0; geoIndex < geometry.length; geoIndex++) {
-      const entity: Entity = new Entity()
-      entity.get(Component.TRANSFORM).setLocalPosition([geoIndex - 3 + geoIndex, 0, -4])
-      entity.add(geometry[geoIndex])
+    for(let entityIndex = 0; entityIndex < entities.length; entityIndex++) {
+      const entity = entities[entityIndex]
+      entity.get(Component.TRANSFORM).setLocalPosition([entityIndex - entities.length + 1 + entityIndex, 0, -4])
       entity.add(new Turntable(1, [0, 1, 0]))
       entity.add(material)
 

@@ -19,12 +19,14 @@ export default class SkinnedUnlitMaterial extends Material {
     this.attributeLocations.set('aJointIndices', gl.getAttribLocation(this.program, 'aJointIndices'))
 
     this.uniformLocations.set('uColor', gl.getUniformLocation(this.program, 'uColor'))
+    this.uniformLocations.set('uJointsMatrix', gl.getUniformLocation(this.program, 'uJointsMatrix'))
 
     return true
   }
 
   bind = (gl: WebGL2RenderingContext): boolean => {
     gl.uniform3fv(this.uniformLocations.get('uColor'), this.color)
+    gl.uniformMatrix4fv(this.uniformLocations.get('uJointsMatrix'), false, new Float32Array(4 * 16))
     return true
   }
 }
