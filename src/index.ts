@@ -6,16 +6,18 @@ import FlyControls from './core/components/controls/flyControls';
 import Terrain from './core/components/geometry/terrain';
 import Quad from './core/components/geometry/quad';
 import UnlitMaterial from './core/components/material/unlitMaterial';
-import GltfLoader from './core/loader/gltfLoader';
+import GltfLoader from './util/loader/gltfLoader';
 import { ComponentEnum as Component } from './core/components/base/component';
 import Turntable from './core/components/scripts/turntable';
 import Engine from './core/engine';
 import PhongMaterial from './core/components/material/phongMaterial';
 import UvMaterial from './core/components/material/uvMaterial';
-import loadGltf from './core/loader/gltfLoader';
+import loadGltf from './util/loader/gltfLoader';
 import Debug from './core/internal/debug';
 import NormalMaterial from './core/components/material/normalMaterial';
 import PositionMaterial from './core/components/material/positionMaterial';
+import OutlineMaterial from './core/components/material/fresnelMaterial';
+import FresnelMaterial from './core/components/material/fresnelMaterial';
 
 /*
 
@@ -91,7 +93,7 @@ const main = () => {
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test animation geometry = ${error}`))
 
   loadGltf("http://localhost:8080/res/geo/testGeo.gltf").then(({geometry}) => {
-    const material = new PositionMaterial() as Material
+    const material = new FresnelMaterial([1.0, 1.0, 1.0]) as Material
 
     for(let geoIndex = 0; geoIndex < geometry.length; geoIndex++) {
       const entity: Entity = new Entity()

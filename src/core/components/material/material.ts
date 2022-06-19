@@ -4,7 +4,7 @@ import { mat4, vec3 } from "gl-matrix"
 import Transform from "../base/transform"
 import Camera from "../base/camera"
 import Debug from "../../internal/debug"
-import round from "../../../util/math/round"
+import { roundNumber } from "../../../util/math/round"
 
 const vsDefaultSource: string = require('/src/core/components/material/shader/default.vs') as string
 
@@ -68,7 +68,7 @@ export default class Material implements Component {
     this.attributeLocations = attributeLocations
     this.uniformLocations = uniformLocations
 
-    const compileTime = round(performance.now() - startTime)
+    const compileTime = roundNumber(performance.now() - startTime)
     Debug.info(`Material::compileBase(): Compiled program in = ${compileTime} ms`)
 
     return true

@@ -1,5 +1,5 @@
 import { vec3 } from "gl-matrix";
-import vec3ToRoundedArray, { roundNumber } from "../../util/math/vector";
+import vec3ToRoundedArray from "../../util/math/vector";
 import FlyControls from "../components/controls/flyControls";
 import Geometry from "../components/geometry/geometry";
 import Material from "../components/material/material";
@@ -10,6 +10,7 @@ import Time from "../internal/time";
 import Entity from "../scene/entity";
 import Client, { GameConnectPackage, GameDeltaStatePackage, GameDisconnectPackage, GameTransformPackage, GlobalConnectPackage } from "./client";
 import { ComponentEnum } from "../components/base/component";
+import { roundNumber } from "../../util/math/round";
 
 type ClientTransform = {
   currentPosition: Array<number>,

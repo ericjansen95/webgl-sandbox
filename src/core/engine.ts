@@ -7,7 +7,7 @@ import Debug from "./internal/debug"
 import Input from "./internal/input"
 import Time from "./internal/time"
 import Entity from "./scene/entity"
-import Renderer from "./scene/renderer"
+import Renderer from "./renderer/renderer"
 import Scene from "./scene/scene"
 
 export type MainStats = {
