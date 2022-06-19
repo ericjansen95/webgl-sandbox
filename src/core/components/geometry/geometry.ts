@@ -204,11 +204,15 @@ export default class Geometry implements Component {
     return this.setVAOBase(vao)
   }
 
-  onAdd = (self: Entity) => {
+  onAddBase = (self: Entity) => {
     if(!this.boundingSphere) return
     
     const boundingSphere: BoundingSphere = new BoundingSphere()
     self.add(boundingSphere)
+  }
+
+  onAdd = (self: Entity) => {
+    this.onAddBase(self)
   }
 }
 
