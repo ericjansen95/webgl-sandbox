@@ -1,4 +1,4 @@
-import { quat } from "gl-matrix"
+import { mat4, quat } from "gl-matrix"
 import entity from "../../scene/entity"
 import Component, { ComponentEnum } from "../base/component"
 import Transform from "../base/transform"
@@ -38,10 +38,18 @@ export default class Animator implements Component {
 
   onUpdate = (self: entity, camera: entity) => {
     const animation = this.animations[0]
+    const currentPose = new Array<mat4>()
 
-    for(let boneIndex = 0; boneIndex < this.skeleton.bones.length; boneIndex++) {
-      const boneTransform = this.skeleton.bones[boneIndex].get(ComponentEnum.TRANSFORM) as Transform
-      boneTransform.setLocalRotation(animation[this.currentFrame][boneIndex].rotation)
+    for(let jointIndex = 0; jointIndex < this.skeleton.bones.length; jointIndex++) {
+      
+      const rotationMatrix = mat4.fromQuat(mat4.create(), animation[this.currentFrame][jointIndex].rotation)
+      const localMatrix = mat4.mul(mat4.create(), this.skeleton.bindPose[jointIndex], rotationMatrix)
+
+      currentPose.push(localMatrix)
+
+      // debug vis
+      const boneTransform = this.skeleton.bones[jointIndex].get(ComponentEnum.TRANSFORM) as Transform
+      boneTransform.localMatrix = localMatrix
     }
 
     this.currentFrame = ++this.currentFrame % 30
