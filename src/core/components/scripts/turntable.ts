@@ -21,6 +21,6 @@ export default class Turntable implements Component {
     const transform = self.get(ComponentEnum.TRANSFORM) as Transform
 
     const axisRotation = vec3.scale(vec3.create(), this.axis, this.speed * Time.deltaTime)
-    transform.setRotation([transform.rotation[0] + axisRotation[0], transform.rotation[1] + axisRotation[1], transform.rotation[2] + axisRotation[2]])
+    transform.rotateLocalEuler(axisRotation)
   }
 }

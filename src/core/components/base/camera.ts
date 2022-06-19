@@ -82,13 +82,13 @@ export default class Camera implements Component {
     return true
   }
 
-  isBoxInFrustrum = (corners: Array<vec3>, worldMatrix: mat4): boolean => {
+  isBoxInFrustrum = (corners: Array<vec3>, globalMatrix: mat4): boolean => {
     // ToDo(Eric) Cache this in geometry / bounding box component after transform was diry
     let points: Array<vec3> = new Array<vec3>()
 
     // ToDo: Cache this!
     corners.forEach(corner => {
-      points.push(vec3.transformMat4(vec3.create(), corner, worldMatrix))
+      points.push(vec3.transformMat4(vec3.create(), corner, globalMatrix))
     })
 
     for(const plane of this.frustrum.planes) {
@@ -113,22 +113,22 @@ export default class Camera implements Component {
 
     let isInFrustrum: boolean | null = null
 
-    const point: vec3 = (entity.get(ComponentEnum.TRANSFORM) as Transform).getPosition()
+    const point: vec3 = (entity.get(ComponentEnum.TRANSFORM) as Transform).getGlobalPosition()
 
     // ToDo: Abstract bounding volumes with base class and type to improve component query and code flow
 
     const boundingVolume = entity.get(ComponentEnum.BOUNDING_VOLUME) as BoundingBox & BoundingSphere
 
     if(boundingVolume.radius) {
-      const scale: vec3 = (entity.get(ComponentEnum.TRANSFORM) as Transform).getScale()
+      const scale: vec3 = (entity.get(ComponentEnum.TRANSFORM) as Transform).getGlobalScale()
       // ToDo: Chache this!
       const radiusScalar: number = Math.max(scale[0], Math.max(scale[1], scale[2])) 
       isInFrustrum = this.isSphereInFrustrum(point, boundingVolume.radius * radiusScalar)
     }
 
     if(boundingVolume.corners) {
-      const worldMatrix: mat4 = (entity.get(ComponentEnum.TRANSFORM) as Transform).worldMatrix
-      isInFrustrum = this.isBoxInFrustrum(boundingVolume.corners, worldMatrix)
+      const globalMatrix: mat4 = (entity.get(ComponentEnum.TRANSFORM) as Transform).globalMatrix
+      isInFrustrum = this.isBoxInFrustrum(boundingVolume.corners, globalMatrix)
     }
 
     if(isInFrustrum === null) isInFrustrum = this.isPointInFrustrum(point)
@@ -139,7 +139,7 @@ export default class Camera implements Component {
   updateFrustrum = () => {
     // ToDo: Optimize this!
 
-    const position = this.self.get(ComponentEnum.TRANSFORM).getPosition()
+    const position = this.self.get(ComponentEnum.TRANSFORM).getGlobalPosition()
 
     // see: http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-extracting-the-planes/
 
@@ -256,10 +256,10 @@ export default class Camera implements Component {
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
-    const worldMatrix = (self.get(ComponentEnum.TRANSFORM) as Transform).worldMatrix
-    this.viewMatrix = mat4.invert(mat4.create(), worldMatrix)
+    const globalMatrix = (self.get(ComponentEnum.TRANSFORM) as Transform).globalMatrix
+    this.viewMatrix = mat4.invert(mat4.create(), globalMatrix)
 
-    const rotation: quat = mat4.getRotation(quat.create(), worldMatrix)
+    const rotation: quat = mat4.getRotation(quat.create(), globalMatrix)
 
     vec3.transformQuat(this.viewDir, VECTOR_FORWARD, rotation)
     vec3.cross(this.side, VECTOR_UP, this.viewDir)

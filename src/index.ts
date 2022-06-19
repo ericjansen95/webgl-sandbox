@@ -18,6 +18,7 @@ import NormalMaterial from './core/components/material/normalMaterial';
 import PositionMaterial from './core/components/material/positionMaterial';
 import OutlineMaterial from './core/components/material/fresnelMaterial';
 import FresnelMaterial from './core/components/material/fresnelMaterial';
+import Bone from './core/components/geometry/bone';
 
 /*
 
@@ -77,10 +78,33 @@ const main = () => {
   canvas.height = window.innerHeight
 
   const sceneCamera: Entity = new Entity()
-  sceneCamera.get(Component.TRANSFORM).setPosition([0.0, 1.0, 6.0])
+  sceneCamera.get(Component.TRANSFORM).setLocalPosition([0.0, 1.0, 6.0])
   sceneCamera.add(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
   const engine = new Engine(canvas, sceneCamera)
+
+  const rootBone: Entity = new Entity()
+
+  rootBone.add(new Bone())
+  rootBone.add(Debug.material)
+
+  let prevBoneTransform = rootBone.get(Component.TRANSFORM)
+  prevBoneTransform.setLocalPosition([-1, 0, 0])
+
+  for(let boneIndex = 1; boneIndex < 3; boneIndex++) {
+    const bone: Entity = new Entity()
+
+    bone.add(new Bone())
+    bone.add(Debug.material)
+
+    const boneTransform = bone.get(Component.TRANSFORM)
+    boneTransform.setLocalPosition([0, boneIndex, 0])
+    boneTransform.setLocalEulerRotation([0, 0, Math.PI * 0.1])
+
+    prevBoneTransform.add(bone)
+  }
+
+  engine.scene.add(rootBone)
 
   loadGltf("http://localhost:8080/res/geo/testAnimGeo.gltf").then(({geometry}) => {
     const lambertMaterial = new LambertMaterial([1.0, 1.0, 1.0]) as Material
@@ -97,7 +121,7 @@ const main = () => {
 
     for(let geoIndex = 0; geoIndex < geometry.length; geoIndex++) {
       const entity: Entity = new Entity()
-      entity.get(Component.TRANSFORM).setPosition([geoIndex - 3 + geoIndex, 0, -4])
+      entity.get(Component.TRANSFORM).setLocalPosition([geoIndex - 3 + geoIndex, 0, -4])
       entity.add(geometry[geoIndex])
       entity.add(new Turntable(1, [0, 1, 0]))
       entity.add(material)

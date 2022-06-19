@@ -23,7 +23,7 @@ export default class Material implements Component {
   compile: (gl: WebGL2RenderingContext) => boolean
 
   bindBase = (gl: WebGL2RenderingContext, entity: Entity, camera: Entity, light: LightData = { mainDirection: DEFAULT_MAIN_LIGHT_DIRECTION }): boolean => {
-    const { modelMatrix, worldMatrix } = entity.get(ComponentEnum.TRANSFORM) as Transform
+    const { localMatrix: modelMatrix, globalMatrix: globalMatrix } = entity.get(ComponentEnum.TRANSFORM) as Transform
     const { projectionMatrix, viewMatrix, viewDir } = camera.get(ComponentEnum.CAMERA) as Camera
 
     if(!this.compile(gl)) return false
@@ -34,7 +34,7 @@ export default class Material implements Component {
     gl.uniformMatrix4fv(
       this.uniformLocations.get('uWorldMatrix'),
       false,
-      worldMatrix
+      globalMatrix
     )
 
     gl.uniformMatrix4fv(

@@ -41,8 +41,8 @@ export default class Scene {
     }
 
     const grid: Entity = new Entity()
-    grid.get(ComponentEnum.TRANSFORM).setScale([10.0, 10.0, 10.0])
-    grid.get(ComponentEnum.TRANSFORM).setPosition([-5.0, 0.0, -5.0])
+    grid.get(ComponentEnum.TRANSFORM).setLocalScale([10.0, 10.0, 10.0])
+    grid.get(ComponentEnum.TRANSFORM).setLocalPosition([-5.0, 0.0, -5.0])
     grid.add(new Grid(10))
     grid.add(new UnlitMaterial([0.75, 0.75, 0.75]))
     this.root.get(ComponentEnum.TRANSFORM).add(grid)

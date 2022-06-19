@@ -30,7 +30,7 @@ export const getLocalClientTransform = (entity: Entity): ClientTransform => {
   const transform = entity.get(ComponentEnum.TRANSFORM) as Transform
   const controls = entity.get(ComponentEnum.CONTROLS) as FlyControls
 
-  const position = vec3ToRoundedArray(transform.getPosition())
+  const position = vec3ToRoundedArray(transform.getGlobalPosition())
   const rotation = roundNumber(controls.angleRotation[0])
 
   return {
@@ -144,8 +144,8 @@ export default class GameNetworkController {
       transform.currentRotation = transform.targetRotation
   
       const transformComponent = entity.get(ComponentEnum.TRANSFORM) as Transform
-      transformComponent.setPosition(currentPosition)
-      transformComponent.setRotation(vec3.fromValues(0.0, transform.targetRotation, 0.0));
+      transformComponent.setLocalPosition(currentPosition)
+      transformComponent.setLocalEulerRotation(vec3.fromValues(0.0, transform.targetRotation, 0.0));
     }
   }
 
@@ -158,8 +158,8 @@ export default class GameNetworkController {
     const lambertMaterial: Material = new LambertMaterial([Math.random(), Math.random(), Math.random()]) as Material
     const entity: Entity = new Entity()
     const transform = entity.get(ComponentEnum.TRANSFORM) as Transform
-    transform.setPosition(vec3.fromValues(position[0], position[1], position[2]))
-    transform.setRotation(vec3.fromValues(0.0, rotation, 0.0))
+    transform.setLocalPosition(vec3.fromValues(position[0], position[1], position[2]))
+    transform.setLocalEulerRotation(vec3.fromValues(0.0, rotation, 0.0))
 
     const humanGeometry = new Geometry()
     

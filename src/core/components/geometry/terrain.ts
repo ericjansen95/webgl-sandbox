@@ -60,8 +60,8 @@ export default class Terrain implements Component {
         chunkPos = vec3.fromValues(xPos, 0.0, zPos)
         const chunk: Entity = new Entity()
 
-        chunk.get(ComponentEnum.TRANSFORM).setPosition(chunkPos)
-        chunk.get(ComponentEnum.TRANSFORM).setScale(chunkScale)
+        chunk.get(ComponentEnum.TRANSFORM).setLocalPosition(chunkPos)
+        chunk.get(ComponentEnum.TRANSFORM).setLocalScale(chunkScale)
 
         chunk.add(this.highGeometry)
         chunk.add(this.highMaterial)
@@ -76,7 +76,7 @@ export default class Terrain implements Component {
 
   onUpdate = (self: Entity, camera: Entity) => {
     return;
-    const cameraPos: vec3 = (camera.get(ComponentEnum.TRANSFORM) as Transform).getPosition()
+    const cameraPos: vec3 = (camera.get(ComponentEnum.TRANSFORM) as Transform).getGlobalPosition()
     // ToDo(Eric) Check why we have to make this transform
     // => this seems wrong
     vec3.multiply(cameraPos, cameraPos, [-1.0, 1.0, -1.0])
@@ -88,7 +88,7 @@ export default class Terrain implements Component {
       const chunk: Entity = this.chunks[chunkIndex]
 
       const chunkPos: vec3 = vec3.create()
-      mat4.getTranslation(chunkPos, chunk.get(ComponentEnum.TRANSFORM).worldMatrix)
+      mat4.getTranslation(chunkPos, chunk.get(ComponentEnum.TRANSFORM).globalMatrix)
       
       // ToDo(Eric) Transform bb check in 0-1 range on both axis
       const chunkCornerLowerLeft: vec2 = [chunkPos[0] - 1.0 + this.size, chunkPos[2] + 1.0 + this.size]      
@@ -137,7 +137,7 @@ export default class Terrain implements Component {
 
   onAdd = (self: Entity) => {
     this.chunks.forEach(chunk => self.get(ComponentEnum.TRANSFORM).add(chunk))
-    self.get(ComponentEnum.TRANSFORM).setScale([this.size, 1.0, this.size])
-    self.get(ComponentEnum.TRANSFORM).setPosition([this.size * -0.5, -100, this.size * -1.0])
+    self.get(ComponentEnum.TRANSFORM).setLocalScale([this.size, 1.0, this.size])
+    self.get(ComponentEnum.TRANSFORM).setLocalPosition([this.size * -0.5, -100, this.size * -1.0])
   }
 }

@@ -21,6 +21,7 @@ export default class FlyControls implements Component {
 
   constructor() {
     this.type = ComponentEnum.CONTROLS
+    
     this.angleRotation = vec2.create()
     this.tmpAngleRotation = vec2.create()
   }
@@ -60,7 +61,7 @@ export default class FlyControls implements Component {
 
     // TRANSLATION
 
-    this.position = self.get(ComponentEnum.TRANSFORM).getPosition()
+    this.position = self.get(ComponentEnum.TRANSFORM).getGlobalPosition()
 
     const translateSpeed = TRANSLATE_SPEED * Time.deltaTime * (Input.isKeyDown('shift') ? 6.0 : 1.0)
     const inputDirection: vec3 = [Input.isKeyDown('a') ? 1.0 : Input.isKeyDown('d') ? -1.0 : 0.0,
@@ -78,7 +79,7 @@ export default class FlyControls implements Component {
 
     // UPDATE ENTITY TRANSFORM
 
-    self.get(ComponentEnum.TRANSFORM).worldMatrix = mat4.mul(mat4.create(), translationMatrix, rotationMatrix)
+    self.get(ComponentEnum.TRANSFORM).globalMatrix = mat4.mul(mat4.create(), translationMatrix, rotationMatrix)
   }
 
   onAdd = (self: Entity) => {

@@ -5,16 +5,16 @@ import Component, { ComponentEnum } from "./component";
 
 export default class Transform implements Component {
   type: ComponentEnum
-  position: vec3
-  rotation: vec3
-  scale: vec3
 
-  modelMatrix: mat4
+  localPosition: vec3
+  localScale: vec3
+  localRotation: quat
 
   dirty: boolean
-  autoUpdate: boolean
+  localRotationMatrix: mat4
+  localMatrix: mat4
 
-  worldMatrix: mat4
+  globalMatrix: mat4
 
   parent: Transform | null
   children: Array<Entity>
@@ -22,46 +22,53 @@ export default class Transform implements Component {
   constructor() {
     this.type = ComponentEnum.TRANSFORM
 
-    this.position = vec3.create()
-    this.rotation = vec3.create()
-    this.scale = vec3.create()
-    this.scale.fill(1.0)
+    this.localPosition = vec3.create()
+    this.localScale = vec3.create()
+    this.localScale.fill(1.0)
+    this.localRotation = quat.create()
 
     this.dirty = true
-    this.autoUpdate = true
+    this.localRotationMatrix = mat4.create()
+    this.localMatrix = mat4.create()
 
-    this.modelMatrix = mat4.create()
-    this.worldMatrix = mat4.create()
+    this.globalMatrix = mat4.create()
 
     this.parent = null
     this.children = new Array<Entity>()
   }
 
-  setPosition = (position: vec3) => {
-    this.position = position
+  setLocalPosition = (position: vec3) => {
+    this.localPosition = position
     this.dirty = true
   }
 
-  setRotation = (rotation: vec3) => {
-    this.rotation = rotation
+  setLocalEulerRotation = (rotation: vec3) => {
+    quat.copy(this.localRotation, quat.create())
+    this.rotateLocalEuler(rotation)
+  }
+
+  rotateLocalEuler = (rotation: vec3) => {
+    quat.rotateX(this.localRotation, this.localRotation, rotation[0])
+    quat.rotateY(this.localRotation, this.localRotation, rotation[1])
+    quat.rotateZ(this.localRotation, this.localRotation, rotation[2])
     this.dirty = true
   }
 
-  setScale = (scale: vec3) => {
-    this.scale = scale
+  setLocalScale = (scale: vec3) => {
+    this.localScale = scale
     this.dirty = true
   }
 
-  getPosition = (): vec3 => {
-    return mat4.getTranslation(vec3.create(), this.worldMatrix)
+  getGlobalPosition = (): vec3 => {
+    return mat4.getTranslation(vec3.create(), this.globalMatrix)
   }
 
-  getRotation = (): quat => {
-    return mat4.getRotation(quat.create(), this.worldMatrix)
+  getGlobalRotation = (): quat => {
+    return mat4.getRotation(quat.create(), this.globalMatrix)
   }
 
-  getScale = (): vec3 => {
-    return mat4.getScaling(vec3.create(), this.worldMatrix)
+  getGlobalScale = (): vec3 => {
+    return mat4.getScaling(vec3.create(), this.globalMatrix)
   }
 
   add = (entity: Entity) => {
@@ -69,33 +76,29 @@ export default class Transform implements Component {
     this.children.push(entity)
   }
 
-  removeChild = (entity: Entity) => {
-    // ToDo: Improve Error handling
+  removeChild = (entity: Entity): boolean => {
     const entityIndex = this.children.indexOf(entity)
-    if(!entityIndex) return
+    if(!entityIndex) return null
 
-    this.children.splice(entityIndex, 1)
+    return Boolean(this.children.splice(entityIndex, 1).length)
   }
 
   onUpdate = () => {
     if(this.dirty) {
-      // ToDo Do this in the setters of the local transform
-      this.modelMatrix = mat4.create()
+      mat4.copy(this.localMatrix, mat4.create())
   
-      mat4.translate(this.modelMatrix, this.modelMatrix, this.position)
+      mat4.translate(this.localMatrix, this.localMatrix, this.localPosition)
   
-      mat4.scale(this.modelMatrix, this.modelMatrix, this.scale)
+      mat4.scale(this.localMatrix, this.localMatrix, this.localScale)
   
-      // ToDo(Eric) Is this possible in one call with the library?
-      mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotation[0])
-      mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotation[1])
-      mat4.rotateZ(this.modelMatrix, this.modelMatrix, this.rotation[2])    
+      mat4.fromQuat(this.localRotationMatrix, this.localRotation)
+      mat4.multiply(this.localMatrix, this.localMatrix, this.localRotationMatrix)  
     }
 
     if(this.parent)
-      this.worldMatrix = mat4.multiply(this.worldMatrix, this.parent.worldMatrix, this.modelMatrix)
+      mat4.multiply(this.globalMatrix, this.parent.globalMatrix, this.localMatrix)
     else if(this.dirty)
-      this.worldMatrix = mat4.clone(this.modelMatrix)      
+      mat4.copy(this.globalMatrix, this.localMatrix)      
 
     this.dirty = false;
   }
