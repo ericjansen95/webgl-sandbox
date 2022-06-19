@@ -134,9 +134,13 @@ export default class Debug {
     if(!this.camera)
       this.createCamera(this.sceneCamera)
 
+    const debugCameraControls = this.camera.get(ComponentEnum.CONTROLS) as FlyControls
+    const debugCameraTransform = this.camera.get(ComponentEnum.TRANSFORM) as Transform
+
     // set debug camera position to scene camera
-    this.camera.get(ComponentEnum.TRANSFORM).setLocalPosition(sceneCameraTransform.getGlobalPosition())
-    this.camera.get(ComponentEnum.CONTROLS).angleRotation = vec2.create()
+    debugCameraTransform.setLocalPosition(sceneCameraTransform.getGlobalPosition())
+    debugCameraTransform.onUpdate()
+    debugCameraControls.angleRotation = vec2.create()
 
     return "Engine::toggleDebugCamera(): Enabled debug camera."
   }

@@ -42,6 +42,11 @@ export default class Transform implements Component {
     this.dirty = true
   }
 
+  setLocalRotation = (rotation: quat) => {
+    quat.copy(this.localRotation, rotation)
+    this.dirty = true
+  }
+
   setLocalEulerRotation = (rotation: vec3) => {
     quat.copy(this.localRotation, quat.create())
     this.rotateLocalEuler(rotation)

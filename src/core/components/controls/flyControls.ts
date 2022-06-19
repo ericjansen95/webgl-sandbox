@@ -4,6 +4,7 @@ import Component, { ComponentEnum } from "../base/component"
 import Input from "../../internal/input"
 import Time from "../../internal/time"
 import clamp from "../../../util/math/clamp"
+import Transform from "../base/transform"
 
 const VECTOR_UP: vec3 = vec3.fromValues(0.0, -1.0, 0.0)
 
@@ -21,7 +22,7 @@ export default class FlyControls implements Component {
 
   constructor() {
     this.type = ComponentEnum.CONTROLS
-    
+
     this.angleRotation = vec2.create()
     this.tmpAngleRotation = vec2.create()
   }
@@ -59,9 +60,11 @@ export default class FlyControls implements Component {
     const side = vec3.cross(vec3.create(), forward, VECTOR_UP)
     const up = vec3.cross(vec3.create(), forward, side)
 
+    const transform = self.get(ComponentEnum.TRANSFORM) as Transform
+
     // TRANSLATION
 
-    this.position = self.get(ComponentEnum.TRANSFORM).getGlobalPosition()
+    this.position = transform.getGlobalPosition()
 
     const translateSpeed = TRANSLATE_SPEED * Time.deltaTime * (Input.isKeyDown('shift') ? 6.0 : 1.0)
     const inputDirection: vec3 = [Input.isKeyDown('a') ? 1.0 : Input.isKeyDown('d') ? -1.0 : 0.0,
@@ -72,14 +75,8 @@ export default class FlyControls implements Component {
     vec3.scaleAndAdd(this.position, this.position, up, inputDirection[1] * translateSpeed)
     vec3.scaleAndAdd(this.position, this.position, forward, inputDirection[2] * translateSpeed)
 
-    // CONSTRUCT MATRIX
-
-    const rotationMatrix = mat4.fromQuat(mat4.create(), rotation)
-    const translationMatrix = mat4.fromTranslation(mat4.create(), this.position)
-
-    // UPDATE ENTITY TRANSFORM
-
-    self.get(ComponentEnum.TRANSFORM).globalMatrix = mat4.mul(mat4.create(), translationMatrix, rotationMatrix)
+    transform.setLocalRotation(rotation)
+    transform.setLocalPosition(this.position)
   }
 
   onAdd = (self: Entity) => {
