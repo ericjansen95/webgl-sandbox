@@ -19,6 +19,7 @@ import PositionMaterial from './core/components/material/positionMaterial';
 import OutlineMaterial from './core/components/material/fresnelMaterial';
 import FresnelMaterial from './core/components/material/fresnelMaterial';
 import Bone from './core/components/geometry/bone';
+import Transform from './core/components/base/transform';
 
 /*
 
@@ -91,17 +92,18 @@ const main = () => {
   let prevBoneTransform = rootBone.get(Component.TRANSFORM)
   prevBoneTransform.setLocalPosition([-1, 0, 0])
 
-  for(let boneIndex = 1; boneIndex < 3; boneIndex++) {
+  for(let boneIndex = 1; boneIndex < 6; boneIndex++) {
     const bone: Entity = new Entity()
 
     bone.add(new Bone())
     bone.add(Debug.material)
 
-    const boneTransform = bone.get(Component.TRANSFORM)
-    boneTransform.setLocalPosition([0, boneIndex, 0])
+    const boneTransform = bone.get(Component.TRANSFORM) as Transform
+    boneTransform.setLocalPosition([0, 1, 0])
     boneTransform.setLocalEulerRotation([0, 0, Math.PI * 0.1])
 
     prevBoneTransform.add(bone)
+    prevBoneTransform = boneTransform
   }
 
   engine.scene.add(rootBone)
