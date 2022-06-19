@@ -59,9 +59,6 @@ export default class SkinnedGeometry extends Geometry {
 
     this.bindBase(gl, material)
 
-    return true
-
-    const type: number = gl.FLOAT
     const normalize: boolean = false
     const stride: number = 0
     const offset: number = 0
@@ -70,12 +67,12 @@ export default class SkinnedGeometry extends Geometry {
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.WEIGHTS_0)
     gl.enableVertexAttribArray(
-      material.attributeLocations.get('aJointWeights')
+      material.attributeLocations.get('aJointWeight')
     )
     gl.vertexAttribPointer(
-      material.attributeLocations.get('aJointWeights'),
+      material.attributeLocations.get('aJointWeight'),
       4,
-      type,
+      gl.FLOAT,
       normalize,
       stride,
       offset)
@@ -89,7 +86,7 @@ export default class SkinnedGeometry extends Geometry {
     gl.vertexAttribPointer(
       material.attributeLocations.get('aJointIndices'),
       4,
-      type,
+      gl.UNSIGNED_BYTE,
       normalize,
       stride,
       offset)

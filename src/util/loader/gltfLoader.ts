@@ -2,8 +2,7 @@ import Geometry from "../../core/components/geometry/geometry"
 import SkinnedGeometry from "../../core/components/geometry/skinnedGeometry"
 
 export type GlftLoadResponse = {
-  geometry?: Array<Geometry>
-  skinnedGeometry?: Array<SkinnedGeometry>
+  geometry: Array<Geometry>
 }
 
 const componentByteCount = {

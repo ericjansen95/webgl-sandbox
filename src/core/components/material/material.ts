@@ -6,7 +6,7 @@ import Camera from "../base/camera"
 import Debug from "../../internal/debug"
 import { roundNumber } from "../../../util/math/round"
 
-const vsDefaultSource: string = require('/src/core/components/material/shader/default.vs') as string
+const vsStaticSource: string = require('/src/core/components/material/shader/static.vs') as string
 
 export type LightData = { mainDirection: vec3 }
 const DEFAULT_MAIN_LIGHT_DIRECTION: vec3 = vec3.normalize(vec3.create(), [0.75, 0.25, 0.0])
@@ -51,7 +51,7 @@ export default class Material implements Component {
 
     return true
   }
-  compileBase = (gl: WebGL2RenderingContext, fsSource: string, vsSource: string = vsDefaultSource): boolean => {
+  compileBase = (gl: WebGL2RenderingContext, fsSource: string, vsSource: string = vsStaticSource): boolean => {
     if(this.program) return false
 
     const startTime = performance.now()

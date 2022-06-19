@@ -20,6 +20,7 @@ import OutlineMaterial from './core/components/material/fresnelMaterial';
 import FresnelMaterial from './core/components/material/fresnelMaterial';
 import Bone from './core/components/geometry/bone';
 import Transform from './core/components/base/transform';
+import SkinnedUnlitMaterial from './core/components/material/skinnedUnlitMaterial';
 
 /*
 
@@ -109,11 +110,11 @@ const main = () => {
   engine.scene.add(rootBone)
 
   loadGltf("http://localhost:8080/res/geo/testAnimGeo.gltf").then(({geometry}) => {
-    const lambertMaterial = new LambertMaterial([1.0, 1.0, 1.0]) as Material
+    const unlitMaterial = new SkinnedUnlitMaterial([1.0, 1.0, 1.0]) as Material
 
     const entity: Entity = new Entity()
     entity.add(geometry[0])
-    entity.add(lambertMaterial)
+    entity.add(unlitMaterial)
   
     engine.scene.add(entity)
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test animation geometry = ${error}`))

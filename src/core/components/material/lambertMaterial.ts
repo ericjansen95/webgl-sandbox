@@ -1,7 +1,6 @@
 import { vec3 } from "gl-matrix";
-import Material, { compileProgram, DEFAULT_AMBIENT_LIGHT_INTENSITY, LightData } from "./material";
+import Material, { DEFAULT_AMBIENT_LIGHT_INTENSITY, LightData } from "./material";
 
-const vsDefaultSource: string = require('/src/core/components/material/shader/default.vs') as string
 const fsLambertSource: string = require('/src/core/components/material/shader/lambert.fs') as string
 
 export default class LambertMaterial extends Material {
