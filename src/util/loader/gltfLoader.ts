@@ -39,18 +39,6 @@ const parseEntity = (gltf: any, bufferData: Array<ArrayBuffer>, nodeIndex: any):
     animator.setAnimations(parseAnimations(gltf, bufferData, skin))
 
     entity.add(animator)
-
-    /*
-    // TMP: test input animation data
-    const { skeleton: { bones } } = entity.get(ComponentEnum.GEOMETRY) as SkinnedGeometry
-    
-    const bone = bones[1]
-    const boneTransform = bone.get(ComponentEnum.TRANSFORM) as Transform
-
-    const rotation = animator.animations[0][15][1].rotation
-    console.log(rotation)
-    boneTransform.setLocalRotation(rotation)
-    */
   }
 
   return entity
@@ -174,6 +162,7 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
     bones,
     bindPose,
     inverseBindPose,
+    currentPose: bindPose
   }
 
   return skeleton
@@ -197,9 +186,11 @@ const getBufferViewFromAccessorIndex = (gltf: any, bufferData: Array<ArrayBuffer
 
   const length = count * componentByteCount[type]
 
+  console.log(type, count, length, componentType)
+
   switch(componentType) {
     case componentPrimitiveType.U_INT_8:
-      return new Uint8Array(bufferData[buffer], byteOffset, length)
+      return new Uint8Array(bufferData[buffer], byteOffset, count)
     case componentPrimitiveType.U_INT_16:
       return new Uint16Array(bufferData[buffer], byteOffset, length)
     case componentPrimitiveType.FLOAT_32:
@@ -227,12 +218,14 @@ const parseGeometry = (gltf: any, bufferData: Array<ArrayBuffer>, meshIndex: num
     vertex[key] = getBufferViewFromAccessorIndex(gltf, bufferData, accessorIndex)
   }
 
+  console.log(vertex)
+
   let geometry = null
   
   if(!isSkinnedGeometry)
     geometry = new Geometry()
   else {
-    geometry = new SkinnedGeometry(false)
+    geometry = new SkinnedGeometry()
     geometry.setSkeleton(parseSkeleton(gltf, bufferData, skinIndex))
   }
 

@@ -26,7 +26,6 @@ export default class SkinnedUnlitMaterial extends Material {
 
   bind = (gl: WebGL2RenderingContext): boolean => {
     gl.uniform3fv(this.uniformLocations.get('uColor'), this.color)
-    gl.uniformMatrix4fv(this.uniformLocations.get('uJointsMatrix'), false, new Float32Array(4 * 16))
     return true
   }
 }

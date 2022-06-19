@@ -33,9 +33,11 @@ export const createSVBO = (gl: WebGL2RenderingContext): SVBO => {
 
 export type Skeleton = {
   bones: Array<Entity>
-  
+
   bindPose: Array<mat4>
   inverseBindPose: Array<mat4>
+
+  currentPose: Array<mat4>
 }
 
 export default class SkinnedGeometry extends Geometry {
@@ -99,11 +101,20 @@ export default class SkinnedGeometry extends Geometry {
     )
     gl.vertexAttribPointer(
       material.attributeLocations.get('aJointIndices'),
-      4,
-      gl.UNSIGNED_BYTE,
+      3,
+      gl.UNSIGNED_INT,
       normalize,
       stride,
       offset)
+
+    const { currentPose } = this.skeleton
+    const jointCount = currentPose.length
+
+    const jointsMatrixBuffer = new Float32Array(16 * 24)
+    for(let jointIndex = 0; jointIndex < jointCount; jointIndex++)
+      jointsMatrixBuffer.set(currentPose[jointIndex], jointIndex * 16)
+
+    gl.uniformMatrix4fv(material.uniformLocations.get('uJointsMatrix'), false, jointsMatrixBuffer)
 
     return true
   }

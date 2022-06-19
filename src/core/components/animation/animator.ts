@@ -38,17 +38,19 @@ export default class Animator implements Component {
 
   onUpdate = (self: entity, camera: entity) => {
     const animation = this.animations[0]
-    const currentPose = new Array<mat4>()
 
-    for(let jointIndex = 0; jointIndex < this.skeleton.bones.length; jointIndex++) {
-      
+    this.skeleton.currentPose = new Array<mat4>()
+    const { bindPose, currentPose, bones } = this.skeleton
+
+    for(let jointIndex = 0; jointIndex < bones.length; jointIndex++) {
+
       const rotationMatrix = mat4.fromQuat(mat4.create(), animation[this.currentFrame][jointIndex].rotation)
-      const localMatrix = mat4.mul(mat4.create(), this.skeleton.bindPose[jointIndex], rotationMatrix)
+      const localMatrix = mat4.mul(mat4.create(), bindPose[jointIndex], rotationMatrix)
 
       currentPose.push(localMatrix)
 
       // debug vis
-      const boneTransform = this.skeleton.bones[jointIndex].get(ComponentEnum.TRANSFORM) as Transform
+      const boneTransform = bones[jointIndex].get(ComponentEnum.TRANSFORM) as Transform
       boneTransform.localMatrix = localMatrix
     }
 
