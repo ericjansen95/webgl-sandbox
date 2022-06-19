@@ -90,8 +90,8 @@ export default class BoundingBox extends BoundingVolume {
 
     const boxGeometry = new Geometry(DrawMode.LINE, true, false, false)
     const positions = this.createBoxBuffer(this.min, this.max)
-    boxGeometry.setVertices({
-      position: positions
+    boxGeometry.setVAO({
+      POSITION: positions
     })
 
     this.box.add(boxGeometry)
@@ -107,8 +107,8 @@ export default class BoundingBox extends BoundingVolume {
 
     const geometry = self.get(ComponentEnum.GEOMETRY) as Geometry
 
-    this.min = geometry.vertex.min
-    this.max = geometry.vertex.max
+    this.min = geometry.vao.min
+    this.max = geometry.vao.max
 
     this.corners.push([this.min[0], this.min[1], this.min[2]])
     this.corners.push([this.max[0], this.min[1], this.min[2]])

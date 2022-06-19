@@ -1,5 +1,5 @@
 import { vec3 } from "gl-matrix";
-import Geometry, { calcNormals, createVertexObject, DrawMode } from "./geometry";
+import Geometry, { calcNormals, createVAO, DrawMode } from "./geometry";
 
 export default class Grid extends Geometry {
   constructor(subdivisions: number = 1) {
@@ -16,8 +16,8 @@ export default class Grid extends Geometry {
       positions.push(1.0, 0.0, pos)
     }
 
-    this.setVertices({
-      position: new Float32Array(positions)
+    this.setVAO({
+      POSITION: new Float32Array(positions)
     })
   }
 }

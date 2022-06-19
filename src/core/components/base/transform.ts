@@ -89,6 +89,8 @@ export default class Transform implements Component {
   }
 
   onUpdate = () => {
+    let localUpdate = false
+
     if(this.dirty) {
       mat4.copy(this.localMatrix, mat4.create())
   
@@ -97,7 +99,9 @@ export default class Transform implements Component {
       mat4.scale(this.localMatrix, this.localMatrix, this.localScale)
   
       mat4.fromQuat(this.localRotationMatrix, this.localRotation)
-      mat4.multiply(this.localMatrix, this.localMatrix, this.localRotationMatrix)  
+      mat4.multiply(this.localMatrix, this.localMatrix, this.localRotationMatrix)
+
+      localUpdate = true
     }
 
     if(this.parent)
@@ -106,5 +110,7 @@ export default class Transform implements Component {
       mat4.copy(this.globalMatrix, this.localMatrix)      
 
     this.dirty = false;
+
+    return localUpdate
   }
 }

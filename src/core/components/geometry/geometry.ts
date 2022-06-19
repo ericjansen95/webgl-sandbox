@@ -19,49 +19,49 @@ export enum DrawMode {
   LINE = 1,
 }
 
-export type VertexObject = {
+export type VAO = {
   count?: number
 
-  position: Float32Array
-  normal?: Float32Array
+  POSITION: Float32Array
+  NORMAL?: Float32Array
 
-  indices?: Uint16Array
-  texcoord?: Float32Array
+  INDICES?: Uint16Array
+  TEXCOORD_0?: Float32Array
   
   min?: vec3
   max?: vec3
 }
 
-export type VertexBufferObject = {
-  position: WebGLBuffer
-  normal: WebGLBuffer
+export type VBO = {
+  POSITION: WebGLBuffer
+  NORMAL: WebGLBuffer
 
-  indices?: WebGLBuffer
-  texcoord?: WebGLBuffer
+  INDICES?: WebGLBuffer
+  TEXCOORD_0?: WebGLBuffer
 }
 
-export const createVertexObject = (): VertexObject => {
+export const createVAO = (): VAO => {
   return {
     count: 0,
 
-    position: new Float32Array(),
-    normal: null,
+    POSITION: new Float32Array(),
+    NORMAL: null,
 
-    indices: null,
-    texcoord: null,
+    INDICES: null,
+    TEXCOORD_0: null,
 
     min: vec3.create(),
     max: vec3.create()
   }
 }
 
-export const createVertexBufferObject = (gl: WebGL2RenderingContext): VertexBufferObject => {
+export const createVBO = (gl: WebGL2RenderingContext): VBO => {
   return {
-    position: gl.createBuffer(),
-    normal: gl.createBuffer(),
+    POSITION: gl.createBuffer(),
+    NORMAL: gl.createBuffer(),
 
-    indices: null,
-    texcoord: null
+    INDICES: null,
+    TEXCOORD_0: null
   }
 }
 
@@ -69,8 +69,8 @@ export default class Geometry implements Component {
   type: ComponentEnum
   drawMode: DrawMode
 
-  vertex: VertexObject
-  buffer: VertexBufferObject | null
+  vao: VAO
+  vbo: VBO | null
 
   visible: boolean
 
@@ -81,8 +81,8 @@ export default class Geometry implements Component {
     this.type = ComponentEnum.GEOMETRY
     this.drawMode = drawMode
 
-    this.vertex = createVertexObject()
-    this.buffer = null
+    this.vao = createVAO()
+    this.vbo = null
 
     this.visible = visible
 
@@ -90,37 +90,40 @@ export default class Geometry implements Component {
     this.boundingSphere = boundingSphere
   }
 
-  load = (gl: WebGL2RenderingContext) => {
-    if(this.buffer) return true
+  loadBase = (gl: WebGL2RenderingContext, usage: number = gl.STATIC_DRAW) => {
+    if(this.vbo) return true
+    if(!this.vao.count) return false
 
-    if(!this.vertex.count) return false
+    this.vbo = createVBO(gl)
 
-    this.buffer = createVertexBufferObject(gl)
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.position)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.position), gl.STATIC_DRAW)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.POSITION)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vao.POSITION), usage)
     
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normal)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.normal), gl.STATIC_DRAW)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.NORMAL)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vao.NORMAL), usage)
     
-    if(this.vertex.indices) {
-      this.buffer.indices = gl.createBuffer()
+    if(this.vao.INDICES) {
+      this.vbo.INDICES = gl.createBuffer()
 
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer.indices)
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.vertex.indices), gl.STATIC_DRAW)  
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.vbo.INDICES)
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.vao.INDICES), usage)  
     }
 
-    if(this.vertex.texcoord) {
-      this.buffer.texcoord = gl.createBuffer()
+    if(this.vao.TEXCOORD_0) {
+      this.vbo.TEXCOORD_0 = gl.createBuffer()
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.texcoord)
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertex.texcoord), gl.STATIC_DRAW) 
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.TEXCOORD_0)
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vao.TEXCOORD_0), usage) 
     }
 
     return true
   }
 
-  bind = (gl: WebGL2RenderingContext, material: Material): boolean => {
+  load = (gl: WebGL2RenderingContext) => {
+    return this.loadBase(gl)
+  }
+
+  bindBase = (gl: WebGL2RenderingContext, material: Material): boolean => {
     if(!this.load(gl)) return false
 
     const type: number = gl.FLOAT
@@ -130,7 +133,7 @@ export default class Geometry implements Component {
 
     // POSITION
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.position)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.POSITION)
     gl.enableVertexAttribArray(
       material.attributeLocations.get('aVertexPosition')
     )
@@ -144,7 +147,7 @@ export default class Geometry implements Component {
  
     // NORMAL
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.normal)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.NORMAL)
     gl.enableVertexAttribArray(
       material.attributeLocations.get('aVertexNormal')
     )
@@ -159,13 +162,13 @@ export default class Geometry implements Component {
 
     // INDICES
 
-    if(this.buffer.indices)
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.buffer.indices)
+    if(this.vbo.INDICES)
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.vbo.INDICES)
 
     // UV
 
-    if(this.buffer.texcoord) {
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer.texcoord)
+    if(this.vbo.TEXCOORD_0) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.TEXCOORD_0)
       gl.enableVertexAttribArray(
         material.attributeLocations.get('aVertexUv')
       )
@@ -181,16 +184,24 @@ export default class Geometry implements Component {
     return true
   }
 
-  setVertices = (vertex: VertexObject): boolean => {
-    this.vertex = vertex
-    this.vertex.count = this.vertex.position.length
+  bind = (gl: WebGL2RenderingContext, material: Material): boolean => {
+    return this.bindBase(gl, material)
+  }
 
-    if(!this.vertex.normal) this.vertex.normal = calcNormals(this.vertex.position)
+  setVAOBase = (vao: VAO): boolean => {
+    this.vao = vao
+    this.vao.count = this.vao.POSITION.length
 
-    if(!this.vertex.min) this.vertex.min = [-1.0, -1.0, -1.0]
-    if(!this.vertex.max) this.vertex.max = [1.0, 1.0, 1.0]
+    if(!this.vao.NORMAL) this.vao.NORMAL = calcNormals(this.vao.POSITION)
+
+    if(!this.vao.min) this.vao.min = [-1.0, -1.0, -1.0]
+    if(!this.vao.max) this.vao.max = [1.0, 1.0, 1.0]
 
     return true
+  }
+
+  setVAO = (vao: VAO): boolean => {
+    return this.setVAOBase(vao)
   }
 
   onAdd = (self: Entity) => {

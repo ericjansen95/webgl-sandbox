@@ -6,6 +6,8 @@ export enum ComponentEnum {
   BOUNDING_VOLUME,
   MATERIAL,
   CAMERA,
+  SKINNED_GEOMETRY,
+  ANIMATOR,
   TERRAIN,
   CONTROLS,
   SCRIPT

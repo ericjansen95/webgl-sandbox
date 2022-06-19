@@ -12,6 +12,7 @@ import Geometry from "../components/geometry/geometry";
 
 export type SceneStats = {
   updateTime: number
+  localMatrixUpdates: number
   entityCount: number
   cullTime: number
   cullCount: number
@@ -35,6 +36,7 @@ export default class Scene {
     this.entities = new Array<Entity>()
     this.stats = {
       updateTime: 0,
+      localMatrixUpdates: 0,
       entityCount: 0,
       cullTime: 0,
       cullCount: 0
@@ -57,6 +59,7 @@ export default class Scene {
   update = () => {
     const startTime = Date.now()
 
+    this.stats.localMatrixUpdates = 0
     this.entities = []
     this.updateEntity(this.root, this.camera, true)
 
@@ -81,7 +84,7 @@ export default class Scene {
   }
 
   updateEntityTransform = (entity: Entity): void => {
-    entity.get(ComponentEnum.TRANSFORM).onUpdate()
+    if(entity.get(ComponentEnum.TRANSFORM).onUpdate()) this.stats.localMatrixUpdates++
   }
 
   updateEntityComponents = (entity: Entity, camera: Entity): void => {

@@ -61,8 +61,8 @@ export default class BoundingSphere extends BoundingVolume {
 
     const sphereGeometry: Geometry = new Geometry(DrawMode.LINE, true, false, false)
     const positions = this.createSphereBuffer(this.radius)
-    sphereGeometry.setVertices({
-      position: positions
+    sphereGeometry.setVAO({
+      POSITION: positions
     });
 
     this.sphere = new Entity()
@@ -79,8 +79,8 @@ export default class BoundingSphere extends BoundingVolume {
 
     const geometry: Geometry = self.get(ComponentEnum.GEOMETRY)
 
-    this.min = geometry.vertex.min
-    this.max = geometry.vertex.max
+    this.min = geometry.vao.min
+    this.max = geometry.vao.max
 
     const distanceX: number = this.max[0] - this.min[0]
     const distanceY: number = this.max[1] - this.min[1]

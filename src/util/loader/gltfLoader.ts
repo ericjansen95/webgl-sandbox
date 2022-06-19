@@ -1,40 +1,52 @@
 import Geometry from "../../core/components/geometry/geometry"
+import SkinnedGeometry from "../../core/components/geometry/skinnedGeometry"
 
 export type GlftLoadResponse = {
-  geometry: Array<Geometry>
+  geometry?: Array<Geometry>
+  skinnedGeometry?: Array<SkinnedGeometry>
 }
 
-enum ComponentType {
-  SCALAR = 1,
-  VEC2,
-  VEC3
+const componentByteCount = {
+  SCALAR: 1,
+  VEC2: 2,
+  VEC3: 3,
+  VEC4: 4
+}
+
+// https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#accessor-data-types
+const componentPrimitiveType = {
+  U_INT_8: 5121,
+  U_INT_16: 5123,
+  FLOAT_32: 5126
 }
 
 const parseGeometry = async (gltf: any, bufferData: Array<ArrayBuffer>): Promise<Array<Geometry>> => {
   const { meshes, accessors, bufferViews } = gltf
   const geometries = new Array<Geometry>()
 
-  const getBufferViewFromAccessorIndex = (accessorIndex: number, component: ComponentType) => {
-    const accessorEntry = accessors[accessorIndex]
+  const getBufferViewFromAccessorIndex = (accessorIndex: number) => {
     const {
       bufferView,
       componentType,
       count,
       type,
-    } = accessorEntry
+    } = accessors[accessorIndex]
 
-    const bufferViewEntry = bufferViews[bufferView]
     const {
       buffer,
       byteLength,
       byteOffset,
-    } = bufferViewEntry
+    } = bufferViews[bufferView]
 
-    switch(component) {
-      case ComponentType.SCALAR:
-        return new Uint16Array(bufferData[buffer], byteOffset, count)
-      default:
-        return new Float32Array(bufferData[buffer], byteOffset, count * component)
+    const length = count * componentByteCount[type]
+
+    switch(componentType) {
+      case componentPrimitiveType.U_INT_8:
+        return new Uint8Array(bufferData[buffer], byteOffset, length)
+      case componentPrimitiveType.U_INT_16:
+        return new Uint16Array(bufferData[buffer], byteOffset, length)
+      case componentPrimitiveType.FLOAT_32:
+        return new Float32Array(bufferData[buffer], byteOffset, length)
     }    
   }
 
@@ -44,44 +56,21 @@ const parseGeometry = async (gltf: any, bufferData: Array<ArrayBuffer>): Promise
     for(const primitive of primitives) {
       const { attributes } = primitive
 
-      const geometry = new Geometry()
+      const vertex = {} as any
 
       const indicesAccessorIndex = primitive.indices as number
-      const indices = getBufferViewFromAccessorIndex(indicesAccessorIndex, ComponentType.SCALAR) as Uint16Array
-
-      let position = null
-      let normal = null
-
-      let texcoord = null
+      vertex.INDICES = getBufferViewFromAccessorIndex(indicesAccessorIndex) as Uint16Array
 
       for(const [key, value] of Object.entries(attributes as object)) {
-        switch (key) {
-          case "POSITION": {
-            const positionAccessorIndex = value as number
-            position = getBufferViewFromAccessorIndex(positionAccessorIndex, ComponentType.VEC3)
-            break
-          }
-          case "NORMAL": {
-            const normalAccessorIndex = value as number
-            normal = getBufferViewFromAccessorIndex(normalAccessorIndex, ComponentType.VEC3)
-            break
-          }
-          case "TEXCOORD_0": {
-            const texcoordAccessorIndex = value as number
-            texcoord = getBufferViewFromAccessorIndex(texcoordAccessorIndex, ComponentType.VEC2)
-            break
-          }
-        }
+        const accessorIndex = value as number
+        vertex[key] = getBufferViewFromAccessorIndex(accessorIndex)
       }
 
-      geometry.setVertices({
-        position, 
-        normal,
+      const isSkinnedGeometry = vertex.JOINTS_0
 
-        indices,
-        texcoord
-      })
-
+      const geometry = isSkinnedGeometry ? new SkinnedGeometry() : new Geometry()
+      geometry.setVAO(vertex)
+  
       geometries.push(geometry)
     }
   }

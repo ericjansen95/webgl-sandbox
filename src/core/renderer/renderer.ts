@@ -51,11 +51,11 @@ export default class Renderer {
 
     if(!geometry.bind(this.gl, material)) return
 
-    if(geometry.buffer.indices) this.gl.drawElements(geometry.drawMode, geometry.vertex.indices.length, this.gl.UNSIGNED_SHORT, 0)
-    else this.gl.drawArrays(geometry.drawMode, 0, geometry.vertex.count)
+    if(geometry.vbo.INDICES) this.gl.drawElements(geometry.drawMode, geometry.vao.INDICES.length, this.gl.UNSIGNED_SHORT, 0)
+    else this.gl.drawArrays(geometry.drawMode, 0, geometry.vao.count)
 
     this.stats.drawCalls++
-    this.stats.vertexCount += geometry.vertex.count
+    this.stats.vertexCount += geometry.vao.count
   }
 
   renderEntities = (renderList: RenderList, camera: Entity) => {

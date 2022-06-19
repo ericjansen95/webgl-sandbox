@@ -41,8 +41,8 @@ export default class Plane extends Geometry {
     min[1] = 0
     max[1] = 150
 
-    this.setVertices({
-      position: new Float32Array(positions),
+    this.setVAO({
+      POSITION: new Float32Array(positions),
       min: vec3.fromValues(min[0], min[1], min[2]),
       max: vec3.fromValues(max[0], max[1], max[2]),
     })
