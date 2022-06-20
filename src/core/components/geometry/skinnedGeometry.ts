@@ -61,11 +61,11 @@ export default class SkinnedGeometry extends Geometry {
 
     this.vbo.WEIGHTS_0 = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.WEIGHTS_0)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vao.WEIGHTS_0), gl.STATIC_DRAW)
+    gl.bufferData(gl.ARRAY_BUFFER, this.vao.WEIGHTS_0, gl.STATIC_DRAW)
     
     this.vbo.JOINTS_0 = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.JOINTS_0)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vao.JOINTS_0), gl.STATIC_DRAW)
+    gl.bufferData(gl.ARRAY_BUFFER, this.vao.JOINTS_0, gl.STATIC_DRAW)
 
     return true
   }
@@ -101,8 +101,8 @@ export default class SkinnedGeometry extends Geometry {
     )
     gl.vertexAttribPointer(
       material.attributeLocations.get('aJointIndices'),
-      3,
-      gl.UNSIGNED_INT,
+      4,
+      gl.UNSIGNED_BYTE,
       normalize,
       stride,
       offset)

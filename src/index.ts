@@ -20,7 +20,7 @@ import OutlineMaterial from './core/components/material/fresnelMaterial';
 import FresnelMaterial from './core/components/material/fresnelMaterial';
 import Bone from './core/components/geometry/bone';
 import Transform from './core/components/base/transform';
-import SkinnedUnlitMaterial from './core/components/material/skinnedUnlitMaterial';
+import SkinnedDebugMaterial from './core/components/material/skinnedDebugMaterial';
 
 /*
 
@@ -110,7 +110,7 @@ const main = () => {
   engine.scene.add(rootBone)
 
   loadGltf("http://localhost:8080/res/geo/testAnimGeo.gltf").then((entities) => {
-    const unlitMaterial = new SkinnedUnlitMaterial([1.0, 1.0, 1.0]) as Material
+    const unlitMaterial = new SkinnedDebugMaterial() as Material
 
     for(const entity of entities) {
       entity.add(unlitMaterial)

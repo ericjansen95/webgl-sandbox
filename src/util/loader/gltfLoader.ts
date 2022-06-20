@@ -20,7 +20,7 @@ const componentByteCount = {
 
 // https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#accessor-data-types
 const componentPrimitiveType = {
-  U_INT_8: 5121,
+  U_BYTE: 5121,
   U_INT_16: 5123,
   FLOAT_32: 5126
 }
@@ -186,11 +186,9 @@ const getBufferViewFromAccessorIndex = (gltf: any, bufferData: Array<ArrayBuffer
 
   const length = count * componentByteCount[type]
 
-  console.log(type, count, length, componentType)
-
   switch(componentType) {
-    case componentPrimitiveType.U_INT_8:
-      return new Uint8Array(bufferData[buffer], byteOffset, count)
+    case componentPrimitiveType.U_BYTE:
+      return new Uint8Array(bufferData[buffer], byteOffset, length)
     case componentPrimitiveType.U_INT_16:
       return new Uint16Array(bufferData[buffer], byteOffset, length)
     case componentPrimitiveType.FLOAT_32:
@@ -217,8 +215,6 @@ const parseGeometry = (gltf: any, bufferData: Array<ArrayBuffer>, meshIndex: num
     const accessorIndex = value as number
     vertex[key] = getBufferViewFromAccessorIndex(gltf, bufferData, accessorIndex)
   }
-
-  console.log(vertex)
 
   let geometry = null
   
@@ -251,6 +247,7 @@ export default function loadGltf(uri: string): Promise<GlftLoadResponse> {
     }
 
     const gltf = await gltfResponse.json() as any
+
     console.log(gltf)
 
     const { buffers } = gltf

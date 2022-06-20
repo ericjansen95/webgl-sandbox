@@ -2,18 +2,15 @@ import { vec3 } from "gl-matrix";
 import Material from "./material";
 
 const vsSkinnedSource: string = require('/src/core/components/material/shader/skinned.vs') as string
-const fsUnlitSource: string = require('/src/core/components/material/shader/unlit.fs') as string
+const fsSkinnedDebugSource: string = require('/src/core/components/material/shader/skinnedDebug.fs') as string
 
-export default class SkinnedUnlitMaterial extends Material {
-  color: vec3
-
-  constructor(color) {
+export default class SkinnedDebugMaterial extends Material {
+  constructor() {
     super()
-    this.color = color
   }
 
   compile = (gl: WebGL2RenderingContext): boolean => {
-    if(!this.compileBase(gl, fsUnlitSource, vsSkinnedSource)) return true
+    if(!this.compileBase(gl, fsSkinnedDebugSource, vsSkinnedSource)) return true
 
     this.attributeLocations.set('aJointWeight', gl.getAttribLocation(this.program, 'aJointWeight'))
     this.attributeLocations.set('aJointIndices', gl.getAttribLocation(this.program, 'aJointIndices'))
@@ -25,7 +22,6 @@ export default class SkinnedUnlitMaterial extends Material {
   }
 
   bind = (gl: WebGL2RenderingContext): boolean => {
-    gl.uniform3fv(this.uniformLocations.get('uColor'), this.color)
     return true
   }
 }

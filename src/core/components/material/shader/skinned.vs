@@ -11,24 +11,19 @@ uniform mat4 uWorldMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 
+varying vec3 vVertexPosition;
 varying vec3 vVertexNormal;
 varying vec2 vVertexUv;
-varying vec3 vVertexPosition;
 
 void main() {
   mat4 modelViewMatrix = uViewMatrix * uWorldMatrix;
 
-  float height = aVertexPosition.y * 0.5;
+  mat4 skinningMatrix = aJointWeight.x * uJointsMatrix[int(aJointIndices.x)] +
+                        aJointWeight.y * uJointsMatrix[int(aJointIndices.y)] +
+                        aJointWeight.z * uJointsMatrix[int(aJointIndices.z)] +
+                        aJointWeight.w * uJointsMatrix[int(aJointIndices.w)];
 
-  gl_Position = uProjectionMatrix * modelViewMatrix *
-                (uJointsMatrix[0] * aVertexPosition * (1.0 - height) + 
-                  uJointsMatrix[1] * aVertexPosition * height);
-  /*
-  (uJointsMatrix[int(aJointIndices[0])] * aVertexPosition * aJointWeight[0] +
-    uJointsMatrix[int(aJointIndices[1])] * aVertexPosition * aJointWeight[1] +
-    uJointsMatrix[int(aJointIndices[2])] * aVertexPosition * aJointWeight[2] +
-    uJointsMatrix[int(aJointIndices[3])] * aVertexPosition * aJointWeight[3]);
-  */
+  gl_Position = uProjectionMatrix * modelViewMatrix * skinningMatrix * aVertexPosition;
                
   vVertexPosition = aVertexPosition.xyz;
   vVertexNormal = mat3(uWorldMatrix) * aVertexNormal;

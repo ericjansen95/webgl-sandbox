@@ -97,23 +97,23 @@ export default class Geometry implements Component {
     this.vbo = createVBO(gl)
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.POSITION)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vao.POSITION), usage)
+    gl.bufferData(gl.ARRAY_BUFFER, this.vao.POSITION, usage)
     
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.NORMAL)
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vao.NORMAL), usage)
+    gl.bufferData(gl.ARRAY_BUFFER, this.vao.NORMAL, usage)
     
     if(this.vao.INDICES) {
       this.vbo.INDICES = gl.createBuffer()
 
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.vbo.INDICES)
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.vao.INDICES), usage)  
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.vao.INDICES, usage)  
     }
 
     if(this.vao.TEXCOORD_0) {
       this.vbo.TEXCOORD_0 = gl.createBuffer()
 
       gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.TEXCOORD_0)
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vao.TEXCOORD_0), usage) 
+      gl.bufferData(gl.ARRAY_BUFFER, this.vao.TEXCOORD_0, usage) 
     }
 
     return true
