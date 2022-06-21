@@ -3,7 +3,7 @@ import entity from "../../scene/entity";
 import BoundingBox from "../boundingVolume/boundingBox";
 import Geometry, { DrawMode } from "./geometry";
 
-export default class Plane extends Geometry {
+export default class PlaneGeometry extends Geometry {
   constructor(subdivisions: number = 1) {
     super(DrawMode.TRIANGLE, true, true, false)
 

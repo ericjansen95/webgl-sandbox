@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix";
 import Geometry, { calcNormals, createVAO, DrawMode } from "./geometry";
 
-export default class Quad extends Geometry {
+export default class QuadGeometry extends Geometry {
   constructor(input: Array<vec3>, visible: boolean = true, cull: boolean = true, boundingVolume: boolean = true) {
     if(input.length !== 4) console.error("Quad::constructor(): Invalid arguments!")
 

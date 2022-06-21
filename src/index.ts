@@ -3,8 +3,8 @@ import Entity from './core/scene/entity';
 import LambertMaterial from './core/components/material/lambertMaterial';
 import Material from './core/components/material/material';
 import FlyControls from './core/components/controls/flyControls';
-import Terrain from './core/components/geometry/terrain';
-import Quad from './core/components/geometry/quad';
+import Terrain from './core/components/scripts/terrain';
+import QuadGeometry from './core/components/geometry/quad';
 import UnlitMaterial from './core/components/material/unlitMaterial';
 import GltfLoader from './util/loader/gltfLoader';
 import { ComponentEnum as Component } from './core/components/base/component';
@@ -18,7 +18,7 @@ import NormalMaterial from './core/components/material/normalMaterial';
 import PositionMaterial from './core/components/material/positionMaterial';
 import OutlineMaterial from './core/components/material/fresnelMaterial';
 import FresnelMaterial from './core/components/material/fresnelMaterial';
-import Bone from './core/components/geometry/bone';
+import BoneGeometry from './core/components/geometry/bone';
 import Transform from './core/components/base/transform';
 import SkinnedDebugMaterial from './core/components/material/skinnedDebugMaterial';
 
@@ -84,30 +84,6 @@ const main = () => {
   sceneCamera.add(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
   const engine = new Engine(canvas, sceneCamera)
-
-  const rootBone: Entity = new Entity()
-
-  rootBone.add(new Bone())
-  rootBone.add(Debug.material)
-
-  let prevBoneTransform = rootBone.get(Component.TRANSFORM)
-  prevBoneTransform.setLocalPosition([-1, 0, 0])
-
-  for(let boneIndex = 1; boneIndex < 6; boneIndex++) {
-    const bone: Entity = new Entity()
-
-    bone.add(new Bone())
-    bone.add(Debug.material)
-
-    const boneTransform = bone.get(Component.TRANSFORM) as Transform
-    boneTransform.setLocalPosition([0, 1, 0])
-    boneTransform.setLocalEulerRotation([0, 0, Math.PI * 0.1])
-
-    prevBoneTransform.add(bone)
-    prevBoneTransform = boneTransform
-  }
-
-  engine.scene.add(rootBone)
 
   loadGltf("http://localhost:8080/res/geo/testAnimGeo.gltf").then((entities) => {
     const unlitMaterial = new SkinnedDebugMaterial() as Material

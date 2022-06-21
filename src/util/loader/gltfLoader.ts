@@ -2,9 +2,10 @@ import { mat4, quat, vec3 } from "gl-matrix"
 import Animator, { Animation, JointTransfrom, KeyFrame } from "../../core/components/animation/animator"
 import { ComponentEnum } from "../../core/components/base/component"
 import Transform from "../../core/components/base/transform"
-import Bone from "../../core/components/geometry/bone"
+import BoneGeometry from "../../core/components/geometry/bone"
 import Geometry from "../../core/components/geometry/geometry"
-import SkinnedGeometry, { Skeleton } from "../../core/components/geometry/skinnedGeometry"
+import SkinnedGeometry, { Skeleton } from "../../core/components/geometry/skinned"
+import SphereGeometry from "../../core/components/geometry/sphere"
 import UnlitMaterial from "../../core/components/material/unlitMaterial"
 import Entity from "../../core/scene/entity"
 
@@ -141,25 +142,25 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
   const inverseBindPose = parseBufferToMatrixArray(gltf, bufferData, inverseBindMatrices)
   const bindPose = inverseBindPose.map(inverseBindMatrix => mat4.invert(mat4.create(), inverseBindMatrix))
 
-  const bones = new Array<Entity>()
+  const skeletonJoints = new Array<Entity>()
 
-  const boneGeometry = new Bone()
+  const boneGeometry = new SphereGeometry(0.1)
   const boneMaterial = new UnlitMaterial([1.0, 0.0, 1.0])
 
   for(const jointMatrix of bindPose) {
-    const bone = new Entity()
-    bone.add(boneGeometry)
-    bone.add(boneMaterial)
+    const joint = new Entity()
+    joint.add(boneGeometry)
+    joint.add(boneMaterial)
 
-    const boneTransform = bone.get(ComponentEnum.TRANSFORM) as Transform
-    boneTransform.setLocalPosition(mat4.getTranslation(vec3.create(), jointMatrix))
-    boneTransform.setLocalRotation(mat4.getRotation(quat.create(), jointMatrix))
+    const jointTransform = joint.get(ComponentEnum.TRANSFORM) as Transform
+    jointTransform.setLocalPosition(mat4.getTranslation(vec3.create(), jointMatrix))
+    jointTransform.setLocalRotation(mat4.getRotation(quat.create(), jointMatrix))
 
-    bones.push(bone)
+    skeletonJoints.push(joint)
   }
 
   const skeleton: Skeleton = {
-    bones,
+    joints: skeletonJoints,
     bindPose,
     inverseBindPose,
     currentPose: bindPose

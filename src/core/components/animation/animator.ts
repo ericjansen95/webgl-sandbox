@@ -2,7 +2,7 @@ import { mat4, quat } from "gl-matrix"
 import entity from "../../scene/entity"
 import Component, { ComponentEnum } from "../base/component"
 import Transform from "../base/transform"
-import SkinnedGeometry, { Skeleton } from "../geometry/skinnedGeometry"
+import SkinnedGeometry, { Skeleton } from "../geometry/skinned"
 
 export type JointTransfrom = {
   rotation: quat
@@ -40,19 +40,28 @@ export default class Animator implements Component {
     const animation = this.animations[0]
 
     this.skeleton.currentPose = new Array<mat4>()
-    const { bindPose, currentPose, bones } = this.skeleton
+    const { inverseBindPose, bindPose, currentPose, joints } = this.skeleton
 
-    for(let jointIndex = 0; jointIndex < bones.length; jointIndex++) {
-
+    for(let jointIndex = 0; jointIndex < joints.length; jointIndex++) {
+      // rotate in local space
       const rotationMatrix = mat4.fromQuat(mat4.create(), animation[this.currentFrame][jointIndex].rotation)
-      const localMatrix = mat4.mul(mat4.create(), bindPose[jointIndex], rotationMatrix)
+      // translate to model position
+      mat4.multiply(rotationMatrix, bindPose[jointIndex], rotationMatrix)
 
-      currentPose.push(localMatrix)
+      // transform by parent joint pose in world space
+      // ToDo: multiply with parent joint specific to current joint
+      if(jointIndex > 0)
+        mat4.multiply(rotationMatrix, currentPose[jointIndex - 1], rotationMatrix)
+
+      // transform back to model space
+      const jointPose = mat4.multiply(mat4.create(), rotationMatrix, inverseBindPose[jointIndex])
+      currentPose.push(jointPose)
 
       // debug vis
-      const boneTransform = bones[jointIndex].get(ComponentEnum.TRANSFORM) as Transform
-      boneTransform.localMatrix = localMatrix
+      const boneTransform = joints[jointIndex].get(ComponentEnum.TRANSFORM) as Transform
+      boneTransform.localMatrix = rotationMatrix
     }
+    
 
     this.currentFrame = ++this.currentFrame % 30
   }

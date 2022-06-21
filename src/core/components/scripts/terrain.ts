@@ -1,9 +1,9 @@
 import { mat4, vec2, vec3 } from "gl-matrix";
 import Entity from "../../scene/entity";
 import Material from "../material/material";
-import Plane from "./plane";
+import PlaneGeometry from "../geometry/plane";
 import Component, { ComponentEnum } from "../base/component";
-import Geometry from "./geometry";
+import Geometry from "../geometry/geometry";
 import TerrainMaterial from "../material/terrainMaterial";
 import UnlitMaterial from "../material/unlitMaterial";
 import Transform from "../base/transform";
@@ -46,10 +46,10 @@ export default class Terrain implements Component {
     this.chunks = new Array<Entity>()
 
     this.lowMaterial = new UnlitMaterial([1.0, 0.0, 1.0]) as Material
-    this.lowGeometry = new Plane(TERRAIN_CHUNK_LOW_SUBDEVISIONS) as Geometry
+    this.lowGeometry = new PlaneGeometry(TERRAIN_CHUNK_LOW_SUBDEVISIONS) as Geometry
 
     this.highMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, TERRAIN_MAP_COMBINED, this.height) as Material
-    this.highGeometry = new Plane(TERRAIN_CHUNK_HIGH_SUBDEVISIONS) as Geometry
+    this.highGeometry = new PlaneGeometry(TERRAIN_CHUNK_HIGH_SUBDEVISIONS) as Geometry
 
     const step: number = TERRAIN_CHUNK_SIZE / this.size
     const chunkScale: vec3 = [step, 1.0, step]

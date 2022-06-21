@@ -1,6 +1,6 @@
 import BoundingVolume from "../components/boundingVolume/boundingVolume";
 import Camera from "../components/base/camera";
-import Grid from "../components/geometry/grid";
+import GridGeometry from "../components/geometry/grid";
 import UnlitMaterial from "../components/material/unlitMaterial";
 import Debug from "../internal/debug";
 import Client from "../network/client";
@@ -45,7 +45,7 @@ export default class Scene {
     const grid: Entity = new Entity()
     grid.get(ComponentEnum.TRANSFORM).setLocalScale([10.0, 10.0, 10.0])
     grid.get(ComponentEnum.TRANSFORM).setLocalPosition([-5.0, 0.0, -5.0])
-    grid.add(new Grid(10))
+    grid.add(new GridGeometry(10))
     grid.add(new UnlitMaterial([0.75, 0.75, 0.75]))
     this.root.get(ComponentEnum.TRANSFORM).add(grid)
 

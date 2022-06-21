@@ -1,4 +1,3 @@
-import { vec3 } from "gl-matrix";
 import Material from "./material";
 
 const vsSkinnedSource: string = require('/src/core/components/material/shader/skinned.vs') as string

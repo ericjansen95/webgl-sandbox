@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix";
 import Geometry, { calcNormals, createVAO, DrawMode } from "./geometry";
 
-export default class Grid extends Geometry {
+export default class GridGeometry extends Geometry {
   constructor(subdivisions: number = 1) {
     super(DrawMode.LINE, true, false, false)
 

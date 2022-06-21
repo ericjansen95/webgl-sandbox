@@ -11,7 +11,7 @@ import { Plane } from '../../../util/math/plane';
 import UnlitMaterial from '../material/unlitMaterial';
 import Geometry from '../geometry/geometry';
 import BoundingVolume from '../boundingVolume/boundingVolume';
-import Quad from '../geometry/quad';
+import QuadGeometry from '../geometry/quad';
 import Material from '../material/material';
 
 const DEFAULT_Z_NEAR: number = 0.05
@@ -248,7 +248,7 @@ export default class Camera implements Component {
   
       const positions = this.frustrum.positions.slice(posIndex, posIndex + 4)
   
-      frustrumPlane.add(new Quad(positions, false, false, false))
+      frustrumPlane.add(new QuadGeometry(positions, false, false, false))
       frustrumPlane.add(debugMaterial)
   
       this.self.get(ComponentEnum.TRANSFORM).add(frustrumPlane)

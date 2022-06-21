@@ -1,6 +1,6 @@
 import Geometry, { DrawMode } from "./geometry";
 
-export default class Bone extends Geometry {
+export default class BoneGeometry extends Geometry {
   constructor(visible: boolean = true) {
     super(DrawMode.LINE, visible, false, false)
 

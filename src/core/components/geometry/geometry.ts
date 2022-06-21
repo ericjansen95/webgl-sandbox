@@ -147,18 +147,19 @@ export default class Geometry implements Component {
  
     // NORMAL
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.NORMAL)
-    gl.enableVertexAttribArray(
-      material.attributeLocations.get('aVertexNormal')
-    )
-    gl.vertexAttribPointer(
-      material.attributeLocations.get('aVertexNormal'),
-      3,
-      type,
-      normalize,
-      stride,
-      offset)
-
+    if(material.attributeLocations.get('aVertexNormal') !== -1) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.NORMAL)
+      gl.enableVertexAttribArray(
+        material.attributeLocations.get('aVertexNormal')
+      )
+      gl.vertexAttribPointer(
+        material.attributeLocations.get('aVertexNormal'),
+        3,
+        type,
+        normalize,
+        stride,
+        offset)
+    }
 
     // INDICES
 
