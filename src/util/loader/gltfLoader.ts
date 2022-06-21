@@ -4,7 +4,7 @@ import { ComponentEnum } from "../../core/components/base/component"
 import Transform from "../../core/components/base/transform"
 import BoneGeometry from "../../core/components/geometry/bone"
 import Geometry from "../../core/components/geometry/geometry"
-import SkinnedGeometry, { Skeleton } from "../../core/components/geometry/skinned"
+import SkinnedGeometry, { Joint, Skeleton } from "../../core/components/geometry/skinned"
 import SphereGeometry from "../../core/components/geometry/sphere"
 import UnlitMaterial from "../../core/components/material/unlitMaterial"
 import Entity from "../../core/scene/entity"
@@ -142,21 +142,33 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
   const inverseBindPose = parseBufferToMatrixArray(gltf, bufferData, inverseBindMatrices)
   const bindPose = inverseBindPose.map(inverseBindMatrix => mat4.invert(mat4.create(), inverseBindMatrix))
 
-  const skeletonJoints = new Array<Entity>()
+  const skeletonJoints = new Array<Joint>()
 
-  const boneGeometry = new SphereGeometry(0.1)
-  const boneMaterial = new UnlitMaterial([1.0, 0.0, 1.0])
+  const jointGeometry = new SphereGeometry(0.1)
+  const jointMaterial = new UnlitMaterial([1.0, 0.0, 1.0])
 
-  for(const jointMatrix of bindPose) {
-    const joint = new Entity()
-    joint.add(boneGeometry)
-    joint.add(boneMaterial)
+  for(let jointIndex = 0; jointIndex < bindPose.length; jointIndex++) {
+    const debugEntity = new Entity()
 
-    const jointTransform = joint.get(ComponentEnum.TRANSFORM) as Transform
-    jointTransform.setLocalPosition(mat4.getTranslation(vec3.create(), jointMatrix))
-    jointTransform.setLocalRotation(mat4.getRotation(quat.create(), jointMatrix))
+    debugEntity.add(jointGeometry)
+    debugEntity.add(jointMaterial)
 
-    skeletonJoints.push(joint)
+    skeletonJoints.push({
+      parentIndex: null,
+      debugEntity,
+    })
+  }
+
+  // WIP
+  for(let jointIndex = 0; jointIndex < bindPose.length; jointIndex++) {
+    const jointNodeIndex = joints[jointIndex]
+    const { children } = nodes[jointNodeIndex]
+
+    if(children) {
+      children.forEach(childJointIndex => {
+        skeletonJoints[bindPose.length - 1 - childJointIndex].parentIndex = jointIndex
+      })
+    }
   }
 
   const skeleton: Skeleton = {

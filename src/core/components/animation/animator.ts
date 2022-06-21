@@ -47,19 +47,18 @@ export default class Animator implements Component {
       const rotationMatrix = mat4.fromQuat(mat4.create(), animation[this.currentFrame][jointIndex].rotation)
       // translate to model position
       mat4.multiply(rotationMatrix, bindPose[jointIndex], rotationMatrix)
-
+      
       // transform by parent joint pose in world space
-      // ToDo: multiply with parent joint specific to current joint
-      if(jointIndex > 0)
-        mat4.multiply(rotationMatrix, currentPose[jointIndex - 1], rotationMatrix)
+      const parentJointIndex = joints[jointIndex].parentIndex
+      if(parentJointIndex)
+        mat4.multiply(rotationMatrix, currentPose[parentJointIndex], rotationMatrix)
 
       // transform back to model space
       const jointPose = mat4.multiply(mat4.create(), rotationMatrix, inverseBindPose[jointIndex])
       currentPose.push(jointPose)
 
-      // debug vis
-      const boneTransform = joints[jointIndex].get(ComponentEnum.TRANSFORM) as Transform
-      boneTransform.localMatrix = rotationMatrix
+      const debugJointTransform = joints[jointIndex].debugEntity.get(ComponentEnum.TRANSFORM) as Transform
+      debugJointTransform.localMatrix = rotationMatrix
     }
     
 

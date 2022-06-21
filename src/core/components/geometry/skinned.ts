@@ -31,8 +31,13 @@ export const createSVBO = (gl: WebGL2RenderingContext): SVBO => {
   }
 }
 
+export type Joint = {
+  parentIndex: number,
+  debugEntity: Entity
+}
+
 export type Skeleton = {
-  joints: Array<Entity>
+  joints: Array<Joint>
 
   bindPose: Array<mat4>
   inverseBindPose: Array<mat4>
@@ -140,8 +145,8 @@ export default class SkinnedGeometry extends Geometry {
     if(this.skeleton) {
       const transformCompoent = this.self.get(ComponentEnum.TRANSFORM) as Transform
 
-      for(const bone of this.skeleton.joints)
-        transformCompoent.add(bone)
+      for(const joint of this.skeleton.joints)
+        transformCompoent.add(joint.debugEntity)
     }      
   }
 }
