@@ -1,8 +1,7 @@
-import { mat4, quat, vec3 } from "gl-matrix"
+import { mat4, quat } from "gl-matrix"
 import Animator, { Animation, JointTransfrom, KeyFrame } from "../../core/components/animation/animator"
 import { ComponentEnum } from "../../core/components/base/component"
 import Transform from "../../core/components/base/transform"
-import BoneGeometry from "../../core/components/geometry/bone"
 import Geometry from "../../core/components/geometry/geometry"
 import SkinnedGeometry, { Joint, Skeleton } from "../../core/components/geometry/skinned"
 import SphereGeometry from "../../core/components/geometry/sphere"
@@ -142,37 +141,36 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
   const inverseBindPose = parseBufferToMatrixArray(gltf, bufferData, inverseBindMatrices)
   const bindPose = inverseBindPose.map(inverseBindMatrix => mat4.invert(mat4.create(), inverseBindMatrix))
 
-  const skeletonJoints = new Array<Joint>()
+  const jointArray = new Array<Joint>()
+  const rootJointIndex = joints[0]
 
   const jointGeometry = new SphereGeometry(0.1)
   const jointMaterial = new UnlitMaterial([1.0, 0.0, 1.0])
 
-  for(let jointIndex = 0; jointIndex < bindPose.length; jointIndex++) {
-    const debugEntity = new Entity()
+  const parseJoint = (jointIndex: number, parentIndex: number | null = null): Joint => {
+    const entity = new Entity();
+    entity.add(jointGeometry)
+    entity.add(jointMaterial)
 
-    debugEntity.add(jointGeometry)
-    debugEntity.add(jointMaterial)
-
-    skeletonJoints.push({
-      parentIndex: null,
-      debugEntity,
-    })
-  }
-
-  // WIP
-  for(let jointIndex = 0; jointIndex < bindPose.length; jointIndex++) {
-    const jointNodeIndex = joints[jointIndex]
-    const { children } = nodes[jointNodeIndex]
+    const { children } = nodes[jointIndex]
 
     if(children) {
-      children.forEach(childJointIndex => {
-        skeletonJoints[bindPose.length - 1 - childJointIndex].parentIndex = jointIndex
-      })
+      for(const childIndex of children) {
+        jointArray.push(parseJoint(childIndex, Math.abs(jointIndex - rootJointIndex)))
+      }
+    }
+
+    return {
+      parentIndex,
+      entity
     }
   }
 
+  jointArray.push(parseJoint(rootJointIndex))
+  jointArray.reverse()
+
   const skeleton: Skeleton = {
-    joints: skeletonJoints,
+    joints: jointArray,
     bindPose,
     inverseBindPose,
     currentPose: bindPose

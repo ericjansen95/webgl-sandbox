@@ -33,7 +33,7 @@ export const createSVBO = (gl: WebGL2RenderingContext): SVBO => {
 
 export type Joint = {
   parentIndex: number,
-  debugEntity: Entity
+  entity: Entity
 }
 
 export type Skeleton = {
@@ -143,10 +143,10 @@ export default class SkinnedGeometry extends Geometry {
     this.self = self
 
     if(this.skeleton) {
-      const transformCompoent = this.self.get(ComponentEnum.TRANSFORM) as Transform
+      const transformComponent = this.self.get(ComponentEnum.TRANSFORM) as Transform
 
       for(const joint of this.skeleton.joints)
-        transformCompoent.add(joint.debugEntity)
+        transformComponent.add(joint.entity)
     }      
   }
 }

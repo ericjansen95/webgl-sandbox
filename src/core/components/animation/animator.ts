@@ -39,8 +39,8 @@ export default class Animator implements Component {
   onUpdate = (self: entity, camera: entity) => {
     const animation = this.animations[0]
 
-    this.skeleton.currentPose = new Array<mat4>()
-    const { inverseBindPose, bindPose, currentPose, joints } = this.skeleton
+    const currentPose = new Array<mat4>()
+    const { inverseBindPose, bindPose, joints } = this.skeleton
 
     for(let jointIndex = 0; jointIndex < joints.length; jointIndex++) {
       // rotate in local space
@@ -57,11 +57,11 @@ export default class Animator implements Component {
       const jointPose = mat4.multiply(mat4.create(), rotationMatrix, inverseBindPose[jointIndex])
       currentPose.push(jointPose)
 
-      const debugJointTransform = joints[jointIndex].debugEntity.get(ComponentEnum.TRANSFORM) as Transform
+      const debugJointTransform = joints[jointIndex].entity.get(ComponentEnum.TRANSFORM) as Transform
       debugJointTransform.localMatrix = rotationMatrix
     }
     
-
+    this.skeleton.currentPose = currentPose
     this.currentFrame = ++this.currentFrame % 30
   }
 }
