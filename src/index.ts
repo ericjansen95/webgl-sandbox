@@ -1,28 +1,23 @@
 import Camera from './core/components/base/camera';
 import Entity from './core/scene/entity';
-import LambertMaterial from './core/components/material/lambertMaterial';
 import Material from './core/components/material/material';
-import FlyControls from './core/components/controls/flyControls';
 import Terrain from './core/components/scripts/terrain';
-import QuadGeometry from './core/components/geometry/quad';
-import UnlitMaterial from './core/components/material/unlitMaterial';
-import GltfLoader from './util/loader/gltfLoader';
 import { ComponentEnum as Component } from './core/components/base/component';
 import Turntable from './core/components/scripts/turntable';
 import Engine from './core/engine';
-import PhongMaterial from './core/components/material/phongMaterial';
-import UvMaterial from './core/components/material/uvMaterial';
 import loadGltf from './util/loader/gltfLoader';
 import Debug from './core/internal/debug';
-import NormalMaterial from './core/components/material/normalMaterial';
-import PositionMaterial from './core/components/material/positionMaterial';
-import OutlineMaterial from './core/components/material/fresnelMaterial';
 import FresnelMaterial from './core/components/material/fresnelMaterial';
-import BoneGeometry from './core/components/geometry/bone';
-import Transform from './core/components/base/transform';
 import SkinnedDebugMaterial from './core/components/material/skinnedDebugMaterial';
 
 /*
+
+  First Playable:
+  - multi hirachial joint skinning
+  - uv driven texture mapping
+  - collision => ray triangle intersection
+  - first person controls
+  - basic audio => emitter and listener
 
   Ideas:
   - scene skybox
@@ -38,7 +33,6 @@ import SkinnedDebugMaterial from './core/components/material/skinnedDebugMateria
   - base-server, chat-server, scene-server
 
   ToDo:
-  - transform local matrix
   - min max from gltf and fallback calculation
 
   - this in component callbacks
@@ -63,16 +57,6 @@ import SkinnedDebugMaterial from './core/components/material/skinnedDebugMateria
   - rename wording for channels to "SCENE" and "CHAT"
 
 */
-
-/*
-  ### Skinning ###
-
-  Components:
-  
-  - Animator => keyframe, animation 
-  - SkinnedGeometry => joint, rig 
-*/
-
 
 const main = () => {
   const canvas = document.getElementById('glCanvas') as HTMLCanvasElement

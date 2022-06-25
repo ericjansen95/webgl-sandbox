@@ -1,9 +1,7 @@
 import { mat4, quat } from "gl-matrix"
-import Animator, { Animation, JointTransfrom, KeyFrame } from "../../core/components/animation/animator"
-import { ComponentEnum } from "../../core/components/base/component"
-import Transform from "../../core/components/base/transform"
+import Animator, { Animation, JointTransfrom, KeyFrame, Skeleton } from "../../core/components/animation/animator"
 import Geometry from "../../core/components/geometry/geometry"
-import SkinnedGeometry, { Joint, Skeleton } from "../../core/components/geometry/skinned"
+import SkinnedGeometry from "../../core/components/geometry/skinned"
 import SphereGeometry from "../../core/components/geometry/sphere"
 import UnlitMaterial from "../../core/components/material/unlitMaterial"
 import Entity from "../../core/scene/entity"
@@ -35,8 +33,7 @@ const parseEntity = (gltf: any, bufferData: Array<ArrayBuffer>, nodeIndex: any):
   entity.add(parseGeometry(gltf, bufferData, mesh, skin))
 
   if(isSkinnedEntity) {
-    const animator = new Animator()
-    animator.setAnimations(parseAnimations(gltf, bufferData, skin))
+    const animator = new Animator(parseSkeleton(gltf, bufferData, skin), parseAnimations(gltf, bufferData, skin))
 
     entity.add(animator)
   }
@@ -141,40 +138,68 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
   const inverseBindPose = parseBufferToMatrixArray(gltf, bufferData, inverseBindMatrices)
   const bindPose = inverseBindPose.map(inverseBindMatrix => mat4.invert(mat4.create(), inverseBindMatrix))
 
-  const jointArray = new Array<Joint>()
+  const jointEntities = new Array<Entity>()
+  const parentJoint = new Array<number>()
+  const offsetPose = new Array<mat4>()
+
   const rootJointIndex = joints[0]
 
   const jointGeometry = new SphereGeometry(0.1)
-  const jointMaterial = new UnlitMaterial([1.0, 0.0, 1.0])
+  const jointMaterial = new UnlitMaterial([1.0, 1.0, 1.0])
+  const jointDebugMaterial = new UnlitMaterial([1.0, 0.0, 1.0])
 
-  const parseJoint = (jointIndex: number, parentIndex: number | null = null): Joint => {
+  const parseJoint = (jointIndex: number, parentIndex: number | null = null) => {
     const entity = new Entity();
     entity.add(jointGeometry)
-    entity.add(jointMaterial)
+    entity.add(jointIndex === 1 || jointIndex === 0 ? jointDebugMaterial : jointMaterial)
 
-    const { children } = nodes[jointIndex]
+    const { children, translation, rotation } = nodes[jointIndex]
+
+    const offsetMatrix = mat4.create()
+    if(rotation) {
+      mat4.fromQuat(offsetMatrix, rotation)
+      mat4.invert(offsetMatrix, offsetMatrix)
+    }
+    //if(translation) mat4.translate(offsetMatrix, offsetMatrix, translation)
 
     if(children) {
       for(const childIndex of children) {
-        jointArray.push(parseJoint(childIndex, Math.abs(jointIndex - rootJointIndex)))
+        parseJoint(childIndex, Math.abs(jointIndex - rootJointIndex))
       }
     }
 
-    return {
-      parentIndex,
-      entity
-    }
+    jointEntities.push(entity)
+    parentJoint.push(parentIndex)
+    offsetPose.push(offsetMatrix)
   }
 
-  jointArray.push(parseJoint(rootJointIndex))
-  jointArray.reverse()
+  parseJoint(rootJointIndex)
+  jointEntities.reverse()
+  parentJoint.reverse()
+  //offsetPose.reverse()
+  
+  offsetPose[4] = offsetPose[3]
+  offsetPose[3] = offsetPose[2]
+
+  /*
+  for(let index = 0; index < 2; index++) {
+    bindPose.pop()
+    inverseBindPose.pop()
+    jointEntities.pop()
+    parentJoint.pop()
+  }
+  */
 
   const skeleton: Skeleton = {
-    joints: jointArray,
+    jointCount: inverseBindPose.length,
+    offsetPose,
     bindPose,
     inverseBindPose,
-    currentPose: bindPose
+    jointEntities,
+    parentJoint,
   }
+
+  console.log(skeleton)
 
   return skeleton
 }
@@ -229,12 +254,8 @@ const parseGeometry = (gltf: any, bufferData: Array<ArrayBuffer>, meshIndex: num
 
   let geometry = null
   
-  if(!isSkinnedGeometry)
-    geometry = new Geometry()
-  else {
-    geometry = new SkinnedGeometry()
-    geometry.setSkeleton(parseSkeleton(gltf, bufferData, skinIndex))
-  }
+  if(!isSkinnedGeometry) geometry = new Geometry()
+  else geometry = new SkinnedGeometry()
 
   geometry.setVAO(vertex)
 

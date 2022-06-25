@@ -31,26 +31,11 @@ export const createSVBO = (gl: WebGL2RenderingContext): SVBO => {
   }
 }
 
-export type Joint = {
-  parentIndex: number,
-  entity: Entity
-}
-
-export type Skeleton = {
-  joints: Array<Joint>
-
-  bindPose: Array<mat4>
-  inverseBindPose: Array<mat4>
-
-  currentPose: Array<mat4>
-}
-
 export default class SkinnedGeometry extends Geometry {
   vao: SVAO
   vbo: SVBO | null
 
-  skeleton: Skeleton
-  self: Entity
+  pose: Array<mat4>
 
   constructor(visible: boolean = true, cull: boolean = true, boundingSphere: boolean = true) {
     super(DrawMode.TRIANGLE, visible, cull, boundingSphere)
@@ -112,16 +97,17 @@ export default class SkinnedGeometry extends Geometry {
       stride,
       offset)
 
-    const { currentPose } = this.skeleton
-    const jointCount = currentPose.length
-
     const jointsMatrixBuffer = new Float32Array(16 * 24)
-    for(let jointIndex = 0; jointIndex < jointCount; jointIndex++)
-      jointsMatrixBuffer.set(currentPose[jointIndex], jointIndex * 16)
+    for(let jointIndex = 0; jointIndex < this.pose.length; jointIndex++)
+      jointsMatrixBuffer.set(this.pose[jointIndex], jointIndex * 16)
 
     gl.uniformMatrix4fv(material.uniformLocations.get('uJointsMatrix'), false, jointsMatrixBuffer)
 
     return true
+  }
+
+  setPose = (pose: Array<mat4>) => {
+    this.pose = pose
   }
 
   setVAO = (vao: SVAO): boolean => {
@@ -133,20 +119,7 @@ export default class SkinnedGeometry extends Geometry {
     return true
   }
 
-  setSkeleton = (skeleton: Skeleton) => {
-    this.skeleton = skeleton
-  }
-
   onAdd = (self: Entity) => {
     this.onAddBase(self)
-
-    this.self = self
-
-    if(this.skeleton) {
-      const transformComponent = this.self.get(ComponentEnum.TRANSFORM) as Transform
-
-      for(const joint of this.skeleton.joints)
-        transformComponent.add(joint.entity)
-    }      
   }
 }
