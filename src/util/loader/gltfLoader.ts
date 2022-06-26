@@ -140,18 +140,17 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
 
   const jointEntities = new Array<Entity>()
   const parentJoint = new Array<number>()
-  const offsetPose = new Array<mat4>()
+  const bindPoseRotation = new Array<mat4>()
 
   const rootJointIndex = joints[0]
 
   const jointGeometry = new SphereGeometry(0.1)
-  const jointMaterial = new UnlitMaterial([1.0, 1.0, 1.0])
   const jointDebugMaterial = new UnlitMaterial([1.0, 0.0, 1.0])
 
   const parseJoint = (jointIndex: number, parentIndex: number | null = null) => {
     const entity = new Entity();
     entity.add(jointGeometry)
-    entity.add(jointIndex === 1 || jointIndex === 0 ? jointDebugMaterial : jointMaterial)
+    entity.add(jointDebugMaterial)
 
     const { children, translation, rotation } = nodes[jointIndex]
 
@@ -161,6 +160,7 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
       mat4.invert(offsetMatrix, offsetMatrix)
     }
     //if(translation) mat4.translate(offsetMatrix, offsetMatrix, translation)
+    bindPoseRotation.push(offsetMatrix)
 
     if(children) {
       for(const childIndex of children) {
@@ -170,29 +170,18 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
 
     jointEntities.push(entity)
     parentJoint.push(parentIndex)
-    offsetPose.push(offsetMatrix)
   }
 
   parseJoint(rootJointIndex)
   jointEntities.reverse()
   parentJoint.reverse()
-  //offsetPose.reverse()
-  
-  offsetPose[4] = offsetPose[3]
-  offsetPose[3] = offsetPose[2]
 
-  /*
-  for(let index = 0; index < 2; index++) {
-    bindPose.pop()
-    inverseBindPose.pop()
-    jointEntities.pop()
-    parentJoint.pop()
-  }
-  */
+  bindPose.forEach((jointMatrix, jointIndex) => {
+    mat4.multiply(jointMatrix, jointMatrix, bindPoseRotation[jointIndex])
+  })
 
   const skeleton: Skeleton = {
     jointCount: inverseBindPose.length,
-    offsetPose,
     bindPose,
     inverseBindPose,
     jointEntities,

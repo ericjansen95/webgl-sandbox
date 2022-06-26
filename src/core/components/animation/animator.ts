@@ -10,7 +10,6 @@ export type Skeleton = {
   
   bindPose: Array<mat4>
   inverseBindPose: Array<mat4>
-  offsetPose: Array<mat4>
 
   jointEntities: Array<Entity>
   parentJoint: Array<number>
@@ -55,13 +54,12 @@ export default class Animator implements Component {
     const animation = this.animations[0]
 
     const pose = new Array<mat4>()
-    const { jointCount, inverseBindPose, bindPose, parentJoint, jointEntities, offsetPose } = this.skeleton
+    const { jointCount, inverseBindPose, bindPose, parentJoint, jointEntities } = this.skeleton
 
     for(let jointIndex = 0; jointIndex < jointCount; jointIndex++) {
       // rotate in local space
       const rotationMatrix = mat4.fromQuat(mat4.create(), animation[this.currentFrame][jointIndex].rotation)
       // translate to model position
-      mat4.multiply(rotationMatrix, offsetPose[jointIndex], rotationMatrix)
       mat4.multiply(rotationMatrix, bindPose[jointIndex], rotationMatrix)
       
       // transform by parent joint pose in world space
