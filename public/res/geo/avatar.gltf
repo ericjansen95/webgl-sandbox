@@ -14,7 +14,7 @@
     ],
     "nodes" : [
         {
-            "name" : "Hand.l",
+            "name" : "HandL",
             "rotation" : [
                 0.009546487592160702,
                 0.0060713267885148525,
@@ -36,7 +36,7 @@
             "children" : [
                 0
             ],
-            "name" : "LowerArn.l",
+            "name" : "LowerArmL",
             "rotation" : [
                 0.10103000700473785,
                 0.00015475622785743326,
@@ -58,7 +58,7 @@
             "children" : [
                 1
             ],
-            "name" : "UpperArm.l",
+            "name" : "UpperArmL",
             "rotation" : [
                 0.01712997630238533,
                 0.13010552525520325,
@@ -77,7 +77,7 @@
             ]
         },
         {
-            "name" : "Hand.r",
+            "name" : "HandR",
             "rotation" : [
                 0.009546487592160702,
                 -0.0060713267885148525,
@@ -99,7 +99,7 @@
             "children" : [
                 3
             ],
-            "name" : "LowerArn.r",
+            "name" : "LowerArmR",
             "rotation" : [
                 0.10103000700473785,
                 -0.00015475622785743326,
@@ -121,7 +121,7 @@
             "children" : [
                 4
             ],
-            "name" : "UpperArm.r",
+            "name" : "UpperArmR",
             "rotation" : [
                 0.01712997630238533,
                 -0.13010552525520325,
@@ -205,7 +205,7 @@
             ]
         },
         {
-            "name" : "Foot.l",
+            "name" : "FootL",
             "rotation" : [
                 0.0015209390548989177,
                 0.02946511283516884,
@@ -222,7 +222,7 @@
             "children" : [
                 9
             ],
-            "name" : "LowerLeg.l",
+            "name" : "LowerLegL",
             "rotation" : [
                 0.0386798158288002,
                 0.018103480339050293,
@@ -244,7 +244,7 @@
             "children" : [
                 10
             ],
-            "name" : "UpperLeg.l",
+            "name" : "UpperLegL",
             "rotation" : [
                 0.6171190738677979,
                 0.0899202898144722,
@@ -263,7 +263,7 @@
             ]
         },
         {
-            "name" : "Foot.r",
+            "name" : "FootR",
             "rotation" : [
                 0.0015209558187052608,
                 -0.029465116560459137,
@@ -285,7 +285,7 @@
             "children" : [
                 12
             ],
-            "name" : "LowerLeg.r",
+            "name" : "LowerLegR",
             "rotation" : [
                 0.038679808378219604,
                 -0.018103495240211487,
@@ -307,7 +307,7 @@
             "children" : [
                 13
             ],
-            "name" : "UpperLeg.r",
+            "name" : "UpperLegR",
             "rotation" : [
                 0.6325019598007202,
                 -0.06924907118082047,

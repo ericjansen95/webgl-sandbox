@@ -69,7 +69,7 @@ const main = () => {
 
   const engine = new Engine(canvas, sceneCamera)
 
-  loadGltf("http://localhost:8080/res/geo/testAnimGeo.gltf").then((entities) => {
+  loadGltf("http://localhost:8080/res/geo/avatar.gltf").then((entities) => {
     const unlitMaterial = new SkinnedDebugMaterial() as Material
 
     for(const entity of entities) {

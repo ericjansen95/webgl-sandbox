@@ -139,7 +139,7 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
   const bindPose = inverseBindPose.map(inverseBindMatrix => mat4.invert(mat4.create(), inverseBindMatrix))
 
   const jointEntities = new Array<Entity>()
-  const parentJoint = new Array<number>()
+  let parentJoint = new Array<number>()
   const bindPoseRotation = new Array<mat4>()
 
   const rootJointIndex = joints[0]
@@ -147,12 +147,19 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
   const jointGeometry = new SphereGeometry(0.1)
   const jointDebugMaterial = new UnlitMaterial([1.0, 0.0, 1.0])
 
-  const parseJoint = (jointIndex: number, parentIndex: number | null = null) => {
+  const jointNames = new Array<string>()
+
+  const parseJoint = (jointIndex: number, parentIndex: number | null = null, parentName: string | null = null) => {
+    console.log(`node joint index = ${jointIndex} | array parent joint index = ${parentIndex} | parent name = ${parentName}`)
+    parentJoint.push(parentIndex)
+
     const entity = new Entity();
     entity.add(jointGeometry)
     entity.add(jointDebugMaterial)
+    jointEntities.push(entity)
 
-    const { children, translation, rotation } = nodes[jointIndex]
+    const { children, translation, rotation, name } = nodes[jointIndex]
+    jointNames.push(name)
 
     const offsetMatrix = mat4.create()
     if(rotation) {
@@ -163,18 +170,13 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
     bindPoseRotation.push(offsetMatrix)
 
     if(children) {
-      for(const childIndex of children) {
-        parseJoint(childIndex, Math.abs(jointIndex - rootJointIndex))
-      }
+      for(const childIndex of children)
+        parseJoint(childIndex, jointNames.indexOf(name), name)
     }
-
-    jointEntities.push(entity)
-    parentJoint.push(parentIndex)
   }
 
   parseJoint(rootJointIndex)
-  jointEntities.reverse()
-  parentJoint.reverse()
+  //jointEntities.reverse()
 
   bindPose.forEach((jointMatrix, jointIndex) => {
     mat4.multiply(jointMatrix, jointMatrix, bindPoseRotation[jointIndex])
