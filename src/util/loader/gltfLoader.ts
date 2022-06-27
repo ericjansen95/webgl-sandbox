@@ -1,4 +1,4 @@
-import { mat4, quat } from "gl-matrix"
+import { mat4, quat, vec3 } from "gl-matrix"
 import Animator, { Animation, Joint, JointTransfrom, KeyFrame, Skeleton } from "../../core/components/animation/animator"
 import { ComponentEnum } from "../../core/components/base/component"
 import Transform from "../../core/components/base/transform"
@@ -50,31 +50,38 @@ const parseAnimations = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: n
   const { joints } = skins[skinIndex]
 
   for(const animation of animations) {
-    const { channels, name, samplers } = animation
-    const keyframeArrays = Array<Array<quat>>()
+    const { channels, samplers } = animation
+    const rotationKeyframes = Array<Array<quat>>()
+    const translationKeyframes = Array<Array<vec3>>()
 
     for(const channel of channels) {
       const { sampler, target: { node, path} } = channel
 
       // TMP: check if animation corresponds to one joint of the skin and only use rotation channels
       if(!joints.includes(node)) break
-      if(path !== 'rotation') continue
 
       const { output } = samplers[sampler]
-      keyframeArrays.push(parseBufferToQuaternionArray(gltf, bufferData, output))
-    }
 
-    console.log(keyframeArrays)
+      switch(path) {
+        case 'rotation':
+          rotationKeyframes.push(parseBufferToQuaternionArray(gltf, bufferData, output))
+          break;
+        case 'translation':
+          translationKeyframes.push(parseBufferToVector3Array(gltf, bufferData, output))
+          break;  
+      }      
+    }
 
     const currentAnimation: Animation = new Array<KeyFrame>()
 
-    const keyframeCount = keyframeArrays[0].length
+    const keyframeCount = rotationKeyframes[0].length
     for(let keyframeIndex = 0; keyframeIndex < keyframeCount; keyframeIndex++) {
       const keyframe: KeyFrame = new Array<JointTransfrom>()
 
-      for(let jointIndex = 0; jointIndex < keyframeArrays.length; jointIndex++)
+      for(let jointIndex = 0; jointIndex < rotationKeyframes.length; jointIndex++)
         keyframe[jointIndex] = {
-          rotation: keyframeArrays[jointIndex][keyframeIndex]
+          rotation: rotationKeyframes[jointIndex][keyframeIndex],
+          translation: translationKeyframes[jointIndex][keyframeIndex]
         }
 
       currentAnimation.push(keyframe)  
@@ -82,8 +89,6 @@ const parseAnimations = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: n
 
     parsedAnimations.push(currentAnimation)
   }
-
-  console.log(parsedAnimations)
 
   return parsedAnimations
 }
@@ -104,6 +109,23 @@ const parseBufferToQuaternionArray = (gltf: any, bufferData: Array<ArrayBuffer>,
   }
 
   return quaternions
+}
+
+const parseBufferToVector3Array = (gltf: any, bufferData: Array<ArrayBuffer>, accessorIndex: number): Array<vec3> => {
+  const vectors = new Array<vec3>()
+
+  const uniformVectorBuffer = getBufferViewFromAccessorIndex(gltf, bufferData, accessorIndex) as Float32Array
+  const uniformVectorArray = Array.from(uniformVectorBuffer.values()) as Array<number>
+
+  for(let vectorIndex = 0; vectorIndex < uniformVectorArray.length; vectorIndex += 3) {
+    vectors.push(vec3.fromValues(
+      uniformVectorArray[vectorIndex],
+      uniformVectorArray[vectorIndex + 1],
+      uniformVectorArray[vectorIndex + 2]
+    ))
+  }
+
+  return vectors
 }
 
 const parseBufferToMatrixArray = (gltf: any, bufferData: Array<ArrayBuffer>, accessorIndex: number): Array<mat4> => {
@@ -151,8 +173,7 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
   const buildJointHirachy = (jointNodeIndex: number, parentEntityTransform: Transform | null = null) => {
     ++jointCount
 
-    const { translation, rotation, name, children } = nodes[jointNodeIndex]
-    console.log(nodes[jointNodeIndex])
+    const { children } = nodes[jointNodeIndex]
 
     const entity = new Entity()
     entity.add(jointGeometry)
@@ -163,9 +184,6 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
 
     const entityTransform = entity.get(ComponentEnum.TRANSFORM) as Transform
 
-    if(rotation) entityTransform.setLocalRotation(rotation)
-    if(translation) entityTransform.setLocalPosition(translation)
-
     const childJoints = new Array<Joint>()
 
     if(children)
@@ -174,7 +192,6 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
 
     const joint: Joint = {
       children: childJoints,
-      translation,
       entity
     }
 

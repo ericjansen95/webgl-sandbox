@@ -7,7 +7,6 @@ import SkinnedGeometry from "../geometry/skinned"
 
 export type Joint = {
   children: Array<Joint>
-  translation: vec3
   entity: Entity
 }
 
@@ -19,6 +18,7 @@ export type Skeleton = {
 
 export type JointTransfrom = {
   rotation: quat
+  translation: vec3
 }
 
 export type KeyFrame = Array<JointTransfrom>
@@ -59,15 +59,18 @@ export default class Animator implements Component {
 
     let jointIndex = 0
     const buildPose = (joint: Joint, parentPose: mat4 = mat4.create()) => {
-      const rotation = animation[this.currentFrame][jointIndex].rotation
+      const { rotation, translation } = animation[this.currentFrame][jointIndex]
 
       const transform = joint.entity.get(ComponentEnum.TRANSFORM) as Transform
       transform.setLocalRotation(rotation)
+      transform.setLocalPosition(translation)
+
+      const jointPose = mat4.create()
+      mat4.translate(jointPose, jointPose, translation)
 
       const rotationMatrix = mat4.fromQuat(mat4.create(), rotation)
-      const translationMatrix = mat4.fromTranslation(mat4.create(), joint.translation)
+      mat4.multiply(jointPose, jointPose, rotationMatrix)
 
-      const jointPose = mat4.multiply(mat4.create(), translationMatrix, rotationMatrix)
       mat4.multiply(jointPose, parentPose, jointPose)
       pose.push(jointPose)
 
