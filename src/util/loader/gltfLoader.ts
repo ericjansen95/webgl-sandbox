@@ -1,5 +1,7 @@
 import { mat4, quat } from "gl-matrix"
-import Animator, { Animation, JointTransfrom, KeyFrame, Skeleton } from "../../core/components/animation/animator"
+import Animator, { Animation, Joint, JointTransfrom, KeyFrame, Skeleton } from "../../core/components/animation/animator"
+import { ComponentEnum } from "../../core/components/base/component"
+import Transform from "../../core/components/base/transform"
 import Geometry from "../../core/components/geometry/geometry"
 import SkinnedGeometry from "../../core/components/geometry/skinned"
 import SphereGeometry from "../../core/components/geometry/sphere"
@@ -62,6 +64,8 @@ const parseAnimations = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: n
       keyframeArrays.push(parseBufferToQuaternionArray(gltf, bufferData, output))
     }
 
+    console.log(keyframeArrays)
+
     const currentAnimation: Animation = new Array<KeyFrame>()
 
     const keyframeCount = keyframeArrays[0].length
@@ -78,6 +82,8 @@ const parseAnimations = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: n
 
     parsedAnimations.push(currentAnimation)
   }
+
+  console.log(parsedAnimations)
 
   return parsedAnimations
 }
@@ -136,61 +142,52 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
   const { nodes } = gltf
 
   const inverseBindPose = parseBufferToMatrixArray(gltf, bufferData, inverseBindMatrices)
-  const bindPose = inverseBindPose.map(inverseBindMatrix => mat4.invert(mat4.create(), inverseBindMatrix))
 
-  const jointEntities = new Array<Entity>()
-  let parentJoint = new Array<number>()
-  const bindPoseRotation = new Array<mat4>()
-
-  const rootJointIndex = joints[0]
-
-  const jointGeometry = new SphereGeometry(0.1)
+  const jointGeometry = new SphereGeometry(0.075)
   const jointDebugMaterial = new UnlitMaterial([1.0, 0.0, 1.0])
 
-  const jointNames = new Array<string>()
+  let jointCount = 0
 
-  const parseJoint = (jointIndex: number, parentIndex: number | null = null, parentName: string | null = null) => {
-    console.log(`node joint index = ${jointIndex} | array parent joint index = ${parentIndex} | parent name = ${parentName}`)
-    parentJoint.push(parentIndex)
+  const buildJointHirachy = (jointNodeIndex: number, parentEntityTransform: Transform | null = null) => {
+    ++jointCount
 
-    const entity = new Entity();
+    const { translation, rotation, name, children } = nodes[jointNodeIndex]
+    console.log(nodes[jointNodeIndex])
+
+    const entity = new Entity()
     entity.add(jointGeometry)
     entity.add(jointDebugMaterial)
-    jointEntities.push(entity)
 
-    const { children, translation, rotation, name } = nodes[jointIndex]
-    jointNames.push(name)
+    if(parentEntityTransform)
+      parentEntityTransform.add(entity)
 
-    const offsetMatrix = mat4.create()
-    if(rotation) {
-      mat4.fromQuat(offsetMatrix, rotation)
-      mat4.invert(offsetMatrix, offsetMatrix)
+    const entityTransform = entity.get(ComponentEnum.TRANSFORM) as Transform
+
+    if(rotation) entityTransform.setLocalRotation(rotation)
+    if(translation) entityTransform.setLocalPosition(translation)
+
+    const childJoints = new Array<Joint>()
+
+    if(children)
+      for(const childNodeIndex of children)
+        childJoints.push(buildJointHirachy(childNodeIndex, entityTransform))
+
+    const joint: Joint = {
+      children: childJoints,
+      translation,
+      entity
     }
-    //if(translation) mat4.translate(offsetMatrix, offsetMatrix, translation)
-    bindPoseRotation.push(offsetMatrix)
 
-    if(children) {
-      for(const childIndex of children)
-        parseJoint(childIndex, jointNames.indexOf(name), name)
-    }
+    return joint
   }
 
-  parseJoint(rootJointIndex)
-  //jointEntities.reverse()
-
-  bindPose.forEach((jointMatrix, jointIndex) => {
-    mat4.multiply(jointMatrix, jointMatrix, bindPoseRotation[jointIndex])
-  })
+  const root: Joint = buildJointHirachy(joints[0])
 
   const skeleton: Skeleton = {
-    jointCount: inverseBindPose.length,
-    bindPose,
+    jointCount,
     inverseBindPose,
-    jointEntities,
-    parentJoint,
+    root
   }
-
-  console.log(skeleton)
 
   return skeleton
 }

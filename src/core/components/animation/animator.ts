@@ -1,18 +1,20 @@
-import { mat4, quat } from "gl-matrix"
+import { mat4, quat, vec3 } from "gl-matrix"
 import Entity from "../../scene/entity"
 import entity from "../../scene/entity"
 import Component, { ComponentEnum } from "../base/component"
 import Transform from "../base/transform"
 import SkinnedGeometry from "../geometry/skinned"
 
-export type Skeleton = {
-  jointCount: number
-  
-  bindPose: Array<mat4>
-  inverseBindPose: Array<mat4>
+export type Joint = {
+  children: Array<Joint>
+  translation: vec3
+  entity: Entity
+}
 
-  jointEntities: Array<Entity>
-  parentJoint: Array<number>
+export type Skeleton = {
+  jointCount: number,
+  inverseBindPose: Array<mat4>,
+  root: Joint
 }
 
 export type JointTransfrom = {
@@ -46,36 +48,41 @@ export default class Animator implements Component {
     this.geometry = self.get(ComponentEnum.GEOMETRY) as SkinnedGeometry
 
     const transform = self.get(ComponentEnum.TRANSFORM) as Transform
-    for(const joint of this.skeleton.jointEntities)
-      transform.add(joint)
+
+    transform.add(this.skeleton.root.entity)
   }
 
   onUpdate = (self: entity, camera: entity) => {
     const animation = this.animations[0]
 
     const pose = new Array<mat4>()
-    const { jointCount, inverseBindPose, bindPose, parentJoint, jointEntities } = this.skeleton
 
-    for(let jointIndex = 0; jointIndex < jointCount; jointIndex++) {
-      // rotate in local space
-      const rotationMatrix = mat4.fromQuat(mat4.create(), animation[this.currentFrame][jointIndex].rotation)
-      // translate to model position
-      mat4.multiply(rotationMatrix, bindPose[jointIndex], rotationMatrix)
-      
-      // transform by parent joint pose in world space
-      const parentJointIndex = parentJoint[jointIndex]
-      if(parentJointIndex)
-        mat4.multiply(rotationMatrix, pose[parentJointIndex], rotationMatrix)
+    let jointIndex = 0
+    const buildPose = (joint: Joint, parentPose: mat4 = mat4.create()) => {
+      const rotation = animation[this.currentFrame][jointIndex].rotation
 
-      // transform back to model space
-      const jointMatrix = mat4.create()
-      mat4.multiply(jointMatrix, rotationMatrix, inverseBindPose[jointIndex])
-      pose.push(jointMatrix)
-      
-      const debugJointTransform = jointEntities[jointIndex].get(ComponentEnum.TRANSFORM) as Transform
-      debugJointTransform.localMatrix = rotationMatrix
+      const transform = joint.entity.get(ComponentEnum.TRANSFORM) as Transform
+      transform.setLocalRotation(rotation)
+
+      const rotationMatrix = mat4.fromQuat(mat4.create(), rotation)
+      const translationMatrix = mat4.fromTranslation(mat4.create(), joint.translation)
+
+      const jointPose = mat4.multiply(mat4.create(), translationMatrix, rotationMatrix)
+      mat4.multiply(jointPose, parentPose, jointPose)
+      pose.push(jointPose)
+
+      for(const child of joint.children) {
+        ++jointIndex
+        buildPose(child, jointPose)  
+      } 
     }
+
+    buildPose(this.skeleton.root)
     
+    pose.forEach((globalJointPose, jointIndex) => {
+      mat4.multiply(globalJointPose, globalJointPose, this.skeleton.inverseBindPose[jointIndex])
+    })
+
     this.geometry.setPose(pose)
     this.currentFrame = ++this.currentFrame % 30
   }
