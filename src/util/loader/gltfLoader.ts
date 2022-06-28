@@ -165,7 +165,7 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
 
   const inverseBindPose = parseBufferToMatrixArray(gltf, bufferData, inverseBindMatrices)
 
-  const jointGeometry = new SphereGeometry(0.075)
+  const jointGeometry = new SphereGeometry(0.075, false)
   const jointDebugMaterial = new UnlitMaterial([1.0, 0.0, 1.0])
 
   let jointCount = 0

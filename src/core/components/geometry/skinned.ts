@@ -1,13 +1,14 @@
 import { mat4 } from "gl-matrix"
 import Entity from "../../scene/entity"
-import { ComponentEnum } from "../base/component"
-import Transform from "../base/transform"
 import Material from "../material/material"
 import Geometry, { createVBO, createVAO, DrawMode, VBO, VAO } from "./geometry"
+
+export const MAX_JOINTS: number = 24
 
 export type SVAO = VAO & {
   WEIGHTS_0: Float32Array
   JOINTS_0: Uint8Array
+  POSE: Float32Array
 }
 
 export type SVBO = VBO & {
@@ -20,6 +21,7 @@ export const createSVAO = (): SVAO => {
     ...createVAO(),
     WEIGHTS_0: new Float32Array(),
     JOINTS_0: new Uint8Array(),
+    POSE: new Float32Array(16 * MAX_JOINTS)
   }
 }
 
@@ -97,17 +99,13 @@ export default class SkinnedGeometry extends Geometry {
       stride,
       offset)
 
-    const jointsMatrixBuffer = new Float32Array(16 * 24)
-    for(let jointIndex = 0; jointIndex < this.pose.length; jointIndex++)
-      jointsMatrixBuffer.set(this.pose[jointIndex], jointIndex * 16)
-
-    gl.uniformMatrix4fv(material.uniformLocations.get('uJointsMatrix'), false, jointsMatrixBuffer)
+    gl.uniformMatrix4fv(material.uniformLocations.get('uJointsMatrix'), false, this.vao.POSE)
 
     return true
   }
 
-  setPose = (pose: Array<mat4>) => {
-    this.pose = pose
+  setPose = (pose: Float32Array) => {
+    this.vao.POSE = pose
   }
 
   setVAO = (vao: SVAO): boolean => {

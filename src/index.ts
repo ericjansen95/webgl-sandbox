@@ -8,7 +8,8 @@ import Engine from './core/engine';
 import loadGltf from './util/loader/gltfLoader';
 import Debug from './core/internal/debug';
 import FresnelMaterial from './core/components/material/fresnelMaterial';
-import SkinnedDebugMaterial from './core/components/material/skinnedDebugMaterial';
+import SkinnedLambertMaterial from './core/components/material/skinnedLambert';
+import GeometryCollider from './core/components/collider/geometryCollider';
 
 /*
 
@@ -69,11 +70,21 @@ const main = () => {
 
   const engine = new Engine(canvas, sceneCamera)
 
+  loadGltf("http://localhost:8080/res/geo/testCollisionGeo.gltf").then((entities) => {
+    for(const entity of entities) {
+      entity.add(Debug.material)
+      entity.add(new GeometryCollider())
+
+      engine.scene.add(entity)
+    }
+  }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
+
+
   loadGltf("http://localhost:8080/res/geo/avatar.gltf").then((entities) => {
-    const unlitMaterial = new SkinnedDebugMaterial() as Material
+    const lambertMaterial = new SkinnedLambertMaterial([1.0, 1.0, 1.0]) as Material
 
     for(const entity of entities) {
-      entity.add(unlitMaterial)
+      entity.add(lambertMaterial)
 
       engine.scene.add(entity)
     }

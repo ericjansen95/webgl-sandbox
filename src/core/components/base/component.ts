@@ -6,6 +6,7 @@ export enum ComponentEnum {
   MATERIAL,
   BOUNDING_VOLUME,
   CAMERA,
+  COLLIDER,
   TERRAIN,
   CONTROLS,
   SCRIPT,

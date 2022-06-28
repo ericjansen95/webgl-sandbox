@@ -1,9 +1,10 @@
 import { mat4, quat, vec3 } from "gl-matrix"
+import Time from "../../internal/time"
 import Entity from "../../scene/entity"
 import entity from "../../scene/entity"
 import Component, { ComponentEnum } from "../base/component"
 import Transform from "../base/transform"
-import SkinnedGeometry from "../geometry/skinned"
+import SkinnedGeometry, { MAX_JOINTS } from "../geometry/skinned"
 
 export type Joint = {
   children: Array<Joint>
@@ -28,7 +29,8 @@ export type Animation = Array<KeyFrame>
 export default class Animator implements Component {
   type: ComponentEnum
 
-  currentFrame: number
+  time: number
+  speed: number
 
   skeleton: Skeleton
   animations: Array<Animation>
@@ -38,7 +40,9 @@ export default class Animator implements Component {
   constructor(skeleton: Skeleton, animations: Array<Animation>) {
     this.type = ComponentEnum.ANIMATOR
 
-    this.currentFrame = 0
+    this.time = 0
+    // WIP: Move speed in animation data structure
+    this.speed = 15
 
     this.skeleton = skeleton
     this.animations = animations
@@ -48,45 +52,66 @@ export default class Animator implements Component {
     this.geometry = self.get(ComponentEnum.GEOMETRY) as SkinnedGeometry
 
     const transform = self.get(ComponentEnum.TRANSFORM) as Transform
-
     transform.add(this.skeleton.root.entity)
   }
 
   onUpdate = (self: entity, camera: entity) => {
+    // TMP: Always pick first animation for pose calculation
     const animation = this.animations[0]
 
     const pose = new Array<mat4>()
 
-    let jointIndex = 0
-    const buildPose = (joint: Joint, parentPose: mat4 = mat4.create()) => {
-      const { rotation, translation } = animation[this.currentFrame][jointIndex]
+    // round time and convert to valid frame index
+    // calculate blend factor between 0 - 1 for lerping animation rotation and translation
+    const roundedTime = Math.floor(this.time)
+    const frameIndex = roundedTime % (animation.length - 1)
+    const lerpFactor = this.time - roundedTime
 
-      const transform = joint.entity.get(ComponentEnum.TRANSFORM) as Transform
-      transform.setLocalRotation(rotation)
-      transform.setLocalPosition(translation)
+    let jointIndex = -1
+    const buildPose = (joint: Joint, parentTransform: mat4 = mat4.create()) => {
+      ++jointIndex
 
-      const jointPose = mat4.create()
-      mat4.translate(jointPose, jointPose, translation)
+      // receive animation frames
+      const { rotation: fromRotation, translation: fromTranslation } = animation[frameIndex][jointIndex]
+      const { rotation: toRotation, translation: toTranslation } = animation[frameIndex + 1][jointIndex]
 
-      const rotationMatrix = mat4.fromQuat(mat4.create(), rotation)
-      mat4.multiply(jointPose, jointPose, rotationMatrix)
+      // lerp frames for current time
+      const rotation = quat.slerp(quat.create(), fromRotation, toRotation, lerpFactor)
+      const translation = vec3.lerp(vec3.create(), fromTranslation, toTranslation, lerpFactor)
 
-      mat4.multiply(jointPose, parentPose, jointPose)
-      pose.push(jointPose)
+      // update debug joint entity
+      /*
+        const transform = joint.entity.get(ComponentEnum.TRANSFORM) as Transform
+        transform.setLocalRotation(rotation)
+        transform.setLocalPosition(translation)
+      */
 
-      for(const child of joint.children) {
-        ++jointIndex
-        buildPose(child, jointPose)  
-      } 
+      // calculate global joint transform
+      const jointTransform = mat4.fromRotationTranslation(mat4.create(), rotation, translation)
+      mat4.multiply(jointTransform, parentTransform, jointTransform)
+
+      pose.push(jointTransform)
+
+      // recusivly calculate skeleton pose
+      for(const child of joint.children)
+        buildPose(child, jointTransform)
     }
 
     buildPose(this.skeleton.root)
     
+    // transform pose back into local space
     pose.forEach((globalJointPose, jointIndex) => {
       mat4.multiply(globalJointPose, globalJointPose, this.skeleton.inverseBindPose[jointIndex])
     })
 
-    this.geometry.setPose(pose)
-    this.currentFrame = ++this.currentFrame % 30
+    // construct uniform pose matrix array to be consumed by geometry pipeline
+    const uniformPose = new Float32Array(16 * MAX_JOINTS)
+    for(let jointIndex = 0; jointIndex < pose.length; jointIndex++)
+      uniformPose.set(pose[jointIndex], jointIndex * 16)
+
+    this.geometry.setPose(uniformPose)
+
+    // increase global delta corrected animator time by speed
+    this.time += this.speed * Time.deltaTime
   }
 }

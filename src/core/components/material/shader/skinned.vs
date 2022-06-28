@@ -26,6 +26,6 @@ void main() {
   gl_Position = uProjectionMatrix * modelViewMatrix * skinningMatrix * aVertexPosition;
                
   vVertexPosition = aVertexPosition.xyz;
-  vVertexNormal = mat3(uWorldMatrix) * aVertexNormal;
+  vVertexNormal = mat3(uWorldMatrix) * mat3(skinningMatrix) * aVertexNormal;
   vVertexUv = aVertexUv;
 }
