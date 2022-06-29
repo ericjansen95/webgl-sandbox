@@ -35,13 +35,10 @@ export default class Engine {
 
     this.scene = new Scene(sceneCamera)
 
-    const sceneCameraTransform = sceneCamera.get(ComponentEnum.TRANSFORM) as Transform
-
     const update = curTime => {
       const startTime = Date.now()
       Time.tick(curTime)
   
-      sceneCameraTransform.setLocalEulerRotation([0.0, Math.cos((Date.now() - Time.startTime) * 0.00075) * Math.PI * 0.05, 0.0])
       this.scene.update()
 
       Debug.update()

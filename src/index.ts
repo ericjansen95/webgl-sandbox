@@ -10,6 +10,8 @@ import Debug from './core/internal/debug';
 import FresnelMaterial from './core/components/material/fresnelMaterial';
 import SkinnedLambertMaterial from './core/components/material/skinnedLambert';
 import GeometryCollider from './core/components/collider/geometryCollider';
+import ThirdPersonControls from './core/components/controls/thirdPersonControls';
+import Transform from './core/components/base/transform';
 
 /*
 
@@ -65,7 +67,11 @@ const main = () => {
   canvas.height = window.innerHeight
 
   const sceneCamera: Entity = new Entity()
-  sceneCamera.get(Component.TRANSFORM).setLocalPosition([0.0, 1.0, 6.0])
+  const sceneCameraTransform = sceneCamera.get(Component.TRANSFORM) as Transform
+
+  sceneCameraTransform.setLocalPosition([0.5, 1.4, 2.5])
+  sceneCameraTransform.setLocalEulerRotation([Math.PI * -0.05, 0.0, 0.0])
+
   sceneCamera.add(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
   const engine = new Engine(canvas, sceneCamera)
@@ -81,13 +87,22 @@ const main = () => {
 
 
   loadGltf("http://localhost:8080/res/geo/avatar.gltf").then((entities) => {
+    const player = new Entity()
+    player.add(new ThirdPersonControls())
+    const playerTransform = player.get(Component.TRANSFORM) as Transform
+
     const lambertMaterial = new SkinnedLambertMaterial([1.0, 1.0, 1.0]) as Material
 
     for(const entity of entities) {
       entity.add(lambertMaterial)
+      entity.get(Component.TRANSFORM).setLocalEulerRotation([0.0, Math.PI, 0.0])
 
-      engine.scene.add(entity)
+      playerTransform.add(entity)
     }
+
+    playerTransform.add(sceneCamera)
+
+    engine.scene.add(player)
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test animation geometry = ${error}`))
 
   loadGltf("http://localhost:8080/res/geo/testGeo.gltf").then((entities) => {
@@ -106,8 +121,6 @@ const main = () => {
   const terrain: Entity = new Entity()
   terrain.add(new Terrain())
   engine.scene.add(terrain)
-  
-  engine.scene.add(sceneCamera)
 }
 
 window.onload = main;
