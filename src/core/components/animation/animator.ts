@@ -7,6 +7,8 @@ import SkinnedGeometry, { MAX_JOINTS } from "../geometry/skinned"
 
 export type Joint = {
   children: Array<Joint>
+  translation: vec3
+  rotation: quat
   entity: Entity
 }
 
@@ -27,6 +29,7 @@ export type KeyFrame = Array<JointTransfrom>
 export type Animation = {
   name: string
   weight: number
+  speed: number
   length: number
   keyframes: Array<KeyFrame>
 }
@@ -46,8 +49,6 @@ export default class Animator implements Component {
     this.type = ComponentEnum.ANIMATOR
 
     this.time = 0
-    // WIP: Move speed in animation data structure
-    this.speed = 15
 
     this.skeleton = skeleton
     this.animations = animations
@@ -68,48 +69,61 @@ export default class Animator implements Component {
     const roundedTime = Math.floor(this.time)
     const lerpFactor = this.time - roundedTime
 
-    for(const animation of this.animations) {
-      if(animation.weight < 0.05) continue
+    let jointIndex = -1
+    const buildPose = (joint: Joint, parentTransform: mat4 = mat4.create()) => {
+      ++jointIndex
 
-      const frameIndex = roundedTime % (animation.length - 1)
+      const { translation, rotation } = joint
 
-      let jointIndex = -1
-      const buildPose = (joint: Joint, parentTransform: mat4 = mat4.create()) => {
-        ++jointIndex
+      const blendedFromRotation = quat.clone(rotation)
+      const blendedToRotation = quat.clone(rotation)
+
+      const blendedFromTranslation = vec3.clone(translation)
+      const blendedToTranslation = vec3.clone(translation)
+
+      for(const animation of this.animations) {
+        const { keyframes, weight, speed } = animation
+
+        if(weight < 0.05) continue
+  
+        // ToDo: Calc frame index with speed of animation
+        const frameIndex = roundedTime % (animation.length - 1)
 
         // receive animation frames
-        const { rotation: fromRotation, translation: fromTranslation } = animation.keyframes[frameIndex][jointIndex]
-        const { rotation: toRotation, translation: toTranslation } = animation.keyframes[frameIndex + 1][jointIndex]
+        const { rotation: fromRotation, translation: fromTranslation } = keyframes[frameIndex][jointIndex]
+        const { rotation: toRotation, translation: toTranslation } = keyframes[frameIndex + 1][jointIndex]
 
-        // lerp frames for current time
-        const rotation = quat.slerp(quat.create(), fromRotation, toRotation, lerpFactor)
-        const translation = vec3.lerp(vec3.create(), fromTranslation, toTranslation, lerpFactor)
+        quat.slerp(blendedFromRotation, blendedFromRotation, fromRotation, weight)
+        quat.slerp(blendedToRotation, blendedToRotation, toRotation, weight)
 
-        // update debug joint entity
-        /*
-          const transform = joint.entity.get(ComponentEnum.TRANSFORM) as Transform
-          transform.setLocalRotation(rotation)
-          transform.setLocalPosition(translation)
-        */
-
-        // calculate global joint transform
-        const jointTransform = mat4.fromRotationTranslation(mat4.create(), rotation, translation)
-        mat4.multiply(jointTransform, parentTransform, jointTransform)
-
-        pose.push(jointTransform)
-
-        // recusivly calculate skeleton pose
-        for(const child of joint.children)
-          buildPose(child, jointTransform)
+        vec3.lerp(blendedFromTranslation, blendedFromTranslation, fromTranslation, weight)
+        vec3.lerp(blendedToTranslation, blendedToTranslation, toTranslation, weight)
       }
+      // lerp frames for current time
+      const globalRotation = quat.slerp(quat.create(), blendedFromRotation, blendedToRotation, lerpFactor)
+      const globalTranslation = vec3.lerp(vec3.create(), blendedFromTranslation, blendedToTranslation, lerpFactor)
 
-      buildPose(this.skeleton.root)
+      // update debug joint entity
+      /*
+        const transform = joint.entity.get(ComponentEnum.TRANSFORM) as Transform
+        transform.setLocalRotation(rotation)
+        transform.setLocalPosition(translation)
+      */
+
+      // calculate global joint transform
+      const jointTransform = mat4.fromRotationTranslation(mat4.create(), globalRotation, globalTranslation)
+      mat4.multiply(jointTransform, parentTransform, jointTransform)
+
+      pose.push(jointTransform)
+
+      // recusivly calculate skeleton pose
+      for(const child of joint.children)
+        buildPose(child, jointTransform)
     }
 
-    // transform pose back into local space    
-    if(!pose.length)
-      pose = this.skeleton.bindPose.map((jointMatrix) => mat4.clone(jointMatrix))
+    buildPose(this.skeleton.root)
 
+    // transform pose back into local space
     pose.forEach((globalJointPose, jointIndex) => {
       mat4.multiply(globalJointPose, globalJointPose, this.skeleton.inverseBindPose[jointIndex])
     })
@@ -122,6 +136,7 @@ export default class Animator implements Component {
     this.geometry.setPose(uniformPose)
 
     // increase global delta corrected animator time by speed
-    this.time += this.speed * Time.deltaTime
+    // ToDo: Update this to use speed based by animation
+    this.time += 15 * Time.deltaTime
   }
 }

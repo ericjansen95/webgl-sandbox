@@ -54,6 +54,6 @@ export default class ThirdPersonControls implements Component {
 
     if(translateSpeed) transform.setLocalPosition(this.position)
 
-    this.animator.animations[0].weight = translateSpeed ? 1.0 : 0.0
+    this.animator.animations[1].weight = translateSpeed ? 0.35 : 0.0
   }
 }

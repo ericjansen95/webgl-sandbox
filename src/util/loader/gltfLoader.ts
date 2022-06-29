@@ -89,7 +89,8 @@ const parseAnimations = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: n
 
     parsedAnimations.push({
       name,
-      weight: 0.0,
+      weight: 1.0,
+      speed: 0.1,
       length: keyframes.length,
       keyframes
     })
@@ -181,7 +182,10 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
   const buildJointHirachy = (jointNodeIndex: number, parentEntityTransform: Transform | null = null) => {
     ++jointCount
 
-    const { children } = nodes[jointNodeIndex]
+    let { children, translation, rotation } = nodes[jointNodeIndex]
+
+    if(!translation) translation = vec3.create()
+    if(!rotation) rotation = quat.create() 
 
     const entity = new Entity()
     entity.add(jointGeometry)
@@ -200,6 +204,8 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
 
     const joint: Joint = {
       children: childJoints,
+      translation,
+      rotation,
       entity
     }
 
