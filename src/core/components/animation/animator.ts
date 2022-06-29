@@ -1,7 +1,6 @@
 import { mat4, quat, vec3 } from "gl-matrix"
 import Time from "../../internal/time"
 import Entity from "../../scene/entity"
-import entity from "../../scene/entity"
 import Component, { ComponentEnum } from "../base/component"
 import Transform from "../base/transform"
 import SkinnedGeometry, { MAX_JOINTS } from "../geometry/skinned"
@@ -48,14 +47,14 @@ export default class Animator implements Component {
     this.animations = animations
   }
 
-  onAdd = (self: entity) => {
+  onAdd = (self: Entity) => {
     this.geometry = self.get(ComponentEnum.GEOMETRY) as SkinnedGeometry
 
     const transform = self.get(ComponentEnum.TRANSFORM) as Transform
     transform.add(this.skeleton.root.entity)
   }
 
-  onUpdate = (self: entity, camera: entity) => {
+  onUpdate = (self: Entity, camera: Entity) => {
     // TMP: Always pick first animation for pose calculation
     const animation = this.animations[0]
 
