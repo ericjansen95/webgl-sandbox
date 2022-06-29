@@ -30,7 +30,7 @@ export default class ThirdPersonControls implements Component {
     // ROTATION
     const rotateSpeed = ROTATE_SPEED * Time.deltaTime;
 
-    const translateSpeed = TRANSLATE_SPEED * Time.deltaTime * (Input.isKeyDown('shift') ? 6.0 : 1.0)
+    const translateSpeed = TRANSLATE_SPEED * Time.deltaTime
     const inputDirection: vec2 = [Input.isKeyDown('a') ? 1.0 : Input.isKeyDown('d') ? -1.0 : 0.0,
                                   Input.isKeyDown('w') ? 1.0 : Input.isKeyDown('s') ? -1.0 : 0.0]
 
@@ -51,9 +51,5 @@ export default class ThirdPersonControls implements Component {
 
     transform.setLocalRotation(rotation)
     transform.setLocalPosition(this.position)
-  }
-
-  onAdd = (self: Entity) => {
-    this.position = self.get(ComponentEnum.TRANSFORM).position
   }
 }
