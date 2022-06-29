@@ -5,6 +5,7 @@ import Input from "../../internal/input"
 import Time from "../../internal/time"
 import Transform from "../base/transform"
 import Debug from "../../internal/debug"
+import Animator from "../animation/animator"
 
 const GLOBAL_FORWARD: vec3 = vec3.fromValues(0.0, 0.0, -1.0)
 
@@ -17,39 +18,42 @@ export default class ThirdPersonControls implements Component {
   rotation: number
   position: vec3
 
-  constructor() {
+  animator: Animator
+
+  constructor(animator: Animator) {
     this.type = ComponentEnum.CONTROLS
 
     this.rotation = 0
     this.position = vec3.create()
+
+    this.animator = animator
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
     if(Debug.cameraEnabled) return
 
     // ROTATION
-    const rotateSpeed = ROTATE_SPEED * Time.deltaTime;
-
-    const translateSpeed = TRANSLATE_SPEED * Time.deltaTime
     const inputDirection: vec2 = [Input.isKeyDown('a') ? 1.0 : Input.isKeyDown('d') ? -1.0 : 0.0,
                                   Input.isKeyDown('w') ? 1.0 : Input.isKeyDown('s') ? -1.0 : 0.0]
 
-    this.rotation += rotateSpeed * inputDirection[0]
+    const transform = self.get(ComponentEnum.TRANSFORM) as Transform                              
+
+    const rotateSpeed = inputDirection[0] * ROTATE_SPEED * Time.deltaTime;    
+    this.rotation += rotateSpeed 
 
     const rotation = quat.create()
     quat.rotateY(rotation, rotation, this.rotation)
 
-    // COORDINATE SYSTEM AXES
+    if(rotateSpeed) transform.setLocalRotation(rotation)
 
     const forward = vec3.transformQuat(vec3.create(), GLOBAL_FORWARD, rotation)
-    const transform = self.get(ComponentEnum.TRANSFORM) as Transform
 
-    // TRANSLATION
-
+    const translateSpeed = inputDirection[1] * TRANSLATE_SPEED * Time.deltaTime
     this.position = transform.getGlobalPosition()
-    vec3.scaleAndAdd(this.position, this.position, forward, inputDirection[1] * translateSpeed)
+    vec3.scaleAndAdd(this.position, this.position, forward,  translateSpeed)
 
-    transform.setLocalRotation(rotation)
-    transform.setLocalPosition(this.position)
+    if(translateSpeed) transform.setLocalPosition(this.position)
+
+    this.animator.animations[0].weight = translateSpeed ? 1.0 : 0.0
   }
 }

@@ -12,6 +12,7 @@ import SkinnedLambertMaterial from './core/components/material/skinnedLambert';
 import GeometryCollider from './core/components/collider/geometryCollider';
 import ThirdPersonControls from './core/components/controls/thirdPersonControls';
 import Transform from './core/components/base/transform';
+import Animator from './core/components/animation/animator';
 
 /*
 
@@ -88,12 +89,13 @@ const main = () => {
 
   loadGltf("http://localhost:8080/res/geo/avatar.gltf").then((entities) => {
     const player = new Entity()
-    player.add(new ThirdPersonControls())
     const playerTransform = player.get(Component.TRANSFORM) as Transform
 
     const lambertMaterial = new SkinnedLambertMaterial([1.0, 1.0, 1.0]) as Material
 
     for(const entity of entities) {
+      player.add(new ThirdPersonControls(entity.get(Component.ANIMATOR) as Animator))
+
       entity.add(lambertMaterial)
       entity.get(Component.TRANSFORM).setLocalEulerRotation([0.0, Math.PI, 0.0])
 

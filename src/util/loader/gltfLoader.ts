@@ -50,7 +50,7 @@ const parseAnimations = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: n
   const { joints } = skins[skinIndex]
 
   for(const animation of animations) {
-    const { channels, samplers } = animation
+    const { channels, samplers, name } = animation
     const rotationKeyframes = Array<Array<quat>>()
     const translationKeyframes = Array<Array<vec3>>()
 
@@ -72,7 +72,7 @@ const parseAnimations = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: n
       }      
     }
 
-    const currentAnimation: Animation = new Array<KeyFrame>()
+    const keyframes = new Array<KeyFrame>()
 
     const keyframeCount = rotationKeyframes[0].length
     for(let keyframeIndex = 0; keyframeIndex < keyframeCount; keyframeIndex++) {
@@ -84,11 +84,18 @@ const parseAnimations = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: n
           translation: translationKeyframes[jointIndex][keyframeIndex]
         }
 
-      currentAnimation.push(keyframe)  
+      keyframes.push(keyframe)  
     }
 
-    parsedAnimations.push(currentAnimation)
+    parsedAnimations.push({
+      name,
+      weight: 0.0,
+      length: keyframes.length,
+      keyframes
+    })
   }
+
+  console.log(parsedAnimations)
 
   return parsedAnimations
 }
@@ -164,6 +171,7 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
   const { nodes } = gltf
 
   const inverseBindPose = parseBufferToMatrixArray(gltf, bufferData, inverseBindMatrices)
+  const bindPose = inverseBindPose.map((jointMatrix) => mat4.invert(mat4.create(), jointMatrix))
 
   const jointGeometry = new SphereGeometry(0.075, false)
   const jointDebugMaterial = new UnlitMaterial([1.0, 0.0, 1.0])
@@ -203,6 +211,7 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
   const skeleton: Skeleton = {
     jointCount,
     inverseBindPose,
+    bindPose,
     root
   }
 

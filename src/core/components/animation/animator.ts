@@ -13,6 +13,7 @@ export type Joint = {
 export type Skeleton = {
   jointCount: number,
   inverseBindPose: Array<mat4>,
+  bindPose: Array<mat4>,
   root: Joint
 }
 
@@ -23,7 +24,12 @@ export type JointTransfrom = {
 
 export type KeyFrame = Array<JointTransfrom>
 
-export type Animation = Array<KeyFrame>
+export type Animation = {
+  name: string
+  weight: number
+  length: number
+  keyframes: Array<KeyFrame>
+}
 
 export default class Animator implements Component {
   type: ComponentEnum
@@ -55,50 +61,55 @@ export default class Animator implements Component {
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
-    // TMP: Always pick first animation for pose calculation
-    const animation = this.animations[0]
-
-    const pose = new Array<mat4>()
+    let pose = new Array<mat4>()
 
     // round time and convert to valid frame index
     // calculate blend factor between 0 - 1 for lerping animation rotation and translation
     const roundedTime = Math.floor(this.time)
-    const frameIndex = roundedTime % (animation.length - 1)
     const lerpFactor = this.time - roundedTime
 
-    let jointIndex = -1
-    const buildPose = (joint: Joint, parentTransform: mat4 = mat4.create()) => {
-      ++jointIndex
+    for(const animation of this.animations) {
+      if(animation.weight < 0.05) continue
 
-      // receive animation frames
-      const { rotation: fromRotation, translation: fromTranslation } = animation[frameIndex][jointIndex]
-      const { rotation: toRotation, translation: toTranslation } = animation[frameIndex + 1][jointIndex]
+      const frameIndex = roundedTime % (animation.length - 1)
 
-      // lerp frames for current time
-      const rotation = quat.slerp(quat.create(), fromRotation, toRotation, lerpFactor)
-      const translation = vec3.lerp(vec3.create(), fromTranslation, toTranslation, lerpFactor)
+      let jointIndex = -1
+      const buildPose = (joint: Joint, parentTransform: mat4 = mat4.create()) => {
+        ++jointIndex
 
-      // update debug joint entity
-      /*
-        const transform = joint.entity.get(ComponentEnum.TRANSFORM) as Transform
-        transform.setLocalRotation(rotation)
-        transform.setLocalPosition(translation)
-      */
+        // receive animation frames
+        const { rotation: fromRotation, translation: fromTranslation } = animation.keyframes[frameIndex][jointIndex]
+        const { rotation: toRotation, translation: toTranslation } = animation.keyframes[frameIndex + 1][jointIndex]
 
-      // calculate global joint transform
-      const jointTransform = mat4.fromRotationTranslation(mat4.create(), rotation, translation)
-      mat4.multiply(jointTransform, parentTransform, jointTransform)
+        // lerp frames for current time
+        const rotation = quat.slerp(quat.create(), fromRotation, toRotation, lerpFactor)
+        const translation = vec3.lerp(vec3.create(), fromTranslation, toTranslation, lerpFactor)
 
-      pose.push(jointTransform)
+        // update debug joint entity
+        /*
+          const transform = joint.entity.get(ComponentEnum.TRANSFORM) as Transform
+          transform.setLocalRotation(rotation)
+          transform.setLocalPosition(translation)
+        */
 
-      // recusivly calculate skeleton pose
-      for(const child of joint.children)
-        buildPose(child, jointTransform)
+        // calculate global joint transform
+        const jointTransform = mat4.fromRotationTranslation(mat4.create(), rotation, translation)
+        mat4.multiply(jointTransform, parentTransform, jointTransform)
+
+        pose.push(jointTransform)
+
+        // recusivly calculate skeleton pose
+        for(const child of joint.children)
+          buildPose(child, jointTransform)
+      }
+
+      buildPose(this.skeleton.root)
     }
 
-    buildPose(this.skeleton.root)
-    
-    // transform pose back into local space
+    // transform pose back into local space    
+    if(!pose.length)
+      pose = this.skeleton.bindPose.map((jointMatrix) => mat4.clone(jointMatrix))
+
     pose.forEach((globalJointPose, jointIndex) => {
       mat4.multiply(globalJointPose, globalJointPose, this.skeleton.inverseBindPose[jointIndex])
     })
