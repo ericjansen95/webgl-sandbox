@@ -12,8 +12,8 @@ import getIntersectionPoints from "../../../util/math/raycast"
 
 const GLOBAL_FORWARD: vec3 = vec3.fromValues(0.0, 0.0, -1.0)
 
-const ROTATE_SPEED: number = 3.0
-const TRANSLATE_SPEED: number = 4.0
+const ROTATE_SPEED: number = 2.0
+const TRANSLATE_SPEED: number = 1.5 // in m/s => "preferred" walking speed is around 1.42 m/s
 
 export default class ThirdPersonControls implements Component {
   type: ComponentEnum
