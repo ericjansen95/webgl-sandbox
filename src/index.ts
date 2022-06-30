@@ -72,8 +72,8 @@ const main = () => {
   const sceneCamera: Entity = new Entity()
   const sceneCameraTransform = sceneCamera.get(Component.TRANSFORM) as Transform
 
-  sceneCameraTransform.setLocalPosition([0.5, 1.4, 2.5])
-  sceneCameraTransform.setLocalEulerRotation([Math.PI * -0.05, 0.0, 0.0])
+  sceneCameraTransform.setLocalPosition([0.5, 1.6, 2.3])
+  sceneCameraTransform.setLocalEulerRotation([Math.PI * -0.075, 0.0, 0.0])
 
   sceneCamera.add(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
