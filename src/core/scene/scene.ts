@@ -88,10 +88,15 @@ export default class Scene {
   }
 
   updateEntityComponents = (entity: Entity, camera: Entity): void => {
-    entity.components.forEach((component) => {
-      if(component.onUpdate && component.type !== ComponentEnum.TRANSFORM)
-        component.onUpdate(entity, camera)
-    })
+    const { components } = entity
+
+    for(let componentIndex = 1; componentIndex < components.length; componentIndex++) {
+      const component = components[componentIndex]
+      if(!component?.onUpdate) continue
+      
+      component.onUpdate(entity, camera)
+    }
+      
   }
 
   // this returns a "display list" for all visible entities that are in the camera frustrum
