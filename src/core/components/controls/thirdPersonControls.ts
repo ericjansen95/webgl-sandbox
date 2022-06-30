@@ -8,7 +8,6 @@ import Debug from "../../internal/debug"
 import Animator from "../animation/animator"
 import Collider from "../collider/collider"
 import UnlitMaterial from "../material/unlitMaterial"
-import getIntersectionPoints from "../../../util/math/raycast"
 
 const GLOBAL_FORWARD: vec3 = vec3.fromValues(0.0, 0.0, -1.0)
 
@@ -41,8 +40,16 @@ export default class ThirdPersonControls implements Component {
     if(Debug.cameraEnabled) return
 
     // ROTATION
-    const inputDirection: vec2 = [Input.isKeyDown('a') ? 1.0 : Input.isKeyDown('d') ? -1.0 : 0.0,
-                                  Input.isKeyDown('w') ? 1.0 : Input.isKeyDown('s') ? -1.0 : 0.0]
+    const inputDirection = vec2.create()
+
+    // @ts-expect-error
+    inputDirection[0] += Input.isKeyDown('a') | 0
+    // @ts-expect-error
+    inputDirection[0] -= Input.isKeyDown('d') | 0
+    // @ts-expect-error
+    inputDirection[1] += Input.isKeyDown('w') | 0
+    // @ts-expect-error
+    inputDirection[1] -= Input.isKeyDown('s') | 0
 
     const transform = self.get(ComponentEnum.TRANSFORM) as Transform                              
 
@@ -61,11 +68,11 @@ export default class ThirdPersonControls implements Component {
     vec3.scaleAndAdd(this.position, this.position, forward,  translateSpeed)
 
     if(translateSpeed) {
-      const points = getIntersectionPoints({
+      const points = this.collider[0].getIntersectionPoints({
         origin: vec3.add(vec3.create(), this.position, [0.0, 1.0, 0.0]),
         direction: vec3.fromValues(0, -1, 0),
         length: 2
-      }, this.collider)
+      })
 
       const onCollider = points.length
       this.position[1] = onCollider ? points[0][1] : 0.0

@@ -18,6 +18,7 @@ import UnlitMaterial from './core/components/material/unlitMaterial';
 import { vec3 } from 'gl-matrix';
 import getIntersectionPoints from './util/math/raycast';
 import Geometry from './core/components/geometry/geometry';
+import NormalMaterial from './core/components/material/normalMaterial';
 
 /*
 
@@ -86,7 +87,7 @@ const main = () => {
 
   loadGltf("http://localhost:8080/res/geo/testCollisionGeo.gltf").then((entities) => {
     for(const entity of entities) {
-      entity.add(Debug.material)
+      entity.add(new NormalMaterial())
       entity.add(geometryCollider)
 
       engine.scene.add(entity)

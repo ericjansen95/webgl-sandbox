@@ -1,4 +1,5 @@
 import { vec3 } from "gl-matrix";
+import getIntersectionPoints, { Ray } from "../../../util/math/raycast";
 import Entity from "../../scene/entity";
 import { ComponentEnum } from "../base/component";
 import Geometry from "../geometry/geometry";
@@ -49,6 +50,10 @@ export default class GeometryCollider extends Collider {
 
   constructor() {
     super()
+  }
+
+  getIntersectionPoints = (ray: Ray): Array<vec3> => {
+    return getIntersectionPoints(ray, this.triangles)
   }
 
   onAdd = (self: Entity) => {
