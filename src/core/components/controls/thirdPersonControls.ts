@@ -61,7 +61,6 @@ export default class ThirdPersonControls implements Component {
     vec3.scaleAndAdd(this.position, this.position, forward,  translateSpeed)
 
     if(translateSpeed) {
-
       const points = getIntersectionPoints({
         origin: vec3.add(vec3.create(), this.position, [0.0, 1.0, 0.0]),
         direction: vec3.fromValues(0, -1, 0),
