@@ -13,6 +13,8 @@ import GeometryCollider from './core/components/collider/geometryCollider';
 import ThirdPersonControls from './core/components/controls/thirdPersonControls';
 import Transform from './core/components/base/transform';
 import Animator from './core/components/animation/animator';
+import Ray from './core/components/geometry/ray';
+import UnlitMaterial from './core/components/material/unlitMaterial';
 
 /*
 
@@ -90,6 +92,16 @@ const main = () => {
   loadGltf("http://localhost:8080/res/geo/avatar.gltf").then((entities) => {
     const player = new Entity()
     const playerTransform = player.get(Component.TRANSFORM) as Transform
+
+    const ray = new Entity()
+    ray.add(new Ray())
+    ray.add(new UnlitMaterial([0.0, 1.0, 0.0]))
+
+    const rayTransform = ray.get(Component.TRANSFORM) as Transform
+    rayTransform.setLocalPosition([0.0, 1.0, 0.0])
+    rayTransform.setLocalEulerRotation([Math.PI * -0.5, 0.0, 0.0])
+
+    playerTransform.add(ray)
 
     const lambertMaterial = new SkinnedLambertMaterial([1.0, 1.0, 1.0]) as Material
 
