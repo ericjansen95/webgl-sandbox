@@ -4,7 +4,7 @@ import { ComponentEnum } from "../base/component";
 import Geometry from "../geometry/geometry";
 import Collider from "./collider";
 
-type Triangle = {
+export type Triangle = {
   corners: Array<vec3>,
   normal: vec3
 }
@@ -28,6 +28,15 @@ const buildTriangles = (indices: Uint16Array, position: Float32Array): Array<Tri
           position[vertexIndex + 2]
         )
     }
+
+    const ab = vec3.create()
+    vec3.sub(ab, triangle.corners[1], triangle.corners[0])
+
+    const bc = vec3.create()
+    vec3.sub(bc, triangle.corners[2], triangle.corners[1])
+
+    vec3.cross(triangle.normal, ab, bc)
+    vec3.normalize(triangle.normal, triangle.normal)
 
     triangles.push(triangle)
   }

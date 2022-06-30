@@ -6,6 +6,9 @@ import Time from "../../internal/time"
 import Transform from "../base/transform"
 import Debug from "../../internal/debug"
 import Animator from "../animation/animator"
+import Collider from "../collider/collider"
+import UnlitMaterial from "../material/unlitMaterial"
+import getIntersectionPoints from "../../../util/math/raycast"
 
 const GLOBAL_FORWARD: vec3 = vec3.fromValues(0.0, 0.0, -1.0)
 
@@ -19,14 +22,19 @@ export default class ThirdPersonControls implements Component {
   position: vec3
 
   animator: Animator
+  collider: Array<Collider>
+  rayMaterial: UnlitMaterial
 
-  constructor(animator: Animator) {
+  constructor(animator: Animator, collider: Array<Collider>, rayMaterial: UnlitMaterial) {
     this.type = ComponentEnum.CONTROLS
 
     this.rotation = 0
     this.position = vec3.create()
 
     this.animator = animator
+
+    this.collider = collider
+    this.rayMaterial = rayMaterial
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
@@ -52,7 +60,20 @@ export default class ThirdPersonControls implements Component {
     this.position = transform.getGlobalPosition()
     vec3.scaleAndAdd(this.position, this.position, forward,  translateSpeed)
 
-    if(translateSpeed) transform.setLocalPosition(this.position)
+    if(translateSpeed) {
+
+      const points = getIntersectionPoints({
+        origin: vec3.add(vec3.create(), this.position, [0.0, 1.0, 0.0]),
+        direction: vec3.fromValues(0, -1, 0),
+        length: 2
+      }, this.collider)
+
+      const onCollider = points.length
+      this.position[1] = onCollider ? points[0][1] : 0.0
+      this.rayMaterial.color = onCollider ? [0.0, 1.0, 0.0] : [1.0, 0.0, 0.0]
+
+      transform.setLocalPosition(this.position)
+    }
 
     this.animator.animations[1].weight = translateSpeed ? 0.35 : 0.0
   }

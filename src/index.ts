@@ -15,6 +15,9 @@ import Transform from './core/components/base/transform';
 import Animator from './core/components/animation/animator';
 import Ray from './core/components/geometry/ray';
 import UnlitMaterial from './core/components/material/unlitMaterial';
+import { vec3 } from 'gl-matrix';
+import getIntersectionPoints from './util/math/raycast';
+import Geometry from './core/components/geometry/geometry';
 
 /*
 
@@ -79,10 +82,12 @@ const main = () => {
 
   const engine = new Engine(canvas, sceneCamera)
 
+  const geometryCollider = new GeometryCollider()
+
   loadGltf("http://localhost:8080/res/geo/testCollisionGeo.gltf").then((entities) => {
     for(const entity of entities) {
       entity.add(Debug.material)
-      entity.add(new GeometryCollider())
+      entity.add(geometryCollider)
 
       engine.scene.add(entity)
     }
@@ -93,9 +98,11 @@ const main = () => {
     const player = new Entity()
     const playerTransform = player.get(Component.TRANSFORM) as Transform
 
+    const rayMaterial = new UnlitMaterial([0.0, 1.0, 0.0])
+
     const ray = new Entity()
     ray.add(new Ray())
-    ray.add(new UnlitMaterial([0.0, 1.0, 0.0]))
+    ray.add(rayMaterial)
 
     const rayTransform = ray.get(Component.TRANSFORM) as Transform
     rayTransform.setLocalPosition([0.0, 1.0, 0.0])
@@ -106,7 +113,7 @@ const main = () => {
     const lambertMaterial = new SkinnedLambertMaterial([1.0, 1.0, 1.0]) as Material
 
     for(const entity of entities) {
-      player.add(new ThirdPersonControls(entity.get(Component.ANIMATOR) as Animator))
+      player.add(new ThirdPersonControls(entity.get(Component.ANIMATOR) as Animator, [geometryCollider], rayMaterial))
 
       entity.add(lambertMaterial)
       entity.get(Component.TRANSFORM).setLocalEulerRotation([0.0, Math.PI, 0.0])

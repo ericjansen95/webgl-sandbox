@@ -77,7 +77,7 @@ export default class Geometry implements Component {
   cull: boolean
   boundingSphere: boolean
 
-  constructor(drawMode: DrawMode = DrawMode.TRIANGLE, visible: boolean = true, cull: boolean = true, boundingSphere: boolean = true) {
+  constructor(drawMode: DrawMode = DrawMode.TRIANGLE, visible: boolean = true, cull: boolean = false, boundingSphere: boolean = true) {
     this.type = ComponentEnum.GEOMETRY
     this.drawMode = drawMode
 
