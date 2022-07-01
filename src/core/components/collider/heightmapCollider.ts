@@ -51,7 +51,10 @@ export default class HeightmapCollider extends Collider {
     const maxOrigin = vec2.fromValues(Math.ceil(transformedOrigin[0]), Math.ceil(transformedOrigin[1]))
     const lerpFactor = vec2.sub(vec2.create(), transformedOrigin, minOrigin)
 
+    // ToDo: Use origin direction / player forward to sample next value towards movement
+
     // sample height at position and scale by (terrain) height
+    // ToDo: Take 3x3 sample and blend values?
     const h1 = this.context.getImageData(minOrigin[0], minOrigin[1], 1, 1).data[3]  
     const h2 = this.context.getImageData(maxOrigin[0], maxOrigin[1], 1, 1).data[3]   
     if(!h1 || !h2) return []
