@@ -6,10 +6,11 @@ import Time from "../../internal/time"
 import Transform from "../base/transform"
 import Debug from "../../internal/debug"
 import Animator from "../animation/animator"
-import Collider from "../collider/collider"
+import Collider, { IntersectionInfo } from "../collider/collider"
 import UnlitMaterial from "../material/unlitMaterial"
 
-const GLOBAL_FORWARD: vec3 = vec3.fromValues(0.0, 0.0, -1.0)
+const GLOBAL_FORWARD: vec3 = vec3.fromValues(0, 0, -1)
+const GLOBAL_DOWN: vec3 = vec3.fromValues(0, -1, 0)
 
 const ROTATE_SPEED: number = 2.0
 const TRANSLATE_SPEED: number = 1.5 // in m/s => "preferred" walking speed is around 1.42 m/s
@@ -68,14 +69,21 @@ export default class ThirdPersonControls implements Component {
     vec3.scaleAndAdd(this.position, this.position, forward,  translateSpeed)
 
     if(translateSpeed) {
-      const points = this.collider[0].getIntersectionPoints({
-        origin: vec3.add(vec3.create(), this.position, [0.0, 1.0, 0.0]),
-        direction: vec3.fromValues(0, -1, 0),
-        length: 2
-      })
+      let intersectionInfos = new Array<IntersectionInfo>()
+      
+      for(const collider of this.collider) {
+        const intersectionInfo = collider.getIntersecetions({
+          origin: vec3.add(vec3.create(), this.position, [0.0, 1.0, 0.0]),
+          direction: GLOBAL_DOWN,
+          length: 2
+        })
+        if(!intersectionInfo.length) continue
 
-      const onCollider = points.length
-      this.position[1] = onCollider ? points[0][1] : 0.0
+        intersectionInfos = intersectionInfos.concat(intersectionInfo)
+      }
+
+      const onCollider = intersectionInfos.length
+      this.position[1] = onCollider ? intersectionInfos[0].position[1] : 0.0
       this.rayMaterial.color = onCollider ? [0.0, 1.0, 0.0] : [1.0, 0.0, 0.0]
 
       transform.setLocalPosition(this.position)

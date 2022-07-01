@@ -1,4 +1,5 @@
 import { vec3 } from "gl-matrix";
+import { IntersectionInfo } from "../../core/components/collider/collider";
 import { Triangle } from "../../core/components/collider/geometryCollider";
 
 export type Ray = {
@@ -17,34 +18,37 @@ const isPointInFront = (p1: vec3, p2: vec3, a: vec3, b: vec3): boolean => {
   return true
 }
 
-const calcIntersectionPoint = (ray: Ray, triangle: Triangle): vec3 | null => {
+const calcIntersectionPosition = (ray: Ray, triangle: Triangle): vec3 | null => {
   const { origin, direction, length } = ray
   const { corners, normal } = triangle
 
   const distanceToPoint = -1.0 * (vec3.dot(vec3.sub(vec3.create(), origin, corners[0]), normal) / vec3.dot(direction, normal))
   if(distanceToPoint < 0 || distanceToPoint > length) return null
 
-  const intersectionPoint = vec3.add(vec3.create(), origin, vec3.scale(vec3.create(), direction, distanceToPoint))
+  const intersectionPosition = vec3.add(vec3.create(), origin, vec3.scale(vec3.create(), direction, distanceToPoint))
 
-  if(!isPointInFront(intersectionPoint, corners[0], corners[1], corners[2]) ||
-     !isPointInFront(intersectionPoint, corners[1], corners[0], corners[2]) ||
-     !isPointInFront(intersectionPoint, corners[2], corners[0], corners[1]))
+  if(!isPointInFront(intersectionPosition, corners[0], corners[1], corners[2]) ||
+     !isPointInFront(intersectionPosition, corners[1], corners[0], corners[2]) ||
+     !isPointInFront(intersectionPosition, corners[2], corners[0], corners[1]))
       return null
 
-  return intersectionPoint
+  return intersectionPosition
 }
 
-export default function getIntersectionPoints(ray: Ray, triangles: Array<Triangle>): Array<vec3> {
-  const intersectionPoints = new Array<vec3>()
+export default function getIntersections(ray: Ray, triangles: Array<Triangle>): Array<IntersectionInfo> {
+  const intersectionsInfos = new Array<IntersectionInfo>()
 
   for(const triangle of triangles) {
-    const intersectionPoint = calcIntersectionPoint(ray, triangle)
+    const intersectionPoint = calcIntersectionPosition(ray, triangle)
     if(!intersectionPoint) continue
 
-    intersectionPoints.push(intersectionPoint)
+    intersectionsInfos.push({
+      distance: 0.0,
+      position: intersectionPoint,
+    })
     break
   }
 
   // ToDo: sort by distance to ray origin
-  return intersectionPoints
+  return intersectionsInfos
 }

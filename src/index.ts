@@ -16,9 +16,10 @@ import Animator from './core/components/animation/animator';
 import Ray from './core/components/geometry/ray';
 import UnlitMaterial from './core/components/material/unlitMaterial';
 import { vec3 } from 'gl-matrix';
-import getIntersectionPoints from './util/math/raycast';
+import getIntersections from './util/math/raycast';
 import Geometry from './core/components/geometry/geometry';
 import NormalMaterial from './core/components/material/normalMaterial';
+import Collider from './core/components/collider/collider';
 
 /*
 
@@ -83,6 +84,13 @@ const main = () => {
 
   const engine = new Engine(canvas, sceneCamera)
 
+  const terrain: Entity = new Entity()
+  terrain.add(new Terrain())
+
+  const terrainCollider = terrain.get(Component.COLLIDER) as Collider
+
+  engine.scene.add(terrain)
+
   const geometryCollider = new GeometryCollider()
 
   loadGltf("http://localhost:8080/res/geo/testCollisionGeo.gltf").then((entities) => {
@@ -114,7 +122,7 @@ const main = () => {
     const lambertMaterial = new SkinnedLambertMaterial([1.0, 1.0, 1.0]) as Material
 
     for(const entity of entities) {
-      player.add(new ThirdPersonControls(entity.get(Component.ANIMATOR) as Animator, [geometryCollider], rayMaterial))
+      player.add(new ThirdPersonControls(entity.get(Component.ANIMATOR) as Animator, [geometryCollider, terrainCollider], rayMaterial))
 
       entity.add(lambertMaterial)
       entity.get(Component.TRANSFORM).setLocalEulerRotation([0.0, Math.PI, 0.0])
@@ -139,10 +147,6 @@ const main = () => {
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test geometry = ${error}`))
-
-  const terrain: Entity = new Entity()
-  terrain.add(new Terrain())
-  engine.scene.add(terrain)
 }
 
 window.onload = main;

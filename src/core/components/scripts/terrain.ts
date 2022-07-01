@@ -7,6 +7,7 @@ import Geometry from "../geometry/geometry";
 import TerrainMaterial from "../material/terrainMaterial";
 import UnlitMaterial from "../material/unlitMaterial";
 import Transform from "../base/transform";
+import HeightmapCollider from "../collider/heightmapCollider";
 
 const TERRAIN_HEIGHTMAP_URI: string = "/res/map/heightcombined.png"
 const TERRAIN_MAP_COMBINED: string = "/res/map/terrainCombined.jpg"
@@ -136,8 +137,13 @@ export default class Terrain implements Component {
   }
 
   onAdd = (self: Entity) => {
+    const position = vec3.fromValues(this.size * -0.5, -100, this.size * -1.0)
+
     this.chunks.forEach(chunk => self.get(ComponentEnum.TRANSFORM).add(chunk))
     self.get(ComponentEnum.TRANSFORM).setLocalScale([this.size, 1.0, this.size])
-    self.get(ComponentEnum.TRANSFORM).setLocalPosition([this.size * -0.5, -100, this.size * -1.0])
+
+    self.get(ComponentEnum.TRANSFORM).setLocalPosition(position)
+
+    self.add(new HeightmapCollider(TERRAIN_HEIGHTMAP_URI, this.height, this.size, position))
   }
 }
