@@ -6,8 +6,9 @@ import Time from "../../internal/time"
 import Transform from "../base/transform"
 import Debug from "../../internal/debug"
 import Animator from "../animation/animator"
-import Collider, { IntersectionInfo } from "../collider/collider"
+import Collider, { getClosestIntersection, IntersectionInfo } from "../collider/collider"
 import UnlitMaterial from "../material/unlitMaterial"
+import { Ray } from "../../../util/math/raycast"
 
 const GLOBAL_FORWARD: vec3 = vec3.fromValues(0, 0, -1)
 const GLOBAL_DOWN: vec3 = vec3.fromValues(0, -1, 0)
@@ -54,41 +55,35 @@ export default class ThirdPersonControls implements Component {
 
     const transform = self.get(ComponentEnum.TRANSFORM) as Transform                              
 
-    const rotateSpeed = inputDirection[0] * ROTATE_SPEED * Time.deltaTime;    
-    this.rotation += rotateSpeed 
+    const rotationFactor = inputDirection[0] * ROTATE_SPEED * Time.deltaTime;    
+    this.rotation += rotationFactor 
 
     const rotation = quat.create()
     quat.rotateY(rotation, rotation, this.rotation)
 
-    if(rotateSpeed) transform.setLocalRotation(rotation)
+    if(rotationFactor) transform.setLocalRotation(rotation)
 
     const forward = vec3.transformQuat(vec3.create(), GLOBAL_FORWARD, rotation)
+    const translateFactor = inputDirection[1] * TRANSLATE_SPEED * Time.deltaTime
 
-    const translateSpeed = inputDirection[1] * TRANSLATE_SPEED * Time.deltaTime
-    this.position = transform.getGlobalPosition()
-    vec3.scaleAndAdd(this.position, this.position, forward,  translateSpeed)
+    if(translateFactor) {
+      this.position = transform.getGlobalPosition()
+      vec3.scaleAndAdd(this.position, this.position, forward,  translateFactor)
 
-    if(translateSpeed) {
-      let intersectionInfos = new Array<IntersectionInfo>()
-      
-      for(const collider of this.collider) {
-        const intersectionInfo = collider.getIntersecetions({
-          origin: vec3.add(vec3.create(), this.position, [0.0, 1.0, 0.0]),
-          direction: GLOBAL_DOWN,
-          length: 2
-        })
-        if(!intersectionInfo.length) continue
-
-        intersectionInfos = intersectionInfos.concat(intersectionInfo)
+      const ray: Ray = {
+        origin: vec3.add(vec3.create(), this.position, [0.0, 1.0, 0.0]),
+        direction: GLOBAL_DOWN,
+        length: 2
       }
+      const intersectionInfo = getClosestIntersection(ray, this.collider)
+      const isOnCollider = intersectionInfo !== null
 
-      const onCollider = intersectionInfos.length
-      this.position[1] = onCollider ? intersectionInfos[0].position[1] : 0.0
-      this.rayMaterial.color = onCollider ? [0.0, 1.0, 0.0] : [1.0, 0.0, 0.0]
+      this.position[1] = isOnCollider ? intersectionInfo.position[1] : 0.0
+      this.rayMaterial.color = isOnCollider ? [0.0, 1.0, 0.0] : [1.0, 0.0, 0.0]
 
       transform.setLocalPosition(this.position)
     }
 
-    this.animator.animations[1].weight = translateSpeed ? 0.35 : 0.0
+    this.animator.animations[1].weight = translateFactor ? 0.35 : 0.0
   }
 }

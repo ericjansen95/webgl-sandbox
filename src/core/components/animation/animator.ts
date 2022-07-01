@@ -137,6 +137,6 @@ export default class Animator implements Component {
 
     // increase global delta corrected animator time by speed
     // ToDo: Update this to use speed based by animation
-    this.time += 15 * Time.deltaTime
+    this.time += 18 * Time.deltaTime
   }
 }

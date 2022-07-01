@@ -15,26 +15,29 @@ import Transform from './core/components/base/transform';
 import Animator from './core/components/animation/animator';
 import Ray from './core/components/geometry/ray';
 import UnlitMaterial from './core/components/material/unlitMaterial';
-import { vec3 } from 'gl-matrix';
-import getIntersections from './util/math/raycast';
-import Geometry from './core/components/geometry/geometry';
 import NormalMaterial from './core/components/material/normalMaterial';
 import Collider from './core/components/collider/collider';
+import LambertMaterial from './core/components/material/lambertMaterial';
 
 /*
 
+  General Architecture:
+  - wrapped state, stats, config
+  - options objects for parameters
+  - self refference by default in component
+  - player creation wrapper
+  - namespaces and modules
+
   First Playable:
-  - multi hirachial joint skinning
+  - multi hirachial joint skinning DONE
   - uv driven texture mapping
-  - collision => ray triangle intersection
+  - collision => ray triangle intersection DONE
   - first person controls
   - basic audio => emitter and listener
 
   Ideas:
   - scene skybox
   - update terrain lod
-  - thirdPersonControls
-  - animation => skinning matrix
   - device capibility check and lod (mesh, shader, textures, ...)
   - streaming (network and scene)
   - scene, sceneNetworkController, remoteClient Component, networkedTransfrom Component
@@ -46,13 +49,9 @@ import Collider from './core/components/collider/collider';
   ToDo:
   - min max from gltf and fallback calculation
 
-  - this in component callbacks
-  - transform rotation as quaternions
   - reduce matrix multipications => cache bounding volume data
-  - make component state easily serializable by adding functions to interface
   - canvas resize event
   - namespaces that abstracts initialisation (and entity assemby?)
-  - abstract component constructor arguments into options objects
 
   - clientId
   - server network package verification => block unallowed
@@ -97,6 +96,19 @@ const main = () => {
     for(const entity of entities) {
       entity.add(new NormalMaterial())
       entity.add(geometryCollider)
+
+      engine.scene.add(entity)
+    }
+  }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
+
+  // https://bst.icons8.com/wp-content/uploads/2020/04/illustration-art-inspiration.png
+  loadGltf("http://localhost:8080/res/geo/character.gltf").then((entities) => {
+    for(const entity of entities) {
+      entity.add(new SkinnedLambertMaterial([0.48, 0.74, 0.56]))
+      const entityTransform = entity.get(Component.TRANSFORM) as Transform
+      entityTransform.rotateLocalEuler([0.0, Math.PI * 0.75, 0.0])
+      entityTransform.setLocalPosition([-1.0, 0.0, -1.0])
+      //entityTransform.setLocalScale([0.4, 0.4, 0.4])
 
       engine.scene.add(entity)
     }

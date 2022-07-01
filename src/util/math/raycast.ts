@@ -35,20 +35,21 @@ const calcIntersectionPosition = (ray: Ray, triangle: Triangle): vec3 | null => 
   return intersectionPosition
 }
 
+export const sortIntersectionsByDistance = (intersections: Array<IntersectionInfo>) => intersections.sort(({distance: firstDistance}, {distance: secondDistance}) => firstDistance < secondDistance ? -1 : 1) 
+
 export default function getIntersections(ray: Ray, triangles: Array<Triangle>): Array<IntersectionInfo> {
-  const intersectionsInfos = new Array<IntersectionInfo>()
+  const intersections = new Array<IntersectionInfo>()
 
   for(const triangle of triangles) {
-    const intersectionPoint = calcIntersectionPosition(ray, triangle)
-    if(!intersectionPoint) continue
+    const position = calcIntersectionPosition(ray, triangle)
+    if(!position) continue
 
-    intersectionsInfos.push({
-      distance: 0.0,
-      position: intersectionPoint,
+    intersections.push({
+      distance: vec3.sqrDist(ray.origin, position),
+      position,
     })
     break
   }
 
-  // ToDo: sort by distance to ray origin
-  return intersectionsInfos
+  return intersections
 }
