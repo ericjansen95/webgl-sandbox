@@ -49,12 +49,7 @@ export type ThirdPersonControlsState = {
   currentRotation: number
 
   currentTranslationVelocity: number
-  speed: number
-
   currentPosition: vec3
-
-  isMoving: boolean
-  isRotating: boolean
 }
 
 type ThirdPersonControlsCameraState = {
@@ -63,6 +58,8 @@ type ThirdPersonControlsCameraState = {
 
   currentPosition: vec3
   targetPosition: vec3
+
+  currentRotation: number
 }
 
 const THIRD_PERSON_CONTROLS_DEFAULT_CONFIG: ThirdPersonControlsConfig = Object.freeze({
@@ -76,8 +73,15 @@ const THIRD_PERSON_CONTROLS_DEFAULT_CONFIG: ThirdPersonControlsConfig = Object.f
   GROUND_RAY_OFFSET: vec3.fromValues(0.0, 1.0, 0.0)
 })
 
+export type ThirdPersonControlsStats = {
+  isRotating: boolean
+  isMoving: boolean
+  speed: number
+}
+
 export default class ThirdPersonControls implements Component {
   type: ComponentEnum
+  stats: ThirdPersonControlsStats
   config: ThirdPersonControlsConfig
   state: ThirdPersonControlsState
 
@@ -96,6 +100,8 @@ export default class ThirdPersonControls implements Component {
   
         currentPosition: vec3.create(),
         targetPosition: vec3.create(),
+
+        currentRotation: 0,
       },
   
       animator,
@@ -109,17 +115,19 @@ export default class ThirdPersonControls implements Component {
       currentRotation: 0,
 
       currentTranslationVelocity: 0,
-      currentPosition: vec3.create(),
-      speed: 0,
+      currentPosition: vec3.create()
+    }
 
+    this.stats = {
       isMoving: false,
       isRotating: false,
+      speed: 0
     }
   }
 
   updateRotation = (inputDirection: InputDirection) => {
     if(inputDirection === 0) {
-      this.state.isRotating = false
+      this.stats.isRotating = false
       return
     }
 
@@ -137,25 +145,25 @@ export default class ThirdPersonControls implements Component {
     // set new rotation
     this.state.transform.setLocalRotation(rotation)
     
-    this.state.isRotating = true
+    this.stats.isRotating = true
   }
 
   updateTranslation = (inputDirection: InputDirection) => {
     // increase or dampen translate velocity
     if(inputDirection !== 0) this.state.currentTranslationVelocity += inputDirection * this.config.TRANSLATE_VELOCITY * Time.deltaTime
-    else if (this.state.currentTranslationVelocity !== 0) this.state.currentTranslationVelocity *= 36 * this.config.TRANSLATE_VELOCITY * Time.deltaTime
+    else if (this.state.currentTranslationVelocity !== 0) this.state.currentTranslationVelocity *= 39 * this.config.TRANSLATE_VELOCITY * Time.deltaTime
 
     // clamp velocity to max or return if under threshold of 5%
     const absTranslationVelocity = Math.abs(this.state.currentTranslationVelocity)
     if(absTranslationVelocity > this.config.TRANSLATE_VELOCITY * 0.01) this.state.currentTranslationVelocity = this.config.TRANSLATE_VELOCITY * 0.01 * inputDirection
     else if (absTranslationVelocity < this.config.TRANSLATE_VELOCITY * 0.0005) {
       this.state.currentTranslationVelocity = 0
-      this.state.speed = this.state.currentTranslationVelocity
-      this.state.isMoving = false
+      this.stats.speed = this.state.currentTranslationVelocity
+      this.stats.isMoving = false
       return
     }
 
-    this.state.speed = (Math.abs(this.state.currentTranslationVelocity) / (this.config.TRANSLATE_VELOCITY * 0.01))
+    this.stats.speed = (Math.abs(this.state.currentTranslationVelocity) / (this.config.TRANSLATE_VELOCITY * 0.01))
 
     // update position with current velocity
     this.state.currentPosition = this.state.transform.getGlobalPosition()
@@ -175,7 +183,7 @@ export default class ThirdPersonControls implements Component {
 
     this.state.transform.setLocalPosition(this.state.currentPosition)
 
-    this.state.isMoving = true
+    this.stats.isMoving = true
   }
 
   updateCameraTransform = () => {
@@ -183,11 +191,12 @@ export default class ThirdPersonControls implements Component {
     
     vec3.scaleAndAdd(this.state.camera.targetPosition, this.state.currentPosition, inverseForward, this.config.CAMERA_DISTANCE)
     this.state.camera.targetPosition[1] += this.config.CAMERA_HEIGHT
-
-    vec3.lerp(this.state.camera.currentPosition, this.state.camera.targetPosition, this.state.camera.currentPosition, this.state.speed *  0.75)
+    vec3.lerp(this.state.camera.currentPosition, this.state.camera.targetPosition, this.state.camera.currentPosition, this.stats.speed *  0.75)
     
+    this.state.camera.currentRotation = this.state.camera.currentRotation + (this.state.currentRotation - this.state.camera.currentRotation) * (this.stats.speed | 0 ? 0.2 : (1 - this.stats.speed))
+
     this.state.camera.transform.setLocalPosition(this.state.camera.currentPosition)
-    this.state.camera.transform.setLocalEulerRotation([0, this.state.currentRotation, 0])
+    this.state.camera.transform.setLocalEulerRotation([0, this.state.camera.currentRotation, 0])
   }
 
   onAdd = (self: Entity) => {
@@ -195,7 +204,7 @@ export default class ThirdPersonControls implements Component {
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
-    this.state.animator.animations[1].weight = this.state.speed * 0.4
+    this.state.animator.animations[1].weight = this.stats.speed * 0.4
 
     if(Debug.cameraEnabled) return                              
 
