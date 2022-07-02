@@ -49,6 +49,8 @@ export type ThirdPersonControlsState = {
   currentRotation: number
 
   currentTranslationVelocity: number
+  speed: number
+
   currentPosition: vec3
 
   isMoving: boolean
@@ -65,7 +67,7 @@ type ThirdPersonControlsCameraState = {
 
 const THIRD_PERSON_CONTROLS_DEFAULT_CONFIG: ThirdPersonControlsConfig = Object.freeze({
   ROTATE_VELOCITY: 2.0,
-  TRANSLATE_VELOCITY: 1.42, // m/s
+  TRANSLATE_VELOCITY: 1.42,//1.42, // m/s
 
   CAMERA_DISTANCE: 2.5,
   CAMERA_HEIGHT: 1.3,
@@ -92,8 +94,8 @@ export default class ThirdPersonControls implements Component {
         component: camera.get(ComponentEnum.CAMERA) as Camera,
         transform,
   
-        currentPosition: transform.localPosition,
-        targetPosition: transform.localPosition,
+        currentPosition: vec3.create(),
+        targetPosition: vec3.create(),
       },
   
       animator,
@@ -108,6 +110,7 @@ export default class ThirdPersonControls implements Component {
 
       currentTranslationVelocity: 0,
       currentPosition: vec3.create(),
+      speed: 0,
 
       isMoving: false,
       isRotating: false,
@@ -147,9 +150,12 @@ export default class ThirdPersonControls implements Component {
     if(absTranslationVelocity > this.config.TRANSLATE_VELOCITY * 0.01) this.state.currentTranslationVelocity = this.config.TRANSLATE_VELOCITY * 0.01 * inputDirection
     else if (absTranslationVelocity < this.config.TRANSLATE_VELOCITY * 0.0005) {
       this.state.currentTranslationVelocity = 0
+      this.state.speed = this.state.currentTranslationVelocity
       this.state.isMoving = false
       return
     }
+
+    this.state.speed = (Math.abs(this.state.currentTranslationVelocity) / (this.config.TRANSLATE_VELOCITY * 0.01))
 
     // update position with current velocity
     this.state.currentPosition = this.state.transform.getGlobalPosition()
@@ -178,8 +184,7 @@ export default class ThirdPersonControls implements Component {
     vec3.scaleAndAdd(this.state.camera.targetPosition, this.state.currentPosition, inverseForward, this.config.CAMERA_DISTANCE)
     this.state.camera.targetPosition[1] += this.config.CAMERA_HEIGHT
 
-    // ToDo: move interpolate factor into config, use translate velocity and correct with delta time
-    vec3.lerp(this.state.camera.currentPosition, this.state.camera.currentPosition, this.state.camera.targetPosition, 1 - (this.state.currentTranslationVelocity / (this.config.TRANSLATE_VELOCITY * 0.01)))
+    vec3.lerp(this.state.camera.currentPosition, this.state.camera.targetPosition, this.state.camera.currentPosition, this.state.speed *  0.75)
     
     this.state.camera.transform.setLocalPosition(this.state.camera.currentPosition)
     this.state.camera.transform.setLocalEulerRotation([0, this.state.currentRotation, 0])
@@ -190,7 +195,7 @@ export default class ThirdPersonControls implements Component {
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
-    this.state.animator.animations[1].weight = (this.state.currentTranslationVelocity / (this.config.TRANSLATE_VELOCITY * 0.01)) * 0.4
+    this.state.animator.animations[1].weight = this.state.speed * 0.4
 
     if(Debug.cameraEnabled) return                              
 
