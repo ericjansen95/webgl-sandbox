@@ -32,7 +32,6 @@ export default class AudioSource implements Component {
     this.state.track.connect(context.destination)
 
     this.state.element.play()
-    console.log("playing audio")
 
     return true
   }

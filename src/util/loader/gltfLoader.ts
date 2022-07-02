@@ -96,8 +96,6 @@ const parseAnimations = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: n
     })
   }
 
-  console.log(parsedAnimations)
-
   return parsedAnimations
 }
 
@@ -299,8 +297,6 @@ export default function loadGltf(uri: string): Promise<GlftLoadResponse> {
     }
 
     const gltf = await gltfResponse.json() as any
-
-    console.log(gltf)
 
     const { buffers } = gltf
     const bufferData = new Array<ArrayBuffer>()

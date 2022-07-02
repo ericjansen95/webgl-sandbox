@@ -29,7 +29,6 @@ export type ThirdPersonControlsConfig = {
 
   CAMERA_DISTANCE: number
   CAMERA_HEIGHT: number
-  CAMERA_X_ROTATION: number
 
   GROUND_RAY_OFFSET: vec3
 }
@@ -65,11 +64,10 @@ type ThirdPersonControlsCameraState = {
 
 const THIRD_PERSON_CONTROLS_DEFAULT_CONFIG: ThirdPersonControlsConfig = Object.freeze({
   ROTATE_VELOCITY: 2.0,
-  TRANSLATE_VELOCITY: 1.42,//1.42, // m/s
+  TRANSLATE_VELOCITY: 1.42, // m/s
 
   CAMERA_DISTANCE: 2.5,
   CAMERA_HEIGHT: 1.3,
-  CAMERA_X_ROTATION: Math.PI * 0.25,
 
   GROUND_RAY_OFFSET: vec3.fromValues(0.0, 1.0, 0.0)
 })
@@ -77,7 +75,7 @@ const THIRD_PERSON_CONTROLS_DEFAULT_CONFIG: ThirdPersonControlsConfig = Object.f
 export type ThirdPersonControlsStats = {
   isRotating: boolean
   isMoving: boolean
-  speed: number
+  speed: number // normalized 0 - 1
 }
 
 export default class ThirdPersonControls implements Component {
@@ -210,8 +208,6 @@ export default class ThirdPersonControls implements Component {
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
-    this.state.animator.animations[1].weight = this.stats.speed * 0.4
-
     if(Debug.cameraEnabled) return                              
 
     const inputDirection = getControlsInputDirection()
@@ -220,5 +216,7 @@ export default class ThirdPersonControls implements Component {
     this.updateTranslation(inputDirection[1])
 
     this.updateCameraTransform()
+
+    this.state.animator.animations[1].weight = this.stats.speed * 0.4
   }
 }

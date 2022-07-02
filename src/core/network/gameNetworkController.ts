@@ -137,8 +137,6 @@ export default class GameNetworkController {
       const targetRotation = vec3.create()
       quat.getAxisAngle(targetRotation, quat.slerp(quat.create(), currentRotation, quat.fromEuler(quat.create(), 0.0, transform.targetRotation / TWO_PI, 0.0), INTERPOLATION_SPEED * deltaTime))
       targetRotation[1] *= TWO_PI
-      
-      console.log(targetRotation)
       */
 
       transform.currentRotation = transform.targetRotation
