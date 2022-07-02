@@ -9,6 +9,7 @@ import Entity from "./entity";
 import { ComponentEnum } from "../components/base/component";
 import Transform from "../components/base/transform";
 import Geometry from "../components/geometry/geometry";
+import AudioController from "../audio/audio";
 
 export type SceneStats = {
   updateTime: number
@@ -26,6 +27,7 @@ export default class Scene {
 
   entities: Array<Entity>
 
+  audioController: AudioController
   networkController: GameNetworkController
 
   constructor(camera: Entity, clientEntity: Entity | null = null, client: Client | null = null) {
@@ -50,6 +52,8 @@ export default class Scene {
     this.root.get(ComponentEnum.TRANSFORM).add(grid)
 
     Debug.console.registerCommand({ name: "bv", description: "Visualize bounding volumes.", callback: this.toggleBoundingVolumes })
+
+    this.audioController = new AudioController()
 
     if(!clientEntity || !client) return
 
@@ -91,12 +95,12 @@ export default class Scene {
     const { components } = entity
 
     for(let componentIndex = 1; componentIndex < components.length; componentIndex++) {
-      const component = components[componentIndex]
-      if(!component?.onUpdate) continue
-      
-      component.onUpdate(entity, camera)
+      const component: any = components[componentIndex]
+      if(!component) continue
+
+      if(component.onUpdate) component.onUpdate(entity, camera)
+      if(componentIndex === ComponentEnum.AUDIO_SOURCE) component.bind(this.audioController.state?.context)
     }
-      
   }
 
   // this returns a "display list" for all visible entities that are in the camera frustrum

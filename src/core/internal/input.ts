@@ -6,7 +6,8 @@ export default class Input {
   static keyState: Map<string, boolean>
   static mouseState: {
     position: vec2,
-    deltaPosition: vec2
+    deltaPosition: vec2,
+    isDown: boolean
   }
   static locked: boolean
 
@@ -14,16 +15,13 @@ export default class Input {
     this.keyState = new Map<string, boolean>()
     this.mouseState = {
       position: vec2.create(),
-      deltaPosition: vec2.create()
+      deltaPosition: vec2.create(),
+      isDown: false
     }
 
-    document.onkeyup = (event) => {
-      this.keyState.set(event.key.toLowerCase(), false)
-    }
+    document.onkeyup = (event) => this.keyState.set(event.key.toLowerCase(), false)
   
-    document.onkeydown = (event) => {
-      this.keyState.set(event.key.toLowerCase(), true)
-    }
+    document.onkeydown = (event) => this.keyState.set(event.key.toLowerCase(), true)
 
     //document.body.style.cursor = 'none'
 
@@ -33,6 +31,9 @@ export default class Input {
     document.onmousemove = this.updateMouseState
     
     document.onmouseleave = () => this.mouseState.deltaPosition.fill(0.0)
+
+    document.onmousedown = () => this.mouseState.isDown = true
+    document.onmouseup = () => this.mouseState.isDown = false
 
     this.locked = false
   }

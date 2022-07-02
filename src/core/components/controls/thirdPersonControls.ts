@@ -12,6 +12,7 @@ import Camera from "../base/camera"
 import clamp from "../../../util/math/clamp"
 import { getControlsInputDirection, InputDirection } from "./controls"
 import { GLOBAL } from "../../constants"
+import Input from "../../internal/input"
 
 export type ThirdPersonControlsOptions = {
   camera: Entity
@@ -125,7 +126,7 @@ export default class ThirdPersonControls implements Component {
     }
   }
 
-  updateRotation = (inputDirection: InputDirection) => {
+  private updateRotation = (inputDirection: InputDirection) => {
     if(inputDirection === 0) {
       this.stats.isRotating = false
       return
@@ -148,7 +149,7 @@ export default class ThirdPersonControls implements Component {
     this.stats.isRotating = true
   }
 
-  updateTranslation = (inputDirection: InputDirection) => {
+  private updateTranslation = (inputDirection: InputDirection) => {
     // increase or dampen translate velocity
     if(inputDirection !== 0) this.state.currentTranslationVelocity += inputDirection * this.config.TRANSLATE_VELOCITY * Time.deltaTime
     else if (this.state.currentTranslationVelocity !== 0) this.state.currentTranslationVelocity *= 39 * this.config.TRANSLATE_VELOCITY * Time.deltaTime
@@ -158,6 +159,7 @@ export default class ThirdPersonControls implements Component {
     if(absTranslationVelocity > this.config.TRANSLATE_VELOCITY * 0.01) this.state.currentTranslationVelocity = this.config.TRANSLATE_VELOCITY * 0.01 * inputDirection
     else if (absTranslationVelocity < this.config.TRANSLATE_VELOCITY * 0.0005) {
       this.state.currentTranslationVelocity = 0
+
       this.stats.speed = this.state.currentTranslationVelocity
       this.stats.isMoving = false
       return
@@ -186,17 +188,21 @@ export default class ThirdPersonControls implements Component {
     this.stats.isMoving = true
   }
 
-  updateCameraTransform = () => {
-    const inverseForward = vec3.scale(vec3.create(), this.state.forward, -1)
+  private updateCameraTransform = () => {
+    // calculate camera y rotation based on forward vector and user mouse rotation input
+    if ((this.stats.isMoving || this.stats.isRotating) && this.state.camera.currentRotation !== 0) this.state.camera.currentRotation = 0
+    else if (Input.mouseState.isDown) this.state.camera.currentRotation -= Input.mouseState.deltaPosition[0] * Time.deltaTime * 1000
+ 
+    // transform forward vector with rotation
+    const forward = vec3.rotateY(vec3.create(), this.state.forward, [0, 0, 0], Math.PI + this.state.camera.currentRotation)
     
-    vec3.scaleAndAdd(this.state.camera.targetPosition, this.state.currentPosition, inverseForward, this.config.CAMERA_DISTANCE)
+    // calculate and interpolate to target position
+    vec3.scaleAndAdd(this.state.camera.targetPosition, this.state.currentPosition, forward, this.config.CAMERA_DISTANCE)
     this.state.camera.targetPosition[1] += this.config.CAMERA_HEIGHT
     vec3.lerp(this.state.camera.currentPosition, this.state.camera.targetPosition, this.state.camera.currentPosition, this.stats.speed *  0.75)
     
-    this.state.camera.currentRotation = this.state.camera.currentRotation + (this.state.currentRotation - this.state.camera.currentRotation) * (this.stats.speed | 0 ? 0.2 : (1 - this.stats.speed))
-
     this.state.camera.transform.setLocalPosition(this.state.camera.currentPosition)
-    this.state.camera.transform.setLocalEulerRotation([0, this.state.camera.currentRotation, 0])
+    this.state.camera.transform.setLocalEulerRotation([0, this.state.currentRotation + this.state.camera.currentRotation, 0])
   }
 
   onAdd = (self: Entity) => {

@@ -9,6 +9,7 @@ export enum ComponentEnum {
   COLLIDER,
   TERRAIN,
   CONTROLS,
+  AUDIO_SOURCE,
   SCRIPT,
   ANIMATOR
 }

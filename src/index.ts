@@ -17,6 +17,7 @@ import Ray from './core/components/geometry/ray';
 import UnlitMaterial from './core/components/material/unlitMaterial';
 import NormalMaterial from './core/components/material/normalMaterial';
 import Collider from './core/components/collider/collider';
+import AudioSource from './core/components/audio/audioSource';
 
 /*
 
@@ -87,6 +88,10 @@ const main = () => {
   const engine = new Engine(canvas, sceneCamera)
 
   engine.scene.add(sceneCamera)
+
+  const audioSource = new Entity()
+  audioSource.add(new AudioSource("http://localhost:8080/res/audio/song.mp3"))
+  engine.scene.add(audioSource)
 
   const terrain: Entity = new Entity()
   terrain.add(new Terrain())
