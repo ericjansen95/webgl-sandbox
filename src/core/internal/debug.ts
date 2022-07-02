@@ -7,14 +7,14 @@ import Material from "../components/material/material"
 import UnlitMaterial from "../components/material/unlitMaterial"
 import { MainStats } from "../engine"
 import Entity from "../scene/entity"
-import { RendererStats } from "../renderer/renderer"
+import { RenderStats } from "../renderer/webGlRenderer"
 import { SceneStats } from "../scene/scene"
 import Console from "./console"
 import FrameInspector from "./fameInspector"
 
 export type DebugStats = {
   scene?: SceneStats,
-  renderer?: RendererStats
+  render?: RenderStats
   main?: MainStats
   client?: {
     ping: number,

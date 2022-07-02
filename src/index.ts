@@ -17,7 +17,6 @@ import Ray from './core/components/geometry/ray';
 import UnlitMaterial from './core/components/material/unlitMaterial';
 import NormalMaterial from './core/components/material/normalMaterial';
 import Collider from './core/components/collider/collider';
-import LambertMaterial from './core/components/material/lambertMaterial';
 
 /*
 
@@ -27,6 +26,8 @@ import LambertMaterial from './core/components/material/lambertMaterial';
   - self refference by default in component
   - player creation wrapper
   - namespaces and modules
+  - singeltons instead of static classes
+  - camera creating wrapper
 
   First Playable:
   - multi hirachial joint skinning DONE
@@ -74,14 +75,18 @@ const main = () => {
   canvas.height = window.innerHeight
 
   const sceneCamera: Entity = new Entity()
+  /*
   const sceneCameraTransform = sceneCamera.get(Component.TRANSFORM) as Transform
 
   sceneCameraTransform.setLocalPosition([0.5, 1.6, 2.3])
   sceneCameraTransform.setLocalEulerRotation([Math.PI * -0.075, 0.0, 0.0])
+  */
 
   sceneCamera.add(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
   const engine = new Engine(canvas, sceneCamera)
+
+  engine.scene.add(sceneCamera)
 
   const terrain: Entity = new Entity()
   terrain.add(new Terrain())
@@ -134,15 +139,17 @@ const main = () => {
     const lambertMaterial = new SkinnedLambertMaterial([1.0, 1.0, 1.0]) as Material
 
     for(const entity of entities) {
-      player.add(new ThirdPersonControls(entity.get(Component.ANIMATOR) as Animator, [geometryCollider, terrainCollider], rayMaterial))
+      player.add(new ThirdPersonControls({
+        camera: sceneCamera,
+        animator: entity.get(Component.ANIMATOR) as Animator, 
+        collider: [geometryCollider, terrainCollider], 
+        rayMaterial }))
 
       entity.add(lambertMaterial)
       entity.get(Component.TRANSFORM).setLocalEulerRotation([0.0, Math.PI, 0.0])
 
       playerTransform.add(entity)
     }
-
-    playerTransform.add(sceneCamera)
 
     engine.scene.add(player)
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test animation geometry = ${error}`))

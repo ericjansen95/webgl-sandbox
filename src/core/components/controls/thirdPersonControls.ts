@@ -1,89 +1,204 @@
-import { vec3, vec2, quat } from "gl-matrix"
+import { vec3, quat } from "gl-matrix"
 import Entity from "../../scene/entity"
 import Component, { ComponentEnum } from "../base/component"
-import Input from "../../internal/input"
 import Time from "../../internal/time"
 import Transform from "../base/transform"
 import Debug from "../../internal/debug"
 import Animator from "../animation/animator"
-import Collider, { getClosestIntersection, IntersectionInfo } from "../collider/collider"
+import Collider, { getClosestIntersection } from "../collider/collider"
 import UnlitMaterial from "../material/unlitMaterial"
 import { Ray } from "../../../util/math/raycast"
+import Camera from "../base/camera"
+import clamp from "../../../util/math/clamp"
+import { getControlsInputDirection, InputDirection } from "./controls"
+import { GLOBAL } from "../../constants"
 
-const GLOBAL_FORWARD: vec3 = vec3.fromValues(0, 0, -1)
-const GLOBAL_DOWN: vec3 = vec3.fromValues(0, -1, 0)
+export type ThirdPersonControlsOptions = {
+  camera: Entity
 
-const ROTATE_SPEED: number = 2.0
-const TRANSLATE_SPEED: number = 1.5 // in m/s => "preferred" walking speed is around 1.42 m/s
+  animator: ThirdPersonControlsState["animator"]
 
-export default class ThirdPersonControls implements Component {
-  type: ComponentEnum
+  collider: ThirdPersonControlsState["collider"]
+  rayMaterial: ThirdPersonControlsState["rayMaterial"]
+}
 
-  rotation: number
-  position: vec3
+export type ThirdPersonControlsConfig = {
+  ROTATE_VELOCITY: number
+  TRANSLATE_VELOCITY: number
+
+  CAMERA_DISTANCE: number
+  CAMERA_HEIGHT: number
+  CAMERA_X_ROTATION: number
+
+  GROUND_RAY_OFFSET: vec3
+}
+
+export type ThirdPersonControlsState = {
+  transform: Transform
+
+  camera: ThirdPersonControlsCameraState
 
   animator: Animator
+  
   collider: Array<Collider>
   rayMaterial: UnlitMaterial
 
-  constructor(animator: Animator, collider: Array<Collider>, rayMaterial: UnlitMaterial) {
+  forward: vec3
+
+  currentRotationVelocity: number
+  currentRotation: number
+
+  currentTranslationVelocity: number
+  currentPosition: vec3
+
+  isMoving: boolean
+  isRotating: boolean
+}
+
+type ThirdPersonControlsCameraState = {
+  component: Camera
+  transform: Transform
+
+  currentPosition: vec3
+  targetPosition: vec3
+}
+
+const THIRD_PERSON_CONTROLS_DEFAULT_CONFIG: ThirdPersonControlsConfig = Object.freeze({
+  ROTATE_VELOCITY: 2.0,
+  TRANSLATE_VELOCITY: 1.42, // m/s
+
+  CAMERA_DISTANCE: 2.5,
+  CAMERA_HEIGHT: 1.3,
+  CAMERA_X_ROTATION: Math.PI * 0.25,
+
+  GROUND_RAY_OFFSET: vec3.fromValues(0.0, 1.0, 0.0)
+})
+
+export default class ThirdPersonControls implements Component {
+  type: ComponentEnum
+  config: ThirdPersonControlsConfig
+  state: ThirdPersonControlsState
+
+  constructor({ camera, animator, collider, rayMaterial }: ThirdPersonControlsOptions) {
     this.type = ComponentEnum.CONTROLS
 
-    this.rotation = 0
-    this.position = vec3.create()
+    this.config = THIRD_PERSON_CONTROLS_DEFAULT_CONFIG
 
-    this.animator = animator
+    const transform = camera.get(ComponentEnum.TRANSFORM) as Transform
+    this.state = {
+      transform: null,
 
-    this.collider = collider
-    this.rayMaterial = rayMaterial
+      camera: {
+        component: camera.get(ComponentEnum.CAMERA) as Camera,
+        transform,
+  
+        currentPosition: transform.localPosition,
+        targetPosition: transform.localPosition,
+      },
+  
+      animator,
+  
+      collider,
+      rayMaterial,
+
+      forward: vec3.clone(GLOBAL.FORWARD),
+
+      currentRotationVelocity: 0,
+      currentRotation: 0,
+
+      currentTranslationVelocity: 0,
+      currentPosition: vec3.create(),
+
+      isMoving: false,
+      isRotating: false,
+    }
+  }
+
+  updateRotation = (inputDirection: InputDirection) => {
+    if(inputDirection === 0) {
+      this.state.isRotating = false
+      return
+    }
+
+    // update and clamp y rotation
+    this.state.currentRotation += inputDirection * this.config.ROTATE_VELOCITY * Time.deltaTime
+    clamp(this.state.currentRotation, 0, Math.PI * 2)
+
+    // transform y rotation to quaternion
+    const rotation = quat.create()
+    quat.rotateY(rotation, rotation, this.state.currentRotation)
+
+    // update forward vector if rotation changed
+    vec3.transformQuat(this.state.forward, GLOBAL.FORWARD, rotation)
+
+    // set new rotation
+    this.state.transform.setLocalRotation(rotation)
+    
+    this.state.isRotating = true
+  }
+
+  updateTranslation = (inputDirection: InputDirection) => {
+    // increase or dampen translate velocity
+    if(inputDirection !== 0) this.state.currentTranslationVelocity += inputDirection * this.config.TRANSLATE_VELOCITY * Time.deltaTime
+    else if (this.state.currentTranslationVelocity !== 0) this.state.currentTranslationVelocity *= 36 * this.config.TRANSLATE_VELOCITY * Time.deltaTime
+
+    // clamp velocity to max or return if under threshold of 5%
+    const absTranslationVelocity = Math.abs(this.state.currentTranslationVelocity)
+    if(absTranslationVelocity > this.config.TRANSLATE_VELOCITY * 0.01) this.state.currentTranslationVelocity = this.config.TRANSLATE_VELOCITY * 0.01 * inputDirection
+    else if (absTranslationVelocity < this.config.TRANSLATE_VELOCITY * 0.0005) {
+      this.state.currentTranslationVelocity = 0
+      this.state.isMoving = false
+      return
+    }
+
+    // update position with current velocity
+    this.state.currentPosition = this.state.transform.getGlobalPosition()
+    vec3.scaleAndAdd(this.state.currentPosition, this.state.currentPosition, this.state.forward, this.state.currentTranslationVelocity)
+
+    // check ground collision by casting a ray down from current position with slight offset
+    const ray: Ray = {
+      origin: vec3.add(vec3.create(), this.state.currentPosition, this.config.GROUND_RAY_OFFSET),
+      direction: GLOBAL.DOWN,
+      length: 2
+    }
+    const intersection = getClosestIntersection(ray, this.state.collider)
+
+    // correct y position with intersection position
+    this.state.currentPosition[1] = intersection ? intersection.position[1] : 0.0
+    this.state.rayMaterial.color = intersection ? [0.0, 1.0, 0.0] : [1.0, 0.0, 0.0]
+
+    this.state.transform.setLocalPosition(this.state.currentPosition)
+
+    this.state.isMoving = true
+  }
+
+  updateCameraTransform = () => {
+    const inverseForward = vec3.scale(vec3.create(), this.state.forward, -1)
+    
+    vec3.scaleAndAdd(this.state.camera.targetPosition, this.state.currentPosition, inverseForward, this.config.CAMERA_DISTANCE)
+    this.state.camera.targetPosition[1] += this.config.CAMERA_HEIGHT
+
+    // ToDo: move interpolate factor into config, use translate velocity and correct with delta time
+    vec3.lerp(this.state.camera.currentPosition, this.state.camera.currentPosition, this.state.camera.targetPosition, 1 - (this.state.currentTranslationVelocity / (this.config.TRANSLATE_VELOCITY * 0.01)))
+    
+    this.state.camera.transform.setLocalPosition(this.state.camera.currentPosition)
+    this.state.camera.transform.setLocalEulerRotation([0, this.state.currentRotation, 0])
+  }
+
+  onAdd = (self: Entity) => {
+    this.state.transform = self.get(ComponentEnum.TRANSFORM) as Transform
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
-    if(Debug.cameraEnabled) return
+    this.state.animator.animations[1].weight = (this.state.currentTranslationVelocity / (this.config.TRANSLATE_VELOCITY * 0.01)) * 0.4
 
-    // ROTATION
-    const inputDirection = vec2.create()
+    if(Debug.cameraEnabled) return                              
 
-    // @ts-expect-error
-    inputDirection[0] += Input.isKeyDown('a') | 0
-    // @ts-expect-error
-    inputDirection[0] -= Input.isKeyDown('d') | 0
-    // @ts-expect-error
-    inputDirection[1] += Input.isKeyDown('w') | 0
-    // @ts-expect-error
-    inputDirection[1] -= Input.isKeyDown('s') | 0
+    const inputDirection = getControlsInputDirection()
 
-    const transform = self.get(ComponentEnum.TRANSFORM) as Transform                              
+    this.updateRotation(inputDirection[0])
+    this.updateTranslation(inputDirection[1])
 
-    const rotationFactor = inputDirection[0] * ROTATE_SPEED * Time.deltaTime;    
-    this.rotation += rotationFactor 
-
-    const rotation = quat.create()
-    quat.rotateY(rotation, rotation, this.rotation)
-
-    if(rotationFactor) transform.setLocalRotation(rotation)
-
-    const forward = vec3.transformQuat(vec3.create(), GLOBAL_FORWARD, rotation)
-    const translateFactor = inputDirection[1] * TRANSLATE_SPEED * Time.deltaTime
-
-    if(translateFactor) {
-      this.position = transform.getGlobalPosition()
-      vec3.scaleAndAdd(this.position, this.position, forward,  translateFactor)
-
-      const ray: Ray = {
-        origin: vec3.add(vec3.create(), this.position, [0.0, 1.0, 0.0]),
-        direction: GLOBAL_DOWN,
-        length: 2
-      }
-      const intersectionInfo = getClosestIntersection(ray, this.collider)
-      const isOnCollider = intersectionInfo !== null
-
-      this.position[1] = isOnCollider ? intersectionInfo.position[1] : 0.0
-      this.rayMaterial.color = isOnCollider ? [0.0, 1.0, 0.0] : [1.0, 0.0, 0.0]
-
-      transform.setLocalPosition(this.position)
-    }
-
-    this.animator.animations[1].weight = translateFactor ? 0.35 : 0.0
+    this.updateCameraTransform()
   }
 }

@@ -7,7 +7,7 @@ import Debug from "./internal/debug"
 import Input from "./internal/input"
 import Time from "./internal/time"
 import Entity from "./scene/entity"
-import Renderer from "./renderer/renderer"
+import WebGlRenderer from "./renderer/webGlRenderer"
 import Scene from "./scene/scene"
 
 export type MainStats = {
@@ -19,7 +19,7 @@ export default class Engine {
   stats: MainStats | null
 
   canvas: HTMLCanvasElement
-  renderer: Renderer
+  renderer: WebGlRenderer
 
   scene: Scene
 
@@ -31,7 +31,7 @@ export default class Engine {
     Input.init()
 
     this.canvas = canvas
-    this.renderer = new Renderer(this.canvas)
+    this.renderer = new WebGlRenderer(this.canvas)
 
     this.scene = new Scene(sceneCamera)
 

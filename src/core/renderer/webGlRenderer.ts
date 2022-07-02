@@ -5,7 +5,7 @@ import Geometry from "../components/geometry/geometry"
 import { ComponentEnum } from "../components/base/component"
 import Debug from "../internal/debug"
 
-export type RendererStats = {
+export type RenderStats = {
   drawTime: number
   drawCalls: number
   vertexCount: number
@@ -15,9 +15,9 @@ export type RenderList = Array<Entity>
 
 const DEFAULT_CLEAR_COLOR: vec3 = vec3.fromValues(0.549, 0.745, 0.839)
 
-export default class Renderer {
+export default class WebGlRenderer {
   gl: WebGL2RenderingContext
-  stats: RendererStats
+  stats: RenderStats
 
   constructor(canvas: HTMLCanvasElement) {
     this.gl = canvas.getContext('webgl2') as WebGL2RenderingContext
@@ -70,6 +70,6 @@ export default class Renderer {
       this.renderEntity(entity, camera)
 
     this.stats.drawTime = Math.ceil(Date.now() - startTime)
-    Debug.updateStats({renderer: this.stats})
+    Debug.updateStats({render: this.stats})
   }
 }
