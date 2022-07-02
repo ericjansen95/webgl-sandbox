@@ -18,6 +18,8 @@ import UnlitMaterial from './core/components/material/unlitMaterial';
 import NormalMaterial from './core/components/material/normalMaterial';
 import Collider from './core/components/collider/collider';
 import AudioSource from './core/components/audio/audioSource';
+import Label from './core/components/ui/label';
+import { vec3 } from 'gl-matrix';
 
 /*
 
@@ -119,6 +121,8 @@ const main = () => {
       entityTransform.rotateLocalEuler([0.0, Math.PI * 0.75, 0.0])
       entityTransform.setLocalPosition([-1.0, 0.0, -1.0])
       //entityTransform.setLocalScale([0.4, 0.4, 0.4])
+
+      entity.add(new Label({text: "Character", offset: vec3.fromValues(0, 1, 0)}))
 
       engine.scene.add(entity)
     }

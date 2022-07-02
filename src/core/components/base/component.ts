@@ -11,7 +11,8 @@ export enum ComponentEnum {
   CONTROLS,
   AUDIO_SOURCE,
   SCRIPT,
-  ANIMATOR
+  ANIMATOR,
+  UI
 }
 
 export default interface Component {
