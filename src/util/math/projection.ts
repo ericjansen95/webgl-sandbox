@@ -4,7 +4,7 @@ import { ComponentEnum } from "../../core/components/base/component";
 import Transform from "../../core/components/base/transform";
 import Entity from "../../core/scene/entity";
 
-export const pointToScreenSpace = (point: vec4, entity: Entity, camera: Entity): vec2 => {
+export const globalToScreenSpace = (globalPosition: vec4, entity: Entity, camera: Entity): vec2 => {
   // ToDo: cache the refs in onAdd callback
   const transformComponent = entity.get(ComponentEnum.TRANSFORM) as Transform
   const cameraComponent = camera.get(ComponentEnum.CAMERA) as Camera
@@ -14,7 +14,7 @@ export const pointToScreenSpace = (point: vec4, entity: Entity, camera: Entity):
   mat4.multiply(mvpMatrix, cameraComponent.projectionMatrix, mvpMatrix)
 
   // project label entity position to clip space
-  const projectedPosition = vec4.transformMat4(vec4.create(), point, mvpMatrix)
+  const projectedPosition = vec4.transformMat4(vec4.create(), globalPosition, mvpMatrix)
 
   // return if point is behind screen
   if(projectedPosition[3] < 0) return null

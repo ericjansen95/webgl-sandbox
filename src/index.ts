@@ -40,6 +40,8 @@ import { vec3 } from 'gl-matrix';
   - third person controller => DONE
   - post processing / render to texture => https://webgl2fundamentals.org/webgl/lessons/webgl-render-to-texture.html
   - wall collision - sphere / circle raycaster
+  - entity tags
+  - collision info that includes enitity ref
 
   Ideas:
   - scene skybox
@@ -73,6 +75,7 @@ import { vec3 } from 'gl-matrix';
   - server connect with same client id after reload
   - come up with a dynamic networking model => check o3d engine talk (state, event, ...)
 
+  - acceleraton velocity for third person controller ~ 0.68 m/s^2
   - instanced mesh system
   - camera frustrum performance
   - rename wording for channels to "SCENE" and "CHAT"

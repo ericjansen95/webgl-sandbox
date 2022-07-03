@@ -1,5 +1,5 @@
 import { vec3, vec4 } from "gl-matrix";
-import { pointToScreenSpace } from "../../../util/math/projection";
+import { globalToScreenSpace } from "../../../util/math/projection";
 import Debug from "../../internal/debug";
 import entity from "../../scene/entity";
 import Component, { ComponentEnum } from "../base/component";
@@ -36,7 +36,7 @@ export default class Label implements Component {
   }
 
   onUpdate = (self: entity, camera: entity) => {
-    const pixelPosition = pointToScreenSpace(this.state.offset, self, Debug.cameraEnabled ? Debug.camera : camera)
+    const pixelPosition = globalToScreenSpace(this.state.offset, self, Debug.cameraEnabled ? Debug.camera : camera)
     
     if(!pixelPosition) {
       if(this.state.element.style.visibility !== 'hidden') this.state.element.style.visibility = 'hidden'
