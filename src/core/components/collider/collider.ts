@@ -1,5 +1,6 @@
 import { vec3 } from "gl-matrix";
 import { Ray, sortIntersectionsByDistance } from "../../../util/math/raycast";
+import Entity from "../../scene/entity";
 import Component, { ComponentEnum } from "../base/component";
 
 export type IntersectionInfo = {

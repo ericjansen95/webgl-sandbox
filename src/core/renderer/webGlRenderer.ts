@@ -13,7 +13,7 @@ export type RenderStats = {
 
 export type RenderList = Array<Entity>
 
-const DEFAULT_CLEAR_COLOR: vec3 = vec3.fromValues(0.549, 0.745, 0.839)
+const DEFAULT_CLEAR_COLOR = vec3.fromValues(0.5, 0.5, 0.5) //vec3.fromValues(0.549, 0.745, 0.839)
 
 export default class WebGlRenderer {
   gl: WebGL2RenderingContext

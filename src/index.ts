@@ -1,7 +1,6 @@
 import Camera from './core/components/base/camera';
 import Entity from './core/scene/entity';
 import Material from './core/components/material/material';
-import Terrain from './core/components/scripts/terrain';
 import { ComponentEnum as Component } from './core/components/base/component';
 import Turntable from './core/components/scripts/turntable';
 import Engine from './core/engine';
@@ -16,7 +15,6 @@ import Animator from './core/components/animation/animator';
 import Ray from './core/components/geometry/ray';
 import UnlitMaterial from './core/components/material/unlitMaterial';
 import NormalMaterial from './core/components/material/normalMaterial';
-import Collider from './core/components/collider/collider';
 import AudioSource from './core/components/audio/audioSource';
 import Label from './core/components/ui/label';
 import { vec3 } from 'gl-matrix';
@@ -31,13 +29,17 @@ import { vec3 } from 'gl-matrix';
   - namespaces and modules
   - singeltons instead of static classes
   - camera creating wrapper
+  - material uniform pipeline
+  - physics controller => audio and physics as systems feeded by scene data
 
   First Playable:
   - multi hirachial joint skinning DONE
   - uv driven texture mapping
   - collision => ray triangle intersection DONE
-  - first person controls
-  - basic audio => emitter and listener
+  - basic audio => emitter and listener DONE
+  - third person controller => DONE
+  - post processing / render to texture => https://webgl2fundamentals.org/webgl/lessons/webgl-render-to-texture.html
+  - wall collision - sphere / circle raycaster
 
   Ideas:
   - scene skybox
@@ -45,19 +47,24 @@ import { vec3 } from 'gl-matrix';
   - device capibility check and lod (mesh, shader, textures, ...)
   - streaming (network and scene)
   - scene, sceneNetworkController, remoteClient Component, networkedTransfrom Component
-  - module bundle namespace
   - app-sandbox
   - level wording
   - base-server, chat-server, scene-server
 
   ToDo:
+  - use pointer lock for first person and fly controls => https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
+  - skinned geometry stats
+  - physics stats
+  - heightmap performance and sample interpolation
+  - firefox fixes and optimizations
   - min max from gltf and fallback calculation
-
+  - collision entity world matrix offset
   - reduce matrix multipications => cache bounding volume data
   - canvas resize event
   - namespaces that abstracts initialisation (and entity assemby?)
 
   - clientId
+  - server abstraction with base architecture that can be shared by scene, com and chat server
   - server network package verification => block unallowed
   - server client authentication
   - server append clientId
@@ -69,6 +76,7 @@ import { vec3 } from 'gl-matrix';
   - instanced mesh system
   - camera frustrum performance
   - rename wording for channels to "SCENE" and "CHAT"
+  - return entity ref in IntersectionInfo
 
 */
 
@@ -95,12 +103,13 @@ const main = () => {
   audioSource.add(new AudioSource("http://localhost:8080/res/audio/song.mp3"))
   engine.scene.add(audioSource)
 
+  /*
   const terrain: Entity = new Entity()
   terrain.add(new Terrain())
-
   const terrainCollider = terrain.get(Component.COLLIDER) as Collider
 
   engine.scene.add(terrain)
+  */
 
   const geometryCollider = new GeometryCollider()
 
@@ -122,7 +131,7 @@ const main = () => {
       entityTransform.setLocalPosition([-1.0, 0.0, -1.0])
       //entityTransform.setLocalScale([0.4, 0.4, 0.4])
 
-      entity.add(new Label({text: "Character", offset: vec3.fromValues(0, 1, 0)}))
+      entity.add(new Label({text: ':)', offset: vec3.fromValues(-0.25, 1.75, 0)}))
 
       engine.scene.add(entity)
     }
@@ -132,6 +141,8 @@ const main = () => {
   loadGltf("http://localhost:8080/res/geo/avatar.gltf").then((entities) => {
     const player = new Entity()
     const playerTransform = player.get(Component.TRANSFORM) as Transform
+
+    player.add(new Label({text: '', offset: vec3.fromValues(0.0, 1.5, 0)}))
 
     const rayMaterial = new UnlitMaterial([0.0, 1.0, 0.0])
 
@@ -151,7 +162,7 @@ const main = () => {
       player.add(new ThirdPersonControls({
         camera: sceneCamera,
         animator: entity.get(Component.ANIMATOR) as Animator, 
-        collider: [geometryCollider, terrainCollider], 
+        collider: [geometryCollider], 
         rayMaterial }))
 
       entity.add(lambertMaterial)

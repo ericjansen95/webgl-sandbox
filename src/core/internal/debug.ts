@@ -11,13 +11,16 @@ import { RenderStats } from "../renderer/webGlRenderer"
 import { SceneStats } from "../scene/scene"
 import Console from "./console"
 import FrameInspector from "./fameInspector"
+import { ControlsStats } from "../components/controls/controls"
+import { formatObjectToString } from "../../util/helper/string"
 
 export type DebugStats = {
-  scene?: SceneStats,
+  scene?: SceneStats
   render?: RenderStats
   main?: MainStats
+  controls?: ControlsStats
   client?: {
-    ping: number,
+    ping: number
   }
 }
 
@@ -76,18 +79,7 @@ export default class Debug {
       this.stats[name] = entry
     }
 
-    let output: string = ""
-
-    for(const [statSectionName, statSectionValue] of Object.entries(this.stats)) {
-      output += statSectionName + ':\r\n'
-
-      for(const [statName, statValue] of Object.entries(statSectionValue))
-        output += '  ' + statName + ' = ' + statValue.toString() + '\r\n'
-
-      output += '\r\n'  
-    }
-
-    this.statsElement.textContent = output
+    this.statsElement.textContent = formatObjectToString(this.stats)
   }
 
   static toggleStats = (): string => {

@@ -10,9 +10,12 @@ import UnlitMaterial from "../material/unlitMaterial"
 import { Ray } from "../../../util/math/raycast"
 import Camera from "../base/camera"
 import clamp from "../../../util/math/clamp"
-import { getControlsInputDirection, InputDirection } from "./controls"
+import { ControlsStats, getControlsInputDirection, InputDirection } from "./controls"
 import { GLOBAL } from "../../constants"
 import Input from "../../internal/input"
+import { roundNumber } from "../../../util/math/round"
+import Label from "../ui/label"
+import { formatObjectToString } from "../../../util/helper/string"
 
 export type ThirdPersonControlsOptions = {
   camera: Entity
@@ -72,15 +75,9 @@ const THIRD_PERSON_CONTROLS_DEFAULT_CONFIG: ThirdPersonControlsConfig = Object.f
   GROUND_RAY_OFFSET: vec3.fromValues(0.0, 1.0, 0.0)
 })
 
-export type ThirdPersonControlsStats = {
-  isRotating: boolean
-  isMoving: boolean
-  speed: number // normalized 0 - 1
-}
-
 export default class ThirdPersonControls implements Component {
   type: ComponentEnum
-  stats: ThirdPersonControlsStats
+  stats: ControlsStats
   config: ThirdPersonControlsConfig
   state: ThirdPersonControlsState
 
@@ -158,12 +155,12 @@ export default class ThirdPersonControls implements Component {
     else if (absTranslationVelocity < this.config.TRANSLATE_VELOCITY * 0.0005) {
       this.state.currentTranslationVelocity = 0
 
-      this.stats.speed = this.state.currentTranslationVelocity
+      this.stats.speed = roundNumber(this.state.currentTranslationVelocity)
       this.stats.isMoving = false
       return
     }
 
-    this.stats.speed = (Math.abs(this.state.currentTranslationVelocity) / (this.config.TRANSLATE_VELOCITY * 0.01))
+    this.stats.speed = roundNumber(Math.abs(this.state.currentTranslationVelocity) / (this.config.TRANSLATE_VELOCITY * 0.01))
 
     // update position with current velocity
     this.state.currentPosition = this.state.transform.getGlobalPosition()
@@ -218,5 +215,10 @@ export default class ThirdPersonControls implements Component {
     this.updateCameraTransform()
 
     this.state.animator.animations[1].weight = this.stats.speed * 0.4
+
+    const label = self.get(ComponentEnum.UI) as Label
+    label.state.element.innerText = formatObjectToString({controls: this.stats})
+
+    Debug.updateStats({controls: this.stats})
   }
 }

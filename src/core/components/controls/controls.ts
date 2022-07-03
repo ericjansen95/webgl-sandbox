@@ -5,6 +5,12 @@ import Input from "../../internal/input"
 
 export type InputDirection = -1 | 0 | 1
 
+export type ControlsStats = {
+    isRotating: boolean
+    isMoving: boolean
+    speed: number // normalized 0 - 1
+  }
+
 export const getControlsInputDirection = (): Array<InputDirection> => {
     const inputDirection = vec2.create()
 
