@@ -21,7 +21,7 @@ module.exports = {
   },
   output: {
     filename: 'ps-engine.js',
-    path: path.resolve(__dirname, 'public'),
+    path: path.resolve(__dirname, '../public'),
   },
   optimization: {
     minimize: false

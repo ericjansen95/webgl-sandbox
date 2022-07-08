@@ -31,6 +31,7 @@ import { vec3 } from 'gl-matrix';
   - camera creating wrapper
   - material uniform pipeline
   - physics controller => audio and physics as systems feeded by scene data
+  - event bus
 
   First Playable:
   - multi hirachial joint skinning DONE
@@ -80,6 +81,7 @@ import { vec3 } from 'gl-matrix';
   - camera frustrum performance
   - rename wording for channels to "SCENE" and "CHAT"
   - return entity ref in IntersectionInfo
+  - shared physics and movement code from server => go compiled to wasm
 
 */
 
