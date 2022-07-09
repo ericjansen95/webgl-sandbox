@@ -8,6 +8,7 @@ import TerrainMaterial from "../material/terrainMaterial";
 import UnlitMaterial from "../material/unlitMaterial";
 import Transform from "../base/transform";
 import HeightmapCollider from "../collider/heightmapCollider";
+import Texture from "../../renderer/texture";
 
 const TERRAIN_HEIGHTMAP_URI: string = "/res/map/heightcombined.png"
 const TERRAIN_MAP_COMBINED: string = "/res/map/terrainCombined.jpg"
@@ -37,7 +38,7 @@ export default class Terrain implements Component {
   chunks: Array<Entity>
 
   // size is in units / m
-  constructor(size: number = 1000) {
+  constructor(heightmapUri: string = TERRAIN_HEIGHTMAP_URI, size: number = 1000) {
     this.type = ComponentEnum.TERRAIN
     this.size = size
 
@@ -49,7 +50,7 @@ export default class Terrain implements Component {
     this.lowMaterial = new UnlitMaterial([1.0, 0.0, 1.0]) as Material
     this.lowGeometry = new PlaneGeometry(TERRAIN_CHUNK_LOW_SUBDEVISIONS) as Geometry
 
-    this.highMaterial = new TerrainMaterial(TERRAIN_HEIGHTMAP_URI, TERRAIN_MAP_COMBINED, this.height) as Material
+    this.highMaterial = new TerrainMaterial(new Texture(heightmapUri), new Texture(TERRAIN_MAP_COMBINED), this.height) as Material
     this.highGeometry = new PlaneGeometry(TERRAIN_CHUNK_HIGH_SUBDEVISIONS) as Geometry
 
     const step: number = TERRAIN_CHUNK_SIZE / this.size

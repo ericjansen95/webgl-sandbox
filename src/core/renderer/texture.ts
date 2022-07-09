@@ -1,3 +1,5 @@
+import Debug from "../internal/debug"
+
 export type TextureOptions = {
 }
 
@@ -9,30 +11,36 @@ export default class Texture {
     this.srcUri = srcUri
   }
 
-  private load = (gl: WebGL2RenderingContext): Promise<boolean> => {
-    return new Promise((resolve) => {
-      if(this.buffer) resolve(true)
+  private load = (gl: WebGL2RenderingContext): boolean => {
+    if(this.buffer) return true
 
-      const image = new Image()
-      image.src = this.srcUri
-  
-      image.onload = () => {
-        this.buffer = gl.createTexture()
-        gl.bindTexture(gl.TEXTURE_2D, this.buffer)
-  
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-  
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image)
+    this.buffer = gl.createTexture()
 
-        resolve(true)
-      }
-    })
+    const startTime = Date.now()
+
+    const image = new Image()
+    image.src = this.srcUri
+
+    image.onload = () => {
+      gl.bindTexture(gl.TEXTURE_2D, this.buffer)
+
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image)
+
+      Debug.info(`Texture::load(): Loaded texture in = ${Date.now() - startTime}ms`)
+    }
+
+    return true
   }
 
-  bind = async (gl: WebGL2RenderingContext) => {
-    await this.load(gl)
+  bind = (gl: WebGL2RenderingContext): boolean => {
+    this.load(gl)
 
+    if(!this.buffer) return false
     gl.bindTexture(gl.TEXTURE_2D, this.buffer)
+
+    return true
   }
 }

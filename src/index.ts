@@ -18,6 +18,8 @@ import NormalMaterial from './core/components/material/normalMaterial';
 import AudioSource from './core/components/audio/audioSource';
 import Label from './core/components/ui/label';
 import { vec3 } from 'gl-matrix';
+import Terrain from './core/components/scripts/terrain';
+import Collider from './core/components/collider/collider';
 
 /*
 
@@ -108,13 +110,11 @@ const main = () => {
   audioSource.add(new AudioSource("http://localhost:8080/res/audio/song.mp3"))
   engine.scene.add(audioSource)
 
-  /*
   const terrain: Entity = new Entity()
   terrain.add(new Terrain())
   const terrainCollider = terrain.get(Component.COLLIDER) as Collider
 
   engine.scene.add(terrain)
-  */
 
   const geometryCollider = new GeometryCollider()
 
@@ -167,7 +167,7 @@ const main = () => {
       player.add(new ThirdPersonControls({
         camera: sceneCamera,
         animator: entity.get(Component.ANIMATOR) as Animator, 
-        collider: [geometryCollider], 
+        collider: [geometryCollider, terrainCollider], 
         rayMaterial }))
 
       entity.add(lambertMaterial)
