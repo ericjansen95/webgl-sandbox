@@ -22,6 +22,7 @@ import Terrain from './core/components/scripts/terrain';
 import Collider from './core/components/collider/collider';
 import UnlitTextureMaterial from './core/components/material/unlitTextureMaterial';
 import Texture from './core/renderer/texture';
+import UnlitAlphaTestMaterial from './core/components/material/unlitAlphaTestMaterial';
 
 /*
 
@@ -129,6 +130,7 @@ const main = () => {
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
 
+  /*
   loadGltf("http://localhost:8080/res/geo/cube.gltf").then((entities) => {
     for(const entity of entities) {
       entity.add(new UnlitTextureMaterial(new Texture("http://localhost:8080/res/map/alphaTestMap.png")))
@@ -136,7 +138,15 @@ const main = () => {
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
+  */
 
+  loadGltf("http://localhost:8080/res/geo/grassChunk.gltf").then((entities) => {
+    for(const entity of entities) {
+      entity.add(new UnlitAlphaTestMaterial(new Texture("http://localhost:8080/res/map/grassMaskMap.png")))
+
+      engine.scene.add(entity)
+    }
+  }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
 
   // https://bst.icons8.com/wp-content/uploads/2020/04/illustration-art-inspiration.png
   loadGltf("http://localhost:8080/res/geo/character.gltf").then((entities) => {

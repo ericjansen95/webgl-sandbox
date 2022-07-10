@@ -33,10 +33,13 @@ export default class WebGlRenderer {
     }
 
     this.gl.enable(this.gl.DEPTH_TEST)
-    this.gl.depthFunc(this.gl.LEQUAL)
+    this.gl.depthFunc(this.gl.LESS)
 
     this.gl.clearColor(DEFAULT_CLEAR_COLOR[0], DEFAULT_CLEAR_COLOR[1], DEFAULT_CLEAR_COLOR[2], 1.0)
     this.gl.clearDepth(1.0)
+
+    //this.gl.enable(this.gl.CULL_FACE);
+    //this.gl.cullFace(this.gl.BACK);
 
     this.gl.enable(this.gl.BLEND);
     this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
