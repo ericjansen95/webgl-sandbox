@@ -11,8 +11,11 @@ varying vec2 vVertexUv;
 
 void main() {
   mat4 modelViewMatrix = uViewMatrix * uWorldMatrix;
-  float xPosition = aVertexPosition.x + aVertexPosition.y * sin(uTime * 0.003) * 0.2;
-  gl_Position = uProjectionMatrix * modelViewMatrix * vec4(xPosition, aVertexPosition.y, aVertexPosition.z, 1.0);
+  vec4 position = uProjectionMatrix * modelViewMatrix * aVertexPosition;
+
+  float offset = aVertexPosition.y * sin(uTime * 0.003) * 0.2;
+  vec4 positionOffset = vec4(offset, 0.0, 0.0, 0.0);
+  gl_Position = position + positionOffset;
 
   vVertexUv = aVertexUv;
 }

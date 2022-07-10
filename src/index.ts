@@ -23,6 +23,7 @@ import Collider from './core/components/collider/collider';
 import UnlitTextureMaterial from './core/components/material/unlitTextureMaterial';
 import Texture from './core/renderer/texture';
 import GrassMaterial from './core/components/material/grassMaterial';
+import Geometry from './core/components/geometry/geometry';
 
 /*
 
@@ -135,11 +136,25 @@ const main = () => {
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
   */
 
+  const grassMaterial = new GrassMaterial(new Texture("http://localhost:8080/res/map/grassMaskMap.png"))
+
   loadGltf("http://localhost:8080/res/geo/grassChunk.gltf").then((entities) => {
     for(const entity of entities) {
-      entity.add(new GrassMaterial(new Texture("http://localhost:8080/res/map/grassMaskMap.png")))
+      const grassGeometry = entity.get(Component.GEOMETRY) as Geometry
 
-      engine.scene.add(entity)
+      for(let x = -4; x < 4; x++) {
+        for(let z = -4; z < 4; z++) {
+          const entity = new Entity()
+          const transform = entity.get(Component.TRANSFORM) as Transform
+          transform.setLocalPosition([x, 0.0, z])
+          transform.setLocalEulerRotation([0.0, Math.random() * 2.0 * Math.PI, 0.0])
+
+          entity.add(grassGeometry)
+          entity.add(grassMaterial)
+
+          engine.scene.add(entity)
+        }
+      }
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
 
