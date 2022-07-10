@@ -22,7 +22,7 @@ import Terrain from './core/components/scripts/terrain';
 import Collider from './core/components/collider/collider';
 import UnlitTextureMaterial from './core/components/material/unlitTextureMaterial';
 import Texture from './core/renderer/texture';
-import UnlitAlphaTestMaterial from './core/components/material/unlitAlphaTestMaterial';
+import GrassMaterial from './core/components/material/grassMaterial';
 
 /*
 
@@ -96,13 +96,6 @@ const main = () => {
   canvas.height = window.innerHeight
 
   const sceneCamera: Entity = new Entity()
-  /*
-  const sceneCameraTransform = sceneCamera.get(Component.TRANSFORM) as Transform
-
-  sceneCameraTransform.setLocalPosition([0.5, 1.6, 2.3])
-  sceneCameraTransform.setLocalEulerRotation([Math.PI * -0.075, 0.0, 0.0])
-  */
-
   sceneCamera.add(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
 
   const engine = new Engine(canvas, sceneCamera)
@@ -113,11 +106,13 @@ const main = () => {
   audioSource.add(new AudioSource("http://localhost:8080/res/audio/song.mp3"))
   engine.scene.add(audioSource)
 
+  /*
   const terrain: Entity = new Entity()
   terrain.add(new Terrain())
   const terrainCollider = terrain.get(Component.COLLIDER) as Collider
 
   engine.scene.add(terrain)
+  */
 
   const geometryCollider = new GeometryCollider()
 
@@ -142,12 +137,13 @@ const main = () => {
 
   loadGltf("http://localhost:8080/res/geo/grassChunk.gltf").then((entities) => {
     for(const entity of entities) {
-      entity.add(new UnlitAlphaTestMaterial(new Texture("http://localhost:8080/res/map/grassMaskMap.png")))
+      entity.add(new GrassMaterial(new Texture("http://localhost:8080/res/map/grassMaskMap.png")))
 
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
 
+  /*
   // https://bst.icons8.com/wp-content/uploads/2020/04/illustration-art-inspiration.png
   loadGltf("http://localhost:8080/res/geo/character.gltf").then((entities) => {
     for(const entity of entities) {
@@ -162,7 +158,7 @@ const main = () => {
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
-
+  */
 
   loadGltf("http://localhost:8080/res/geo/avatar.gltf").then((entities) => {
     const player = new Entity()
@@ -188,7 +184,7 @@ const main = () => {
       player.add(new ThirdPersonControls({
         camera: sceneCamera,
         animator: entity.get(Component.ANIMATOR) as Animator, 
-        collider: [geometryCollider, terrainCollider], 
+        collider: [geometryCollider], 
         rayMaterial }))
 
       entity.add(lambertMaterial)
