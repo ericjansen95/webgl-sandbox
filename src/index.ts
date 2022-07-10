@@ -20,6 +20,8 @@ import Label from './core/components/ui/label';
 import { vec3 } from 'gl-matrix';
 import Terrain from './core/components/scripts/terrain';
 import Collider from './core/components/collider/collider';
+import UnlitTextureMaterial from './core/components/material/unlitTextureMaterial';
+import Texture from './core/renderer/texture';
 
 /*
 
@@ -126,6 +128,15 @@ const main = () => {
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
+
+  loadGltf("http://localhost:8080/res/geo/cube.gltf").then((entities) => {
+    for(const entity of entities) {
+      entity.add(new UnlitTextureMaterial(new Texture("http://localhost:8080/res/map/alphaTestMap.png")))
+
+      engine.scene.add(entity)
+    }
+  }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
+
 
   // https://bst.icons8.com/wp-content/uploads/2020/04/illustration-art-inspiration.png
   loadGltf("http://localhost:8080/res/geo/character.gltf").then((entities) => {
