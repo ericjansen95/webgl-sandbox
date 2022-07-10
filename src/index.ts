@@ -142,8 +142,8 @@ const main = () => {
     for(const entity of entities) {
       const grassGeometry = entity.get(Component.GEOMETRY) as Geometry
 
-      for(let x = -4; x < 4; x++) {
-        for(let z = -4; z < 4; z++) {
+      for(let x = -3.5; x < 4; x++) {
+        for(let z = -3.5; z < 4; z++) {
           const entity = new Entity()
           const transform = entity.get(Component.TRANSFORM) as Transform
           transform.setLocalPosition([x, 0.0, z])
