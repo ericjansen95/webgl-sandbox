@@ -127,6 +127,16 @@ const main = () => {
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
 
   /*
+  loadGltf("http://localhost:8080/res/geo/room.gltf").then((entities) => {
+    for(const entity of entities) {
+      entity.add(new UnlitTextureMaterial(new Texture("http://localhost:8080/res/map/checkerMap.png")))
+
+      engine.scene.add(entity)
+    }
+  }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
+  */
+
+  /*
   loadGltf("http://localhost:8080/res/geo/cube.gltf").then((entities) => {
     for(const entity of entities) {
       entity.add(new UnlitTextureMaterial(new Texture("http://localhost:8080/res/map/alphaTestMap.png")))

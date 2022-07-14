@@ -1,5 +1,4 @@
 {
-  "private": true,
   "scripts": {
     "build": "npx webpack --config ./config/packageBuildConfig.js",
     "serve": "npx webpack serve --config ./config/devBuildConfig.js",
@@ -17,5 +16,22 @@
   },
   "dependencies": {
     "short-uuid": "^4.2.0"
-  }
+  },
+  "name": "project-choros-engine",
+  "description": "3D engine written in typescript with WebGL 2.0",
+  "version": "0.0.1",
+  "main": "./src/package.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/project-choros/engine.git"
+  },
+  "keywords": [
+    "webgl"
+  ],
+  "author": "Eric Jansen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://gitlab.com/project-choros/engine/issues"
+  },
+  "homepage": "https://gitlab.com/project-choros/engine#readme"
 }
