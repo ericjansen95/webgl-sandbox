@@ -15,8 +15,8 @@ void main() {
   vec4 worldPosition = uWorldMatrix * aVertexPosition;
   vec4 position = uProjectionMatrix * uViewMatrix * worldPosition;
 
-  float variation = texture2D(uTexture, aVertexPosition.xz * uTime * 0.0003).b; // wind speed
-  float offset = aVertexPosition.y * sin(variation * 3.14159265359) * 0.4; // bend strength
+  float variation = (texture2D(uTexture, aVertexPosition.xz * uTime * 0.0003).b - 0.5) * 2.0; // wind speed
+  float offset = aVertexPosition.y * variation * 0.4; // bend strength
   position.x += offset;
   gl_Position = position;
 
