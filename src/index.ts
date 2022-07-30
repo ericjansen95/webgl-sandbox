@@ -24,6 +24,7 @@ import UnlitTextureMaterial from './core/components/material/unlitTextureMateria
 import Texture from './core/renderer/texture';
 import GrassMaterial from './core/components/material/grassMaterial';
 import Geometry from './core/components/geometry/geometry';
+import { createPlayer, PlayerType } from './util/helper/player';
 
 /*
 
@@ -146,6 +147,7 @@ const main = () => {
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
   */
 
+  /*
   const grassMaterial = new GrassMaterial(new Texture("http://localhost:8080/res/map/grassMaskMap.png"))
 
   loadGltf("http://localhost:8080/res/geo/grassChunk.gltf").then((entities) => {
@@ -167,6 +169,7 @@ const main = () => {
       }
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
+  */
 
   /*
   // https://bst.icons8.com/wp-content/uploads/2020/04/illustration-art-inspiration.png
@@ -185,6 +188,7 @@ const main = () => {
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
   */
 
+  /*
   loadGltf("http://localhost:8080/res/geo/avatar.gltf").then((entities) => {
     const player = new Entity()
     const playerTransform = player.get(Component.TRANSFORM) as Transform
@@ -220,6 +224,9 @@ const main = () => {
 
     engine.scene.add(player)
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test animation geometry = ${error}`))
+  */
+
+  engine.scene.add(createPlayer({ type: PlayerType.FIRST_PERSON, camera: sceneCamera, collider: [geometryCollider] }))
 
   loadGltf("http://localhost:8080/res/geo/testGeo.gltf").then((entities) => {
     const material = new FresnelMaterial([1.0, 1.0, 1.0]) as Material

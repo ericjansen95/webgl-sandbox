@@ -5,6 +5,12 @@ import Input from "../../internal/input"
 
 export type InputDirection = -1 | 0 | 1
 
+export type ControlsOptions = {
+  camera: Entity
+
+  collider: Array<Collider>
+}
+
 export type ControlsStats = {
     isRotating: boolean
     isMoving: boolean

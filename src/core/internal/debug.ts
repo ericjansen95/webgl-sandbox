@@ -108,6 +108,8 @@ export default class Debug {
   }
 
   static update = () => {
+    this.frameInspector.update(this.stats)
+    
     if(!this.cameraEnabled) return
 
     this.camera.get(ComponentEnum.CONTROLS).onUpdate(this.camera, this.camera)

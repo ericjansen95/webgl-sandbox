@@ -41,7 +41,7 @@ export default class Engine {
   
       this.scene.update()
 
-      Debug.update()
+      
   
       this.renderer.renderEntities(
         this.scene.getVisibleEntities(), 
@@ -52,6 +52,7 @@ export default class Engine {
         FPS: Math.ceil(1 / Time.deltaTime)
       }
       Debug.updateStats({main: this.stats})
+      Debug.update()
   
       requestAnimationFrame(update)
     }

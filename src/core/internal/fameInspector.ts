@@ -1,5 +1,17 @@
 import { DebugStats } from "./debug"
 
+/*
+  - scene
+    - component update
+    - culling
+  - renderer
+    - static geometry
+    - skinned geometry
+*/
+
+const frameInspectorStyle = (value: number, contrast: boolean = false): string => `background-color: ${contrast ? 'burlywood' : 'bisque'}; width: ${Math.max(value, 1) * 100}px; height: 12px; padding-left: 2px; font-family: monospace; font-size: 10px; color: dimgray; font-weight: bold;`
+const frameInspectorElement = (text: string, value: number, contrast: boolean = false): string => `<span style="${frameInspectorStyle(value, contrast)}" title="${value}ms">${text}</span>`
+
 export default class FrameInspector {
   root: HTMLDivElement
 
@@ -16,16 +28,26 @@ export default class FrameInspector {
 
   init() {
     this.frameInspector = document.createElement('div')
-    this.frameInspector.style.cssText = 'height: 25%; width: 100%; background: rgba(0.0, 0.0, 0.0, 0.5); display: flex; flex-direction: row;'
-
-    this.frameInspector.innerHTML = `
-      <div style="background-color:blue; width: 48px; height: 12px"></div>
-      <div style="background-color:red; width: 48px; height: 12px"></div>
-    `
+    this.frameInspector.style.cssText = 'width: 100%; background: rgba(0.0, 0.0, 0.0, 0.5); display: flex; flex-direction: row;'
   }
 
   update(stats: DebugStats) {
+    if(!this.visible) return;
 
+    this.frameInspector.innerHTML = ''
+
+    // ToDo: Loop over key / values instead of hard coding
+    if(stats.scene) {
+      this.frameInspector.innerHTML += `
+        ${frameInspectorElement('update time', stats.scene.updateTime, false)}
+        ${frameInspectorElement('cull time', stats.scene.cullTime, true)}
+        `
+    }
+    if(stats.render) {
+      this.frameInspector.innerHTML += `
+      ${frameInspectorElement('draw time', stats.render.drawTime, false)}
+      ` 
+    }
   }
  
   toggleVisible = (): string => {
