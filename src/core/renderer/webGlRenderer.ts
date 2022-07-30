@@ -43,6 +43,11 @@ export default class WebGlRenderer {
 
     this.gl.enable(this.gl.BLEND);
     this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
+
+    const requestPointerLock = () => canvas.requestPointerLock()
+
+    window.addEventListener('mousedown', requestPointerLock)
+    window.addEventListener('keydown', requestPointerLock)
   }
 
   renderEntity = (entity: Entity, camera: Entity) => {

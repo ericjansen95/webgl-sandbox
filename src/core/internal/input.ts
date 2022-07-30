@@ -45,13 +45,16 @@ export default class Input {
 
     if(this.mouseMoveTimeout) clearTimeout(this.mouseMoveTimeout)
 
-    const mousePosition: vec2 = [event.offsetX, event.offsetY]
+    this.mouseState.deltaPosition = [event.movementX, event.movementY] as vec2
+    vec2.div(this.mouseState.deltaPosition, this.mouseState.deltaPosition, WINDOW_SIZE)
 
+    /*
     vec2.sub(this.mouseState.deltaPosition, mousePosition, this.mouseState.position)
     vec2.div(this.mouseState.deltaPosition, this.mouseState.deltaPosition, WINDOW_SIZE)
 
     this.mouseState.position = mousePosition
-
+    */
+   
     this.mouseMoveTimeout = setTimeout(() => this.mouseState.deltaPosition.fill(0.0), 67)
   }
 
