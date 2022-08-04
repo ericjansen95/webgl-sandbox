@@ -1,7 +1,7 @@
 import Camera from './core/components/base/camera';
 import Entity from './core/scene/entity';
 import Material from './core/components/material/material';
-import { ComponentEnum as Component } from './core/components/base/component';
+import { ComponentType as Component } from './core/components/base/component';
 import Turntable from './core/components/scripts/turntable';
 import Engine from './core/engine';
 import loadGltf from './util/loader/gltfLoader';
@@ -94,11 +94,22 @@ import { createPlayer, PlayerType } from './util/helper/player';
 
 const main = () => {
   const canvas = document.getElementById('glCanvas') as HTMLCanvasElement
-  canvas.width = window.innerWidth
-  canvas.height = window.innerHeight
+  canvas.width = 1024
+  canvas.height = 576
+  canvas.style.cssText = "width: 100%; height: 100%;"
+  
+  /*
+  const updateCanvasSize = () => {
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+  }
 
+  updateCanvasSize()
+
+  window.addEventListener('resize', updateCanvasSize)
+  */
   const sceneCamera: Entity = new Entity()
-  sceneCamera.add(new Camera(Math.PI * 0.3, canvas.width / canvas.height))
+  sceneCamera.add(new Camera(Math.PI * 0.3))
 
   const engine = new Engine(canvas, sceneCamera)
 
@@ -226,7 +237,7 @@ const main = () => {
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test animation geometry = ${error}`))
   */
 
-  engine.scene.add(createPlayer({ type: PlayerType.FIRST_PERSON, camera: sceneCamera, collider: [geometryCollider] }))
+  engine.scene.add(createPlayer({ type: PlayerType.FIRST_PERSON, camera: sceneCamera }))
 
   loadGltf("http://localhost:8080/res/geo/testGeo.gltf").then((entities) => {
     const material = new FresnelMaterial([1.0, 1.0, 1.0]) as Material

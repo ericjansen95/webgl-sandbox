@@ -1,4 +1,4 @@
-import Component, { ComponentEnum } from "../base/component";
+import Component, { ComponentType } from "../base/component";
 
 type AudioSourceState = {
   element: HTMLAudioElement
@@ -6,11 +6,11 @@ type AudioSourceState = {
 }
 
 export default class AudioSource implements Component {
-  type: ComponentEnum
+  type: ComponentType
   state: AudioSourceState
 
   constructor(sourceUri: string) {
-    this.type = ComponentEnum.AUDIO_SOURCE
+    this.type = ComponentType.AUDIO_SOURCE
 
     const element = document.createElement('audio') as HTMLAudioElement
     element.src = sourceUri

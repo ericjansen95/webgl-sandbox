@@ -1,11 +1,11 @@
-import Component, { ComponentEnum } from "../base/component";
+import Component, { ComponentType } from "../base/component";
 
 export default class BoundingVolume implements Component {
-  type: ComponentEnum
+  type: ComponentType
   visible: boolean
 
   constructor(visible: boolean = false) {
-    this.type = ComponentEnum.BOUNDING_VOLUME
+    this.type = ComponentType.BOUNDING_VOLUME
     this.visible = visible
   }
 

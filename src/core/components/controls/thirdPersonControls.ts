@@ -1,6 +1,6 @@
 import { vec3, quat } from "gl-matrix"
 import Entity from "../../scene/entity"
-import Component, { ComponentEnum } from "../base/component"
+import Component, { ComponentType } from "../base/component"
 import Time from "../../internal/time"
 import Transform from "../base/transform"
 import Debug from "../../internal/debug"
@@ -76,22 +76,22 @@ const THIRD_PERSON_CONTROLS_DEFAULT_CONFIG: ThirdPersonControlsConfig = Object.f
 })
 
 export default class ThirdPersonControls implements Component {
-  type: ComponentEnum
+  type: ComponentType
   stats: ControlsStats
   config: ThirdPersonControlsConfig
   state: ThirdPersonControlsState
 
   constructor({ camera, animator, collider, rayMaterial }: ThirdPersonControlsOptions) {
-    this.type = ComponentEnum.CONTROLS
+    this.type = ComponentType.CONTROLS
 
     this.config = THIRD_PERSON_CONTROLS_DEFAULT_CONFIG
 
-    const transform = camera.get(ComponentEnum.TRANSFORM) as Transform
+    const transform = camera.get(ComponentType.TRANSFORM) as Transform
     this.state = {
       transform: null,
 
       camera: {
-        component: camera.get(ComponentEnum.CAMERA) as Camera,
+        component: camera.get(ComponentType.CAMERA) as Camera,
         transform,
   
         currentPosition: vec3.create(),
@@ -186,7 +186,7 @@ export default class ThirdPersonControls implements Component {
   private updateCameraTransform = () => {
     // calculate camera y rotation based on forward vector and user mouse rotation input
     if ((this.stats.isMoving || this.stats.isRotating) && this.state.camera.currentRotation !== 0) this.state.camera.currentRotation = 0
-    else if (Input.mouseState.isDown) this.state.camera.currentRotation -= Input.mouseState.deltaPosition[0] * Time.deltaTime * 1000
+    else if (Input.mouseState.isDown) this.state.camera.currentRotation -= Input.mouseState.deltaTranslation[0] * Time.deltaTime * 1000
  
     // transform forward vector with rotation
     const forward = vec3.rotateY(vec3.create(), this.state.forward, [0, 0, 0], Math.PI + this.state.camera.currentRotation)
@@ -201,7 +201,7 @@ export default class ThirdPersonControls implements Component {
   }
 
   onAdd = (self: Entity) => {
-    this.state.transform = self.get(ComponentEnum.TRANSFORM) as Transform
+    this.state.transform = self.get(ComponentType.TRANSFORM) as Transform
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
@@ -216,7 +216,7 @@ export default class ThirdPersonControls implements Component {
 
     this.state.animator.animations[1].weight = this.stats.speed * 0.4
 
-    const label = self.get(ComponentEnum.UI) as Label
+    const label = self.get(ComponentType.UI) as Label
     label.state.element.innerText = formatObjectToString({controls: this.stats})
 
     Debug.updateStats({controls: this.stats})

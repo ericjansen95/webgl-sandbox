@@ -1,12 +1,9 @@
 import { vec2 } from "gl-matrix"
 
-const WINDOW_SIZE: vec2 = vec2.fromValues(window.innerWidth, window.innerHeight)
-
 export default class Input {
   static keyState: Map<string, boolean>
   static mouseState: {
-    position: vec2,
-    deltaPosition: vec2,
+    deltaTranslation: vec2,
     isDown: boolean
   }
   static locked: boolean
@@ -14,8 +11,7 @@ export default class Input {
   static init = () => {
     this.keyState = new Map<string, boolean>()
     this.mouseState = {
-      position: vec2.create(),
-      deltaPosition: vec2.create(),
+      deltaTranslation: vec2.create(),
       isDown: false
     }
 
@@ -23,14 +19,10 @@ export default class Input {
   
     document.onkeydown = (event) => this.keyState.set(event.key.toLowerCase(), true)
 
-    //document.body.style.cursor = 'none'
-
-    document.onmouseenter = (event) => this.mouseState.position = vec2.fromValues(event.offsetX, event.offsetY)
-
     // handle this manually in game loop to keep synch?
     document.onmousemove = this.updateMouseState
     
-    document.onmouseleave = () => this.mouseState.deltaPosition.fill(0.0)
+    document.onmouseleave = () => this.mouseState.deltaTranslation.fill(0.0)
 
     document.onmousedown = () => this.mouseState.isDown = true
     document.onmouseup = () => this.mouseState.isDown = false
@@ -45,17 +37,9 @@ export default class Input {
 
     if(this.mouseMoveTimeout) clearTimeout(this.mouseMoveTimeout)
 
-    this.mouseState.deltaPosition = [event.movementX, event.movementY] as vec2
-    vec2.div(this.mouseState.deltaPosition, this.mouseState.deltaPosition, WINDOW_SIZE)
-
-    /*
-    vec2.sub(this.mouseState.deltaPosition, mousePosition, this.mouseState.position)
-    vec2.div(this.mouseState.deltaPosition, this.mouseState.deltaPosition, WINDOW_SIZE)
-
-    this.mouseState.position = mousePosition
-    */
+    this.mouseState.deltaTranslation = [event.movementX, event.movementY] as vec2
    
-    this.mouseMoveTimeout = setTimeout(() => this.mouseState.deltaPosition.fill(0.0), 67)
+    this.mouseMoveTimeout = setTimeout(() => this.mouseState.deltaTranslation.fill(0.0), 17)
   }
 
   static isKeyDown = (keyName: string) => {

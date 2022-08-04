@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix";
 import { Ray, sortIntersectionsByDistance } from "../../../util/math/raycast";
 import Entity from "../../scene/entity";
-import Component, { ComponentEnum } from "../base/component";
+import Component, { ComponentType } from "../base/component";
 
 export type IntersectionInfo = {
   distance: number,
@@ -24,10 +24,10 @@ export const getClosestIntersection = (ray: Ray, collider: Array<Collider>): Int
 }
 
 export default class Collider implements Component {
-  type: ComponentEnum
+  type: ComponentType
   getIntersecetions: (ray: Ray) => Array<IntersectionInfo>
 
   constructor() {
-    this.type = ComponentEnum.COLLIDER
+    this.type = ComponentType.COLLIDER
   }
 }

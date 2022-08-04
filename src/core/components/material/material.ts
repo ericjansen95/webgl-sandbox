@@ -1,4 +1,4 @@
-import Component, { ComponentEnum } from "../base/component"
+import Component, { ComponentType } from "../base/component"
 import Entity from "../../scene/entity"
 import { mat4, vec3 } from "gl-matrix"
 import Transform from "../base/transform"
@@ -13,7 +13,7 @@ const DEFAULT_MAIN_LIGHT_DIRECTION: vec3 = vec3.normalize(vec3.create(), [0.75, 
 export const DEFAULT_AMBIENT_LIGHT_INTENSITY: number = 0.25
 
 export default class Material implements Component {
-  type: ComponentEnum
+  type: ComponentType
   program: WebGLProgram
 
   attributeLocations: Map<string, number>
@@ -23,8 +23,8 @@ export default class Material implements Component {
   compile: (gl: WebGL2RenderingContext) => boolean
 
   bindBase = (gl: WebGL2RenderingContext, entity: Entity, camera: Entity, light: LightData = { mainDirection: DEFAULT_MAIN_LIGHT_DIRECTION }): boolean => {
-    const { localMatrix: modelMatrix, globalMatrix: globalMatrix } = entity.get(ComponentEnum.TRANSFORM) as Transform
-    const { projectionMatrix, viewMatrix, viewDir } = camera.get(ComponentEnum.CAMERA) as Camera
+    const { localMatrix: modelMatrix, globalMatrix: globalMatrix } = entity.get(ComponentType.TRANSFORM) as Transform
+    const { projectionMatrix, viewMatrix, viewDir } = camera.get(ComponentType.CAMERA) as Camera
 
     if(!this.compile(gl)) return false
     gl.useProgram(this.program)
@@ -75,7 +75,7 @@ export default class Material implements Component {
   }
 
   constructor() {
-    this.type = ComponentEnum.MATERIAL
+    this.type = ComponentType.MATERIAL
     this.program = null
 
     this.attributeLocations = null

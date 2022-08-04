@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix";
 import Debug from "../../internal/debug";
 import Entity from "../../scene/entity";
-import { ComponentEnum } from "../base/component";
+import { ComponentType } from "../base/component";
 import Geometry, { DrawMode } from "../geometry/geometry";
 import BoundingVolume from "./boundingVolume";
 
@@ -27,7 +27,7 @@ export default class BoundingBox extends BoundingVolume {
 
     this.createBox()
 
-    const geometry = this.box.get(ComponentEnum.GEOMETRY) as Geometry
+    const geometry = this.box.get(ComponentType.GEOMETRY) as Geometry
     geometry.visible = visible
   }
 
@@ -97,7 +97,7 @@ export default class BoundingBox extends BoundingVolume {
     this.box.add(boxGeometry)
     this.box.add(Debug.material)
 
-    this.self.get(ComponentEnum.TRANSFORM).add(this.box)
+    this.self.get(ComponentType.TRANSFORM).add(this.box)
 
     return true
   }
@@ -105,7 +105,7 @@ export default class BoundingBox extends BoundingVolume {
   onAdd = (self: Entity) => {
     this.self = self
 
-    const geometry = self.get(ComponentEnum.GEOMETRY) as Geometry
+    const geometry = self.get(ComponentType.GEOMETRY) as Geometry
 
     this.min = geometry.vao.min
     this.max = geometry.vao.max

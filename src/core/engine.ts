@@ -1,6 +1,6 @@
 import { vec2, vec3 } from "gl-matrix"
 import Camera from "./components/base/camera"
-import { ComponentEnum } from "./components/base/component"
+import { ComponentType } from "./components/base/component"
 import Transform from "./components/base/transform"
 import FlyControls from "./components/controls/flyControls"
 import Debug from "./internal/debug"

@@ -1,7 +1,7 @@
 import { mat4, quat, vec3 } from "gl-matrix"
 import Time from "../../internal/time"
 import Entity from "../../scene/entity"
-import Component, { ComponentEnum } from "../base/component"
+import Component, { ComponentType } from "../base/component"
 import Transform from "../base/transform"
 import SkinnedGeometry, { MAX_JOINTS } from "../geometry/skinned"
 
@@ -35,7 +35,7 @@ export type Animation = {
 }
 
 export default class Animator implements Component {
-  type: ComponentEnum
+  type: ComponentType
 
   time: number
   speed: number
@@ -46,7 +46,7 @@ export default class Animator implements Component {
   geometry: SkinnedGeometry
 
   constructor(skeleton: Skeleton, animations: Array<Animation>) {
-    this.type = ComponentEnum.ANIMATOR
+    this.type = ComponentType.ANIMATOR
 
     this.time = 0
 
@@ -55,9 +55,9 @@ export default class Animator implements Component {
   }
 
   onAdd = (self: Entity) => {
-    this.geometry = self.get(ComponentEnum.GEOMETRY) as SkinnedGeometry
+    this.geometry = self.get(ComponentType.GEOMETRY) as SkinnedGeometry
 
-    const transform = self.get(ComponentEnum.TRANSFORM) as Transform
+    const transform = self.get(ComponentType.TRANSFORM) as Transform
     transform.add(this.skeleton.root.entity)
   }
 

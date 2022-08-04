@@ -1,23 +1,24 @@
 import Entity from "../../scene/entity"
 
-export enum ComponentEnum {
+export enum ComponentType {
   TRANSFORM = 0,
   GEOMETRY,
   MATERIAL,
   BOUNDING_VOLUME,
   CAMERA,
   COLLIDER,
-  TERRAIN,
   CONTROLS,
-  AUDIO_SOURCE,
+  RIGIDBODY,
   SCRIPT,
+  AUDIO_SOURCE,
   ANIMATOR,
-  UI
+  UI,
+  TERRAIN,
 }
 
 export default interface Component {
   // remove self and add delta time?
-  type: ComponentEnum
+  type: ComponentType
   onUpdate?: (self: Entity, camera: Entity) => void
   onAdd?: (self: Entity) => void
   onRemove?: () => void

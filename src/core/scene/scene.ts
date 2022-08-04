@@ -6,10 +6,11 @@ import Debug from "../internal/debug";
 import Client from "../network/client";
 import GameNetworkController from "../network/gameNetworkController";
 import Entity from "./entity";
-import { ComponentEnum } from "../components/base/component";
+import { ComponentType } from "../components/base/component";
 import Transform from "../components/base/transform";
 import Geometry from "../components/geometry/geometry";
-import AudioController from "../audio/audio";
+import AudioController from "../internal/audio";
+import PhysicsController from "../internal/physics";
 
 export type SceneStats = {
   updateTime: number
@@ -28,6 +29,7 @@ export default class Scene {
   entities: Array<Entity>
 
   audioController: AudioController
+  physicsController: PhysicsController
   networkController: GameNetworkController
 
   constructor(camera: Entity, clientEntity: Entity | null = null, client: Client | null = null) {
@@ -45,15 +47,16 @@ export default class Scene {
     }
 
     const grid: Entity = new Entity()
-    grid.get(ComponentEnum.TRANSFORM).setLocalScale([10.0, 10.0, 10.0])
-    grid.get(ComponentEnum.TRANSFORM).setLocalPosition([-5.0, 0.0, -5.0])
+    grid.get(ComponentType.TRANSFORM).setLocalScale([10.0, 10.0, 10.0])
+    grid.get(ComponentType.TRANSFORM).setLocalPosition([-5.0, 0.0, -5.0])
     grid.add(new GridGeometry(10))
     grid.add(new UnlitMaterial([0.75, 0.75, 0.75]))
-    this.root.get(ComponentEnum.TRANSFORM).add(grid)
+    this.root.get(ComponentType.TRANSFORM).add(grid)
 
     Debug.console.registerCommand({ name: "bv", description: "Visualize bounding volumes.", callback: this.toggleBoundingVolumes })
 
     this.audioController = new AudioController()
+    this.physicsController = new PhysicsController()
 
     if(!clientEntity || !client) return
 
@@ -64,11 +67,16 @@ export default class Scene {
     const startTime = Date.now()
 
     this.stats.localMatrixUpdates = 0
+
     this.entities = []
+    this.physicsController.reset()
+
     this.updateEntity(this.root, this.camera, true)
 
     this.stats.updateTime = Math.ceil(Date.now() - startTime)
     this.stats.entityCount = this.entities.length
+
+    this.physicsController.update()
 
     if(!this.networkController) return
 
@@ -88,18 +96,29 @@ export default class Scene {
   }
 
   updateEntityTransform = (entity: Entity): void => {
-    if(entity.get(ComponentEnum.TRANSFORM).onUpdate()) this.stats.localMatrixUpdates++
+    if(entity.get(ComponentType.TRANSFORM).onUpdate()) this.stats.localMatrixUpdates++
   }
 
   updateEntityComponents = (entity: Entity, camera: Entity): void => {
     const { components } = entity
 
-    for(let componentIndex = 1; componentIndex < components.length; componentIndex++) {
-      const component: any = components[componentIndex]
+    for(let componentType = 1; componentType < components.length; componentType++) {
+      const component: any = components[componentType]
       if(!component) continue
 
       if(component.onUpdate) component.onUpdate(entity, camera)
-      if(componentIndex === ComponentEnum.AUDIO_SOURCE) component.bind(this.audioController.state?.context)
+
+      switch (componentType) {
+        case ComponentType.COLLIDER:
+          this.physicsController.addCollider(component)
+          break
+        case ComponentType.RIGIDBODY:
+          this.physicsController.addRigidbody(component)
+          break
+        case ComponentType.AUDIO_SOURCE:
+          component.bind(this.audioController.state?.context) //ToDo: Change this to be handled in controller?
+          break
+      }
     }
   }
 
@@ -107,7 +126,7 @@ export default class Scene {
   getVisibleEntities = (): Array<Entity> => {
     const startTime = Date.now()
 
-    const cameraComponent = this.camera.get(ComponentEnum.CAMERA) as Camera
+    const cameraComponent = this.camera.get(ComponentType.CAMERA) as Camera
 
     const visibleEnties = this.getEntities().filter(entity => cameraComponent.isEntityInFrustrum(entity))
 
@@ -124,7 +143,7 @@ export default class Scene {
   }
 
   add = (entity: Entity): Entity => {
-    const rootTransform = this.root.get(ComponentEnum.TRANSFORM) as Transform
+    const rootTransform = this.root.get(ComponentType.TRANSFORM) as Transform
     rootTransform.add(entity)
     return entity
   }
@@ -133,14 +152,14 @@ export default class Scene {
     if(!this.root) return "Failed toggeling bounding volumes = no scene root found!"
 
     const toggleBoundingVolume = (entity: Entity) => {
-      const boundingVolume = entity.get(ComponentEnum.BOUNDING_VOLUME) as BoundingVolume
+      const boundingVolume = entity.get(ComponentType.BOUNDING_VOLUME) as BoundingVolume
       if(!boundingVolume) return
 
       boundingVolume.setVisible(!boundingVolume.visible)
     }
 
     const toggleFrustrumPlane = (frustrumPlane: Entity) => {
-      const frustrumPlaneGeometry = frustrumPlane.get(ComponentEnum.GEOMETRY) as Geometry
+      const frustrumPlaneGeometry = frustrumPlane.get(ComponentType.GEOMETRY) as Geometry
       frustrumPlaneGeometry.visible = !frustrumPlaneGeometry.visible
     }
 

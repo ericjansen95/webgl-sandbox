@@ -2,7 +2,7 @@ import { mat4, vec2, vec3 } from "gl-matrix";
 import Entity from "../../scene/entity";
 import Material from "../material/material";
 import PlaneGeometry from "../geometry/plane";
-import Component, { ComponentEnum } from "../base/component";
+import Component, { ComponentType } from "../base/component";
 import Geometry from "../geometry/geometry";
 import TerrainMaterial from "../material/terrainMaterial";
 import UnlitMaterial from "../material/unlitMaterial";
@@ -24,7 +24,7 @@ const TERRAIN_CHUNK_HIGH_SUBDEVISIONS: number = 128
 const TERRAIN_CHUNK_SIZE: number = 100.0
 
 export default class Terrain implements Component {
-  type: ComponentEnum
+  type: ComponentType
   size: number
   height: number
 
@@ -39,7 +39,7 @@ export default class Terrain implements Component {
 
   // size is in units / m
   constructor(heightmapUri: string = TERRAIN_HEIGHTMAP_URI, size: number = 1000) {
-    this.type = ComponentEnum.TERRAIN
+    this.type = ComponentType.TERRAIN
     this.size = size
 
     this.height = 75.0
@@ -62,8 +62,8 @@ export default class Terrain implements Component {
         chunkPos = vec3.fromValues(xPos, 0.0, zPos)
         const chunk: Entity = new Entity()
 
-        chunk.get(ComponentEnum.TRANSFORM).setLocalPosition(chunkPos)
-        chunk.get(ComponentEnum.TRANSFORM).setLocalScale(chunkScale)
+        chunk.get(ComponentType.TRANSFORM).setLocalPosition(chunkPos)
+        chunk.get(ComponentType.TRANSFORM).setLocalScale(chunkScale)
 
         chunk.add(this.highGeometry)
         chunk.add(this.highMaterial)
@@ -78,7 +78,7 @@ export default class Terrain implements Component {
 
   onUpdate = (self: Entity, camera: Entity) => {
     return;
-    const cameraPos: vec3 = (camera.get(ComponentEnum.TRANSFORM) as Transform).getGlobalPosition()
+    const cameraPos: vec3 = (camera.get(ComponentType.TRANSFORM) as Transform).getGlobalPosition()
     // ToDo(Eric) Check why we have to make this transform
     // => this seems wrong
     vec3.multiply(cameraPos, cameraPos, [-1.0, 1.0, -1.0])
@@ -90,7 +90,7 @@ export default class Terrain implements Component {
       const chunk: Entity = this.chunks[chunkIndex]
 
       const chunkPos: vec3 = vec3.create()
-      mat4.getTranslation(chunkPos, chunk.get(ComponentEnum.TRANSFORM).globalMatrix)
+      mat4.getTranslation(chunkPos, chunk.get(ComponentType.TRANSFORM).globalMatrix)
       
       // ToDo(Eric) Transform bb check in 0-1 range on both axis
       const chunkCornerLowerLeft: vec2 = [chunkPos[0] - 1.0 + this.size, chunkPos[2] + 1.0 + this.size]      
@@ -140,10 +140,10 @@ export default class Terrain implements Component {
   onAdd = (self: Entity) => {
     const position = vec3.fromValues(this.size * -0.5, -100, this.size * -1.0)
 
-    this.chunks.forEach(chunk => self.get(ComponentEnum.TRANSFORM).add(chunk))
-    self.get(ComponentEnum.TRANSFORM).setLocalScale([this.size, 1.0, this.size])
+    this.chunks.forEach(chunk => self.get(ComponentType.TRANSFORM).add(chunk))
+    self.get(ComponentType.TRANSFORM).setLocalScale([this.size, 1.0, this.size])
 
-    self.get(ComponentEnum.TRANSFORM).setLocalPosition(position)
+    self.get(ComponentType.TRANSFORM).setLocalPosition(position)
 
     self.add(new HeightmapCollider(TERRAIN_HEIGHTMAP_URI, this.height, this.size, position))
   }

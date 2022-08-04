@@ -1,6 +1,6 @@
 import { vec3, quat, vec2 } from "gl-matrix"
 import Entity from "../../scene/entity"
-import Component, { ComponentEnum } from "../base/component"
+import Component, { ComponentType } from "../base/component"
 import Time from "../../internal/time"
 import Transform from "../base/transform"
 import Debug from "../../internal/debug"
@@ -24,8 +24,6 @@ export type FirstPersonControlsState = {
   transform: Transform
 
   camera: FirstPersonControlsCameraState
-  
-  collider: Array<Collider>
 
   forward: vec3
 
@@ -42,8 +40,8 @@ type FirstPersonControlsCameraState = {
 }
 
 const FIRST_PERSON_CONTROLS_DEFAULT_CONFIG: FirstPersonControlsConfig = Object.freeze({
-  ROTATE_SPEED: 400.0,
-  TRANSLATE_SPEED: 1.42, // m/s
+  ROTATE_SPEED: 0.8,
+  TRANSLATE_SPEED: 3, // m/s
 
   CAMERA_Y_OFFSET: 1.6,
 
@@ -51,29 +49,27 @@ const FIRST_PERSON_CONTROLS_DEFAULT_CONFIG: FirstPersonControlsConfig = Object.f
 })
 
 export default class FirstPersonControls implements Component {
-  type: ComponentEnum
+  type: ComponentType
   stats: ControlsStats
   config: FirstPersonControlsConfig
   state: FirstPersonControlsState
 
-  constructor({ camera, collider }: ControlsOptions) {
-    this.type = ComponentEnum.CONTROLS
+  constructor({ camera }: ControlsOptions) {
+    this.type = ComponentType.CONTROLS
 
     this.config = FIRST_PERSON_CONTROLS_DEFAULT_CONFIG
 
-    const transform = camera.get(ComponentEnum.TRANSFORM) as Transform
+    const transform = camera.get(ComponentType.TRANSFORM) as Transform
     this.state = {
       transform: null,
 
       camera: {
-        component: camera.get(ComponentEnum.CAMERA) as Camera,
+        component: camera.get(ComponentType.CAMERA) as Camera,
         transform,
   
         currentPosition: vec3.create(),
         currentRotation: quat.create(),
       },
-  
-      collider,
 
       forward: vec3.clone(GLOBAL.FORWARD),
 
@@ -89,23 +85,19 @@ export default class FirstPersonControls implements Component {
   }
 
   private updateRotation = () => {
-    const { deltaPosition } = Input.mouseState
+    const { deltaTranslation } = Input.mouseState
 
-    if(vec2.sqrLen(deltaPosition) === 0) {
+    if(vec2.sqrLen(deltaTranslation) === 0) {
       this.stats.isRotating = false
       return
     }
 
-    const inputRotation = vec2.clone(deltaPosition)
+    const inputRotation = vec2.clone(deltaTranslation)
     vec2.scale(inputRotation, inputRotation, this.config.ROTATE_SPEED * Time.deltaTime)
 
     vec2.sub(this.state.currentRotation, this.state.currentRotation, inputRotation)
 
-    if(this.state.currentRotation[1] < -1)
-    this.state.currentRotation[1] = -1 
-
-    if(this.state.currentRotation[1] > 1)
-    this.state.currentRotation[1] = 1
+    this.state.currentRotation[1] = Math.min(Math.max(-1, this.state.currentRotation[1]), 1)
 
     // transform y rotation to quaternion
     const rotation = quat.create()
@@ -140,17 +132,6 @@ export default class FirstPersonControls implements Component {
     const side = vec3.cross(vec3.create(), this.state.forward, GLOBAL.UP)
     vec3.scaleAndAdd(this.state.currentPosition, this.state.currentPosition, side, -1.0 * inputDirection[0] * this.config.TRANSLATE_SPEED * Time.deltaTime)
 
-    // check ground collision by casting a ray down from current position with slight offset
-    const ray: Ray = {
-      origin: vec3.add(vec3.create(), this.state.currentPosition, this.config.GROUND_RAY_OFFSET),
-      direction: GLOBAL.DOWN,
-      length: 2
-    }
-    const intersection = getClosestIntersection(ray, this.state.collider)
-
-    // correct y position with intersection position
-    this.state.currentPosition[1] = intersection ? intersection.position[1] : 0.0
-
     this.state.transform.setLocalPosition(this.state.currentPosition)
 
     this.stats.isMoving = true
@@ -165,7 +146,7 @@ export default class FirstPersonControls implements Component {
   }
 
   onAdd = (self: Entity) => {
-    this.state.transform = self.get(ComponentEnum.TRANSFORM) as Transform
+    this.state.transform = self.get(ComponentType.TRANSFORM) as Transform
   }
 
   onUpdate = (self: Entity, camera: Entity) => {

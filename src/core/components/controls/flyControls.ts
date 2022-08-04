@@ -1,6 +1,6 @@
 import { vec3, vec2, mat4, quat } from "gl-matrix"
 import Entity from "../../scene/entity"
-import Component, { ComponentEnum } from "../base/component"
+import Component, { ComponentType } from "../base/component"
 import Input from "../../internal/input"
 import Time from "../../internal/time"
 import clamp from "../../../util/math/clamp"
@@ -14,14 +14,14 @@ const TRANSLATE_SPEED: number = 14.0
 const TWO_PI: number = 2.0 * Math.PI
 
 export default class FlyControls implements Component {
-  type: ComponentEnum
+  type: ComponentType
   angleRotation: vec2
   tmpAngleRotation: vec2
 
   position: vec3
 
   constructor() {
-    this.type = ComponentEnum.CONTROLS
+    this.type = ComponentType.CONTROLS
 
     this.angleRotation = vec2.create()
     this.tmpAngleRotation = vec2.create()
@@ -31,7 +31,7 @@ export default class FlyControls implements Component {
     // ROTATION
 
     // x: yaw, y: pitch
-    const deltaMousePosition = vec2.clone(Input.mouseState.deltaPosition)
+    const deltaMousePosition = vec2.clone(Input.mouseState.deltaTranslation)
     vec2.scale(deltaMousePosition, deltaMousePosition, -1.0)
     const rotateSpeed = ROTATE_SPEED * Time.deltaTime;
 
@@ -60,7 +60,7 @@ export default class FlyControls implements Component {
     const side = vec3.cross(vec3.create(), forward, VECTOR_UP)
     const up = vec3.cross(vec3.create(), forward, side)
 
-    const transform = self.get(ComponentEnum.TRANSFORM) as Transform
+    const transform = self.get(ComponentType.TRANSFORM) as Transform
 
     // TRANSLATION
 
@@ -80,6 +80,6 @@ export default class FlyControls implements Component {
   }
 
   onAdd = (self: Entity) => {
-    this.position = self.get(ComponentEnum.TRANSFORM).position
+    this.position = self.get(ComponentType.TRANSFORM).position
   }
 }

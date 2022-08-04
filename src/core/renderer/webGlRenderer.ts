@@ -2,7 +2,7 @@ import { vec3 } from "gl-matrix"
 import Material from "../components/material/material"
 import Entity from "../scene/entity"
 import Geometry from "../components/geometry/geometry"
-import { ComponentEnum } from "../components/base/component"
+import { ComponentType } from "../components/base/component"
 import Debug from "../internal/debug"
 
 export type RenderStats = {
@@ -51,11 +51,11 @@ export default class WebGlRenderer {
   }
 
   renderEntity = (entity: Entity, camera: Entity) => {
-    const geometry = entity.get(ComponentEnum.GEOMETRY) as Geometry
+    const geometry = entity.get(ComponentType.GEOMETRY) as Geometry
 
     if(!geometry) return
 
-    const material = entity.get(ComponentEnum.MATERIAL) as Material
+    const material = entity.get(ComponentType.MATERIAL) as Material
 
     if(!material) Debug.material.bindBase(this.gl, entity, camera)
     else material.bindBase(this.gl, entity, camera)

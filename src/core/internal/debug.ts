@@ -1,6 +1,6 @@
 import { vec2, vec3 } from "gl-matrix"
 import Camera from "../components/base/camera"
-import { ComponentEnum } from "../components/base/component"
+import { ComponentType } from "../components/base/component"
 import Transform from "../components/base/transform"
 import FlyControls from "../components/controls/flyControls"
 import Material from "../components/material/material"
@@ -13,12 +13,14 @@ import Console from "./console"
 import FrameInspector from "./fameInspector"
 import { ControlsStats } from "../components/controls/controls"
 import { formatObjectToString } from "../../util/helper/string"
+import { PhysicStats } from "./physics"
 
 export type DebugStats = {
   scene?: SceneStats
   render?: RenderStats
   main?: MainStats
   controls?: ControlsStats
+  physics?: PhysicStats
   client?: {
     ping: number
   }
@@ -100,11 +102,11 @@ export default class Debug {
   } 
 
   private static createCamera = (sceneCamera: Entity) => {
-    const sceneCameraComponent = sceneCamera.get(ComponentEnum.CAMERA) as Camera
+    const sceneCameraComponent = sceneCamera.get(ComponentType.CAMERA) as Camera
 
     this.camera = new Entity()
     this.camera.add(new FlyControls())
-    this.camera.add(new Camera(sceneCameraComponent.fov, sceneCameraComponent.aspect))
+    this.camera.add(new Camera(sceneCameraComponent.fov))
   }
 
   static update = () => {
@@ -112,9 +114,9 @@ export default class Debug {
     
     if(!this.cameraEnabled) return
 
-    this.camera.get(ComponentEnum.CONTROLS).onUpdate(this.camera, this.camera)
-    this.camera.get(ComponentEnum.TRANSFORM).onUpdate(this.camera, this.camera)
-    this.camera.get(ComponentEnum.CAMERA).onUpdate(this.camera, this.camera)
+    this.camera.get(ComponentType.CONTROLS).onUpdate(this.camera, this.camera)
+    this.camera.get(ComponentType.TRANSFORM).onUpdate(this.camera, this.camera)
+    this.camera.get(ComponentType.CAMERA).onUpdate(this.camera, this.camera)
   }
 
   static toggleCamera = (): string => {
@@ -122,14 +124,14 @@ export default class Debug {
 
     if(!this.cameraEnabled) return "Engine::toggleDebugCamera(): Disabled debug camera."
 
-    const sceneCameraTransform = this.sceneCamera.get(ComponentEnum.TRANSFORM) as Transform
+    const sceneCameraTransform = this.sceneCamera.get(ComponentType.TRANSFORM) as Transform
 
     // create debug camera if none exists
     if(!this.camera)
       this.createCamera(this.sceneCamera)
 
-    const debugCameraControls = this.camera.get(ComponentEnum.CONTROLS) as FlyControls
-    const debugCameraTransform = this.camera.get(ComponentEnum.TRANSFORM) as Transform
+    const debugCameraControls = this.camera.get(ComponentType.CONTROLS) as FlyControls
+    const debugCameraTransform = this.camera.get(ComponentType.TRANSFORM) as Transform
 
     // set debug camera position to scene camera
     debugCameraTransform.setLocalPosition(sceneCameraTransform.getGlobalPosition())

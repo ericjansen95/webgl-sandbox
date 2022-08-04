@@ -9,7 +9,7 @@ import Debug from "../internal/debug";
 import Time from "../internal/time";
 import Entity from "../scene/entity";
 import Client, { GameConnectPackage, GameDeltaStatePackage, GameDisconnectPackage, GameTransformPackage, GlobalConnectPackage } from "./client";
-import { ComponentEnum } from "../components/base/component";
+import { ComponentType } from "../components/base/component";
 import { roundNumber } from "../../util/math/round";
 
 type ClientTransform = {
@@ -27,8 +27,8 @@ type ClientCache = {
 }
 
 export const getLocalClientTransform = (entity: Entity): ClientTransform => {
-  const transform = entity.get(ComponentEnum.TRANSFORM) as Transform
-  const controls = entity.get(ComponentEnum.CONTROLS) as FlyControls
+  const transform = entity.get(ComponentType.TRANSFORM) as Transform
+  const controls = entity.get(ComponentType.CONTROLS) as FlyControls
 
   const position = vec3ToRoundedArray(transform.getGlobalPosition())
   const rotation = roundNumber(controls.angleRotation[0])
@@ -141,7 +141,7 @@ export default class GameNetworkController {
 
       transform.currentRotation = transform.targetRotation
   
-      const transformComponent = entity.get(ComponentEnum.TRANSFORM) as Transform
+      const transformComponent = entity.get(ComponentType.TRANSFORM) as Transform
       transformComponent.setLocalPosition(currentPosition)
       transformComponent.setLocalEulerRotation(vec3.fromValues(0.0, transform.targetRotation, 0.0));
     }
@@ -155,7 +155,7 @@ export default class GameNetworkController {
 
     const lambertMaterial: Material = new LambertMaterial([Math.random(), Math.random(), Math.random()]) as Material
     const entity: Entity = new Entity()
-    const transform = entity.get(ComponentEnum.TRANSFORM) as Transform
+    const transform = entity.get(ComponentType.TRANSFORM) as Transform
     transform.setLocalPosition(vec3.fromValues(position[0], position[1], position[2]))
     transform.setLocalEulerRotation(vec3.fromValues(0.0, rotation, 0.0))
 
@@ -164,7 +164,7 @@ export default class GameNetworkController {
     entity.add(humanGeometry)
     entity.add(lambertMaterial)
 
-    this.sceneRoot.get(ComponentEnum.TRANSFORM).add(entity)
+    this.sceneRoot.get(ComponentType.TRANSFORM).add(entity)
 
     const remoteClient: ClientCache = {
       clientId,
@@ -186,7 +186,7 @@ export default class GameNetworkController {
     const {clientId} = data
 
     const {entity} = this.remoteClients.get(clientId);
-    (this.sceneRoot.get(ComponentEnum.TRANSFORM) as Transform).removeChild(entity)
+    (this.sceneRoot.get(ComponentType.TRANSFORM) as Transform).removeChild(entity)
 
     this.remoteClients.delete(clientId)
     

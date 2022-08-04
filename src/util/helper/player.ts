@@ -1,4 +1,4 @@
-import { ComponentEnum } from "../../core/components/base/component";
+import Rigidbody from "../../core/components/collider/rigidbody";
 import { ControlsOptions } from "../../core/components/controls/controls";
 import FirstPersonControls from "../../core/components/controls/firstPersonControls";
 import Entity from "../../core/scene/entity";
@@ -12,12 +12,13 @@ export type PlayerCreationOptions = {
   type: PlayerType
 } & ControlsOptions
 
-export const createPlayer = ({ type, camera, collider }: PlayerCreationOptions): Entity => {
+export const createPlayer = ({ type, camera }: PlayerCreationOptions): Entity => {
   const player = new Entity()
+  player.add(new Rigidbody())
 
   switch (type) {
     case PlayerType.FIRST_PERSON: {
-      player.add(new FirstPersonControls({ camera, collider}))
+      player.add(new FirstPersonControls({ camera }))
       break;
     }
   }

@@ -2,7 +2,7 @@ import { vec3, vec4 } from "gl-matrix";
 import { globalToScreenSpace } from "../../../util/math/projection";
 import Debug from "../../internal/debug";
 import entity from "../../scene/entity";
-import Component, { ComponentEnum } from "../base/component";
+import Component, { ComponentType } from "../base/component";
 
 type LabelState = {
   element: HTMLSpanElement
@@ -16,11 +16,11 @@ export type LabelOptions = {
 }
 
 export default class Label implements Component {
-  type: ComponentEnum
+  type: ComponentType
   state: LabelState
 
   constructor({ text, offset = vec3.create() }: LabelOptions) {
-    this.type = ComponentEnum.UI
+    this.type = ComponentType.UI
 
     const element = document.createElement('span')
     element.innerText = text

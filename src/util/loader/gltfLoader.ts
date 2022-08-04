@@ -1,6 +1,6 @@
 import { mat4, quat, vec3 } from "gl-matrix"
 import Animator, { Animation, Joint, JointTransfrom, KeyFrame, Skeleton } from "../../core/components/animation/animator"
-import { ComponentEnum } from "../../core/components/base/component"
+import { ComponentType } from "../../core/components/base/component"
 import Transform from "../../core/components/base/transform"
 import Geometry from "../../core/components/geometry/geometry"
 import SkinnedGeometry from "../../core/components/geometry/skinned"
@@ -192,7 +192,7 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
     if(parentEntityTransform)
       parentEntityTransform.add(entity)
 
-    const entityTransform = entity.get(ComponentEnum.TRANSFORM) as Transform
+    const entityTransform = entity.get(ComponentType.TRANSFORM) as Transform
 
     const childJoints = new Array<Joint>()
 

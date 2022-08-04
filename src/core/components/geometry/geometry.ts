@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix"
 import Entity from "../../scene/entity"
 import BoundingSphere from "../boundingVolume/boundingSphere"
-import Component, { ComponentEnum } from "../base/component"
+import Component, { ComponentType } from "../base/component"
 import Material from "../material/material"
 
 // https://www.khronos.org/registry/webgl/specs/latest/1.0/
@@ -66,7 +66,7 @@ export const createVBO = (gl: WebGL2RenderingContext): VBO => {
 }
 
 export default class Geometry implements Component {
-  type: ComponentEnum
+  type: ComponentType
   drawMode: DrawMode
 
   vao: VAO
@@ -78,7 +78,7 @@ export default class Geometry implements Component {
   boundingSphere: boolean
 
   constructor(drawMode: DrawMode = DrawMode.TRIANGLE, visible: boolean = true, cull: boolean = false, boundingSphere: boolean = true) {
-    this.type = ComponentEnum.GEOMETRY
+    this.type = ComponentType.GEOMETRY
     this.drawMode = drawMode
 
     this.vao = createVAO()
