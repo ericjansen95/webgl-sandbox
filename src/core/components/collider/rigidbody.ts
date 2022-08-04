@@ -34,7 +34,7 @@ export default class Rigidbody implements Component {
     }
   }
 
-  update = (collider: Array<Collider>) => {
+  update = (colliders: Array<Collider>) => {
     const transform = this.state.self.get(ComponentType.TRANSFORM) as Transform
     const position = transform.localPosition
 
@@ -47,7 +47,7 @@ export default class Rigidbody implements Component {
       direction: GLOBAL.DOWN,
       length: 2
     }
-    const intersection = getClosestIntersection(ray, collider)
+    const intersection = getClosestIntersection(ray, colliders)
 
     // correct y position with intersection position
     position[1] = intersection ? intersection.position[1] : 0.0

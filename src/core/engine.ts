@@ -9,6 +9,7 @@ import Time from "./internal/time"
 import Entity from "./scene/entity"
 import WebGlRenderer from "./renderer/webGlRenderer"
 import Scene from "./scene/scene"
+import { roundNumber } from "../util/math/round"
 
 export type MainStats = {
   frameTime: number
@@ -36,20 +37,18 @@ export default class Engine {
     this.scene = new Scene(sceneCamera)
 
     const update = curTime => {
-      const startTime = Date.now()
+      const startTime = window.performance.now()
       Time.tick(curTime)
   
       this.scene.update()
-
-      
   
       this.renderer.renderEntities(
         this.scene.getVisibleEntities(), 
         Debug.cameraEnabled ? Debug.camera : this.scene.camera)
   
       this.stats = {
-        frameTime: Math.ceil(Date.now() - startTime),
-        FPS: Math.ceil(1 / Time.deltaTime)
+        frameTime: roundNumber(window.performance.now() - startTime),
+        FPS: Math.round(1 / Time.deltaTime)
       }
       Debug.updateStats({main: this.stats})
       Debug.update()

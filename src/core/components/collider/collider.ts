@@ -1,6 +1,5 @@
 import { vec3 } from "gl-matrix";
 import { Ray, sortIntersectionsByDistance } from "../../../util/math/raycast";
-import Entity from "../../scene/entity";
 import Component, { ComponentType } from "../base/component";
 
 export type IntersectionInfo = {
@@ -8,11 +7,11 @@ export type IntersectionInfo = {
   position: vec3
 }
 
-export const getClosestIntersection = (ray: Ray, collider: Array<Collider>): IntersectionInfo | null => {
+export const getClosestIntersection = (ray: Ray, colliders: Array<Collider>): IntersectionInfo | null => {
   let intersections = new Array<IntersectionInfo>()
       
-  for(const entry of collider) {
-    const intersection = entry.getIntersecetions(ray)
+  for(const collider of colliders) {
+    const intersection = collider.getIntersections(ray)
     if(!intersection.length) continue
 
     intersections = intersections.concat(intersection)
@@ -25,7 +24,7 @@ export const getClosestIntersection = (ray: Ray, collider: Array<Collider>): Int
 
 export default class Collider implements Component {
   type: ComponentType
-  getIntersecetions: (ray: Ray) => Array<IntersectionInfo>
+  getIntersections: (ray: Ray) => Array<IntersectionInfo>
 
   constructor() {
     this.type = ComponentType.COLLIDER

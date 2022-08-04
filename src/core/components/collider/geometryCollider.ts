@@ -52,7 +52,7 @@ export default class GeometryCollider extends Collider {
     super()
   }
 
-  getIntersecetions = (ray: Ray): Array<IntersectionInfo> => {
+  getIntersections = (ray: Ray): Array<IntersectionInfo> => {
     return getIntersections(ray, this.triangles)
   }
 

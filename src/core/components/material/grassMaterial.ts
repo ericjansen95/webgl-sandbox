@@ -1,3 +1,4 @@
+import { roundNumber } from "../../../util/math/round";
 import Debug from "../../internal/debug";
 import Time from "../../internal/time";
 import Texture from "../../renderer/texture";
@@ -28,7 +29,7 @@ export default class GrassMaterial extends Material {
     this.texture.bind(gl)
     gl.uniform1i(this.uniformLocations.get('uTexture'), 0)
 
-    gl.uniform1f(this.uniformLocations.get('uTime'), Date.now() - Time.startTime)
+    gl.uniform1f(this.uniformLocations.get('uTime'), roundNumber(window.performance.now() - Time.startTime))
 
     return true
   }

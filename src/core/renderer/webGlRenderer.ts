@@ -4,6 +4,7 @@ import Entity from "../scene/entity"
 import Geometry from "../components/geometry/geometry"
 import { ComponentType } from "../components/base/component"
 import Debug from "../internal/debug"
+import { roundNumber } from "../../util/math/round"
 
 export type RenderStats = {
   drawTime: number
@@ -70,7 +71,7 @@ export default class WebGlRenderer {
   }
 
   renderEntities = (renderList: RenderList, camera: Entity) => {
-    const startTime = Date.now()
+    const startTime = window.performance.now()
 
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
 
@@ -80,7 +81,7 @@ export default class WebGlRenderer {
     for(const entity of renderList)
       this.renderEntity(entity, camera)
 
-    this.stats.drawTime = Math.ceil(Date.now() - startTime)
+    this.stats.drawTime = roundNumber(window.performance.now() - startTime)
     Debug.updateStats({render: this.stats})
   }
 }

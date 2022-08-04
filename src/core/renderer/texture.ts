@@ -1,3 +1,4 @@
+import { roundNumber } from "../../util/math/round"
 import Debug from "../internal/debug"
 
 export type TextureOptions = {
@@ -16,7 +17,7 @@ export default class Texture {
 
     this.buffer = gl.createTexture()
 
-    const startTime = Date.now()
+    const startTime = window.performance.now()
 
     const image = new Image()
     image.src = this.srcUri
@@ -32,7 +33,7 @@ export default class Texture {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 
-      Debug.info(`Texture::load(): Loaded texture in = ${Date.now() - startTime}ms`)
+      Debug.info(`Texture::load(): Loaded texture in = ${roundNumber(window.performance.now() - startTime)}ms`)
     }
 
     return true

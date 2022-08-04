@@ -9,7 +9,7 @@ import { DebugStats } from "./debug"
     - skinned geometry
 */
 
-const frameInspectorStyle = (value: number, contrast: boolean = false): string => `background-color: ${contrast ? 'burlywood' : 'bisque'}; width: ${Math.max(value, 1) * 100}px; height: 12px; padding-left: 2px; font-family: monospace; font-size: 10px; color: dimgray; font-weight: bold;`
+const frameInspectorStyle = (value: number, contrast: boolean = false): string => `background-color: ${contrast ? 'burlywood' : 'bisque'}; width: ${100 + value * 100}px; height: 12px; padding-left: 2px; font-family: monospace; font-size: 10px; color: dimgray; font-weight: bold;`
 const frameInspectorElement = (text: string, value: number, contrast: boolean = false): string => `<span style="${frameInspectorStyle(value, contrast)}" title="${value}ms">${text}</span>`
 
 export default class FrameInspector {
@@ -43,9 +43,14 @@ export default class FrameInspector {
         ${frameInspectorElement('cull time', stats.scene.cullTime, true)}
         `
     }
+    if(stats.physics) {
+      this.frameInspector.innerHTML += `
+      ${frameInspectorElement('physics time', stats.physics.updateTime, false)}
+      ` 
+    }
     if(stats.render) {
       this.frameInspector.innerHTML += `
-      ${frameInspectorElement('draw time', stats.render.drawTime, false)}
+      ${frameInspectorElement('draw time', stats.render.drawTime, true)}
       ` 
     }
   }

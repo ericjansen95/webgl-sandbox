@@ -11,6 +11,7 @@ import Transform from "../components/base/transform";
 import Geometry from "../components/geometry/geometry";
 import AudioController from "../internal/audio";
 import PhysicsController from "../internal/physics";
+import { roundNumber } from "../../util/math/round";
 
 export type SceneStats = {
   updateTime: number
@@ -64,16 +65,16 @@ export default class Scene {
   }
 
   update = () => {
-    const startTime = Date.now()
-
     this.stats.localMatrixUpdates = 0
 
     this.entities = []
     this.physicsController.reset()
 
+    const startTime = window.performance.now()
+
     this.updateEntity(this.root, this.camera, true)
 
-    this.stats.updateTime = Math.ceil(Date.now() - startTime)
+    this.stats.updateTime = roundNumber(window.performance.now() - startTime)
     this.stats.entityCount = this.entities.length
 
     this.physicsController.update()
@@ -124,13 +125,13 @@ export default class Scene {
 
   // this returns a "display list" for all visible entities that are in the camera frustrum
   getVisibleEntities = (): Array<Entity> => {
-    const startTime = Date.now()
+    const startTime = window.performance.now()
 
     const cameraComponent = this.camera.get(ComponentType.CAMERA) as Camera
 
     const visibleEnties = this.getEntities().filter(entity => cameraComponent.isEntityInFrustrum(entity))
 
-    this.stats.cullTime = Math.ceil(Date.now() - startTime)
+    this.stats.cullTime = roundNumber(window.performance.now() - startTime)
     this.stats.cullCount = this.stats.entityCount - visibleEnties.length
 
     Debug.updateStats({scene: this.stats})

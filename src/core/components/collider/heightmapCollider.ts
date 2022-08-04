@@ -35,7 +35,7 @@ export default class HeightmapCollider extends Collider {
     })
   }
 
-  getIntersecetions = (ray: Ray): Array<IntersectionInfo> => {
+  getIntersections = (ray: Ray): Array<IntersectionInfo> => {
     const { origin, direction, length } = ray
 
     // project ray origin onto x, y plane

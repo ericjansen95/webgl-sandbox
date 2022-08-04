@@ -54,7 +54,7 @@ export default class Material implements Component {
   compileBase = (gl: WebGL2RenderingContext, fsSource: string, vsSource: string = vsStaticSource): boolean => {
     if(this.program) return false
 
-    const startTime = performance.now()
+    const startTime = window.performance.now()
     
     const result = compileProgram(gl, vsSource, fsSource)
     if(!result) {
@@ -68,7 +68,7 @@ export default class Material implements Component {
     this.attributeLocations = attributeLocations
     this.uniformLocations = uniformLocations
 
-    const compileTime = roundNumber(performance.now() - startTime)
+    const compileTime = roundNumber(window.performance.now() - startTime)
     Debug.info(`Material::compileBase(): Compiled program in = ${compileTime} ms`)
 
     return true
