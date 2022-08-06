@@ -32,12 +32,10 @@ import { createPlayer, PlayerType } from './util/helper/player';
   - wrapped state, stats, config
   - options objects for parameters
   - self refference by default in component
-  - player creation wrapper
   - namespaces and modules
   - singeltons instead of static classes
   - camera creating wrapper
   - material uniform pipeline
-  - physics controller => audio and physics as systems feeded by scene data
   - event bus
 
   First Playable:
@@ -50,6 +48,8 @@ import { createPlayer, PlayerType } from './util/helper/player';
   - wall collision - sphere / circle raycaster
   - entity tags
   - collision info that includes enitity ref
+  - trigger zones (aabb)
+  - positional audio
 
   Ideas:
   - scene skybox
@@ -62,15 +62,11 @@ import { createPlayer, PlayerType } from './util/helper/player';
   - base-server, chat-server, scene-server
 
   ToDo:
-  - use pointer lock for first person and fly controls => https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
   - skinned geometry stats
-  - physics stats
   - heightmap performance and sample interpolation
   - firefox fixes and optimizations
   - min max from gltf and fallback calculation
-  - collision entity world matrix offset
   - reduce matrix multipications => cache bounding volume data
-  - canvas resize event
   - namespaces that abstracts initialisation (and entity assemby?)
 
   - clientId

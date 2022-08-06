@@ -1,6 +1,7 @@
 import { vec3 } from "gl-matrix";
 import { IntersectionInfo } from "../../core/components/collider/collider";
 import { Triangle } from "../../core/components/collider/geometryCollider";
+import Entity from "../../core/scene/entity";
 
 export type Ray = {
   origin: vec3,
@@ -46,7 +47,7 @@ export default function getIntersections(ray: Ray, triangles: Array<Triangle>): 
 
     intersections.push({
       distance: vec3.sqrDist(ray.origin, position),
-      position,
+      position
     })
     break
   }

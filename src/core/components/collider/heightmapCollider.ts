@@ -1,6 +1,7 @@
 import { vec2, vec3 } from "gl-matrix";
 import { Ray } from "../../../util/math/raycast";
 import { roundNumber } from "../../../util/math/round";
+import Entity from "../../scene/entity";
 import Collider, { IntersectionInfo } from "./collider";
 
 export default class HeightmapCollider extends Collider {
@@ -67,9 +68,13 @@ export default class HeightmapCollider extends Collider {
     // construct intersection point with added y offset of center position
     const intersectionInfo: IntersectionInfo = {
       distance: vec3.sqrDist(origin, position),
-      position,
+      position
     }
 
     return [intersectionInfo]
+  }
+
+  onAdd = (self: Entity) => {
+    this.self = self
   }
 }

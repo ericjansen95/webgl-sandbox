@@ -229,7 +229,7 @@ const getBufferViewFromAccessorIndex = (gltf: any, bufferData: Array<ArrayBuffer
     bufferView,
     componentType,
     count,
-    type,
+    type
   } = accessors[accessorIndex]
 
   const {
@@ -260,14 +260,23 @@ const parseGeometry = (gltf: any, bufferData: Array<ArrayBuffer>, meshIndex: num
 
   const isSkinnedGeometry = skinIndex != undefined && gltf.skins[skinIndex]
 
-  const vertex = {} as any
+  const vbo = {} as any
 
   const indicesAccessorIndex = primitive.indices as number
-  vertex.INDICES = getBufferViewFromAccessorIndex(gltf, bufferData, indicesAccessorIndex) as Uint16Array
+  vbo.INDICES = getBufferViewFromAccessorIndex(gltf, bufferData, indicesAccessorIndex) as Uint16Array
 
-  for(const [key, value] of Object.entries(attributes as object)) {
-    const accessorIndex = value as number
-    vertex[key] = getBufferViewFromAccessorIndex(gltf, bufferData, accessorIndex)
+  for(const [attribute, accessorIndex] of Object.entries(attributes as object)) {
+    vbo[attribute] = getBufferViewFromAccessorIndex(gltf, bufferData, accessorIndex)
+
+    if(attribute !== 'POSITION') continue
+
+    const {
+      min,
+      max
+    } = gltf.accessors[accessorIndex]
+    
+    vbo.min = min
+    vbo.max = max
   }
 
   let geometry = null
@@ -275,7 +284,7 @@ const parseGeometry = (gltf: any, bufferData: Array<ArrayBuffer>, meshIndex: num
   if(!isSkinnedGeometry) geometry = new Geometry()
   else geometry = new SkinnedGeometry()
 
-  geometry.setVAO(vertex)
+  geometry.setVAO(vbo)
 
   return geometry
 }
@@ -297,6 +306,8 @@ export default function loadGltf(uri: string): Promise<GlftLoadResponse> {
     }
 
     const gltf = await gltfResponse.json() as any
+
+    console.log(gltf)
 
     const { buffers } = gltf
     const bufferData = new Array<ArrayBuffer>()

@@ -111,7 +111,6 @@ export default class FirstPersonControls implements Component {
     this.state.transform.setLocalRotation(rotation)
 
     quat.rotateX(rotation, rotation, this.state.currentRotation[1])
-
     this.state.camera.currentRotation = quat.clone(rotation)
     
     this.stats.isRotating = true
@@ -139,7 +138,7 @@ export default class FirstPersonControls implements Component {
 
   private updateCameraTransform = () => {
     vec3.copy(this.state.camera.currentPosition, this.state.currentPosition)
-    vec3.add(this.state.camera.currentPosition, this.state.camera.currentPosition, [0, this.config.CAMERA_Y_OFFSET, 0])
+    this.state.camera.currentPosition[1] += this.config.CAMERA_Y_OFFSET
 
     this.state.camera.transform.setLocalRotation(this.state.camera.currentRotation)
     this.state.camera.transform.setLocalPosition(this.state.camera.currentPosition)

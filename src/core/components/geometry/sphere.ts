@@ -1,3 +1,4 @@
+import { vec3 } from "gl-matrix";
 import Entity from "../../scene/entity";
 import Geometry, { DrawMode, VAO } from "./geometry";
 
@@ -32,8 +33,14 @@ export default class SphereGeometry extends Geometry {
       positions.push(pos3, 0.0, pos4)
     }
 
+    const halfRadius = radius * 0.5
+    const min = vec3.fromValues(-halfRadius, -halfRadius, -halfRadius)
+    const max = vec3.fromValues(halfRadius, halfRadius, halfRadius)
+
     return {
-      POSITION: new Float32Array(positions)
+      POSITION: new Float32Array(positions),
+      min,
+      max
     }
   }
 }

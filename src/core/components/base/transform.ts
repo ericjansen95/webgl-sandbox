@@ -1,5 +1,4 @@
 import { mat4, quat, vec3 } from "gl-matrix";
-import Camera from "./camera";
 import Entity from "../../scene/entity";
 import Component, { ComponentType } from "./component";
 

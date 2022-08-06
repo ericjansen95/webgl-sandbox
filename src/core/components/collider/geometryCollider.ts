@@ -57,6 +57,8 @@ export default class GeometryCollider extends Collider {
   }
 
   onAdd = (self: Entity) => {
+    this.self = self
+
     const geometry = self.get(ComponentType.GEOMETRY) as Geometry
     const { INDICES, POSITION } = geometry.vao
 

@@ -62,7 +62,9 @@ export default class BoundingSphere extends BoundingVolume {
     const sphereGeometry: Geometry = new Geometry(DrawMode.LINE, true, false, false)
     const positions = this.createSphereBuffer(this.radius)
     sphereGeometry.setVAO({
-      POSITION: positions
+      POSITION: positions,
+      min: this.min,
+      max: this.max
     });
 
     this.sphere = new Entity()
