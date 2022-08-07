@@ -3,6 +3,7 @@ import Entity from "../../scene/entity"
 import BoundingSphere from "../boundingVolume/boundingSphere"
 import Component, { ComponentType } from "../base/component"
 import Material from "../material/material"
+import BoundingBox from "../boundingVolume/boundingBox"
 
 // https://www.khronos.org/registry/webgl/specs/latest/1.0/
 /*
@@ -75,7 +76,7 @@ export default class Geometry implements Component {
   visible: boolean
 
   cull: boolean
-  boundingSphere: boolean
+  boundingVolume: boolean
 
   constructor(drawMode: DrawMode = DrawMode.TRIANGLE, visible: boolean = true, cull: boolean = true, boundingSphere: boolean = true) {
     this.type = ComponentType.GEOMETRY
@@ -87,7 +88,7 @@ export default class Geometry implements Component {
     this.visible = visible
 
     this.cull = cull
-    this.boundingSphere = boundingSphere
+    this.boundingVolume = boundingSphere
   }
 
   loadBase = (gl: WebGL2RenderingContext, usage: number = gl.STATIC_DRAW) => {
@@ -206,10 +207,15 @@ export default class Geometry implements Component {
   }
 
   onAddBase = (self: Entity) => {
-    if(!this.boundingSphere) return
+    if(!this.boundingVolume) return
     
-    const boundingSphere: BoundingSphere = new BoundingSphere()
+    const boundingBox = new BoundingBox()
+    self.add(boundingBox)
+
+    /*
+    const boundingSphere = new BoundingSphere()
     self.add(boundingSphere)
+    */
   }
 
   onAdd = (self: Entity) => {

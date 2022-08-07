@@ -4,6 +4,7 @@ import BoundingVolume from "./boundingVolume";
 import Geometry, { DrawMode } from "../geometry/geometry";
 import UnlitMaterial from "../material/unlitMaterial";
 import { ComponentType } from "../base/component";
+import Transform from "../base/transform";
 
 export default class BoundingSphere extends BoundingVolume {
   sphere: Entity | null
@@ -68,9 +69,9 @@ export default class BoundingSphere extends BoundingVolume {
     });
 
     this.sphere = new Entity()
+    const transform = this.sphere.get(ComponentType.TRANSFORM) as Transform
     this.sphere.add(sphereGeometry)
     this.sphere.add(new UnlitMaterial([1.0, 0.0, 1.0]))
-
     this.self.get(ComponentType.TRANSFORM).add(this.sphere)
 
     return true
@@ -79,16 +80,15 @@ export default class BoundingSphere extends BoundingVolume {
   onAdd = (self: Entity) => {
     this.self = self
 
-    const geometry: Geometry = self.get(ComponentType.GEOMETRY)
+    const { vao } = self.get(ComponentType.GEOMETRY) as Geometry
 
-    this.min = geometry.vao.min
-    this.max = geometry.vao.max
+    this.min = vao.min
+    this.max = vao.max
 
-    const distanceX: number = this.max[0] - this.min[0]
-    const distanceY: number = this.max[1] - this.min[1]
-    const distanceZ: number = this.max[2] - this.min[2]
+    const { min, max } = this
 
-    this.radius = Math.max(distanceX, Math.max(distanceY, distanceZ)) * 0.5
+    const size = vec3.fromValues(max[0] - min[0], max[1] - min[1], max[2] - min[2])
+    this.radius = Math.max(size[0], Math.max(size[1], size[2]))
 
     this.createSphere()
   }

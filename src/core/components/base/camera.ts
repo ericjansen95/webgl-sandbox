@@ -123,10 +123,10 @@ export default class Camera implements Component {
     const boundingVolume = entity.get(ComponentType.BOUNDING_VOLUME) as BoundingBox & BoundingSphere
 
     if(boundingVolume.radius) {
-      const scale: vec3 = (entity.get(ComponentType.TRANSFORM) as Transform).getGlobalScale()
+      //const scale: vec3 = (entity.get(ComponentType.TRANSFORM) as Transform).getGlobalScale()
       // ToDo: Chache this!
-      const radiusScalar: number = Math.max(scale[0], Math.max(scale[1], scale[2])) 
-      isInFrustrum = this.isSphereInFrustrum(point, boundingVolume.radius * radiusScalar)
+      //const radiusScalar: number = Math.max(scale[0], Math.max(scale[1], scale[2])) 
+      isInFrustrum = this.isSphereInFrustrum(point, boundingVolume.radius)
     }
 
     if(boundingVolume.corners) {

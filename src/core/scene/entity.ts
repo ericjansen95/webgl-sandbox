@@ -1,11 +1,17 @@
 import Component, { ComponentType } from "../components/base/component";
 import Transform from "../components/base/transform";
+const short = require('short-uuid');
+
+export type ID = string;
 
 export default class Entity {
   components: Array<Component>
+  id: ID
 
   constructor() {
     this.components = new Array<Component>()
+    this.id = short.generate()
+
     this.add(new Transform())
   }
 

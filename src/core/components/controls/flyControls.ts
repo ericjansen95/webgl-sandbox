@@ -9,7 +9,7 @@ import Transform from "../base/transform"
 const VECTOR_UP: vec3 = vec3.fromValues(0.0, -1.0, 0.0)
 
 const MAX_YAW_ANGEL: number = Math.PI * 0.45
-const ROTATE_SPEED: number = 150.0
+const ROTATE_SPEED: number = 0.8
 const TRANSLATE_SPEED: number = 14.0
 const TWO_PI: number = 2.0 * Math.PI
 
@@ -31,13 +31,13 @@ export default class FlyControls implements Component {
     // ROTATION
 
     // x: yaw, y: pitch
-    const deltaMousePosition = vec2.clone(Input.mouseState.deltaTranslation)
-    vec2.scale(deltaMousePosition, deltaMousePosition, -1.0)
+    const deltaTranslation = vec2.clone(Input.mouseState.deltaTranslation)
+    vec2.scale(deltaTranslation, deltaTranslation, -1.0)
     const rotateSpeed = ROTATE_SPEED * Time.deltaTime;
 
     vec2.copy(this.tmpAngleRotation, this.angleRotation)
 
-    vec2.add(this.tmpAngleRotation, this.tmpAngleRotation, vec2.scale(deltaMousePosition, deltaMousePosition, rotateSpeed))
+    vec2.add(this.tmpAngleRotation, this.tmpAngleRotation, vec2.scale(deltaTranslation, deltaTranslation, rotateSpeed))
 
     if(this.tmpAngleRotation[1] > MAX_YAW_ANGEL)
       this.tmpAngleRotation[1] = MAX_YAW_ANGEL

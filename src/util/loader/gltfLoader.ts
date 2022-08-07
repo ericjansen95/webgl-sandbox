@@ -307,8 +307,6 @@ export default function loadGltf(uri: string): Promise<GlftLoadResponse> {
 
     const gltf = await gltfResponse.json() as any
 
-    console.log(gltf)
-
     const { buffers } = gltf
     const bufferData = new Array<ArrayBuffer>()
 

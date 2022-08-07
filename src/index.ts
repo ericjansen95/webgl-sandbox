@@ -25,6 +25,7 @@ import Texture from './core/renderer/texture';
 import GrassMaterial from './core/components/material/grassMaterial';
 import Geometry from './core/components/geometry/geometry';
 import { createPlayer, PlayerType } from './util/helper/player';
+import Trigger from './core/components/trigger/trigger';
 
 /*
 
@@ -110,6 +111,12 @@ const main = () => {
   const engine = new Engine(canvas, sceneCamera)
 
   engine.scene.add(sceneCamera)
+
+  const trigger = new Entity()
+  const triggerComponent = new Trigger(vec3.fromValues(1.0, 1.0, 1.0))
+  trigger.add(triggerComponent)
+  triggerComponent.setVisible(true)
+  engine.scene.add(trigger)
 
   const audioSource = new Entity()
   audioSource.add(new AudioSource("http://localhost:8080/res/audio/song.mp3"))
