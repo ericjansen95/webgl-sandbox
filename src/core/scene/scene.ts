@@ -12,6 +12,7 @@ import Geometry from "../components/geometry/geometry";
 import AudioController from "../internal/audio";
 import PhysicsController from "../internal/physics";
 import { roundNumber } from "../../util/math/round";
+import Trigger from "../components/trigger/trigger";
 
 export type SceneStats = {
   updateTime: number
@@ -28,6 +29,7 @@ export default class Scene {
   camera: Entity
 
   entities: Array<Entity>
+  trigger: Array<Trigger>
 
   audioController: AudioController
   physicsController: PhysicsController
@@ -68,6 +70,7 @@ export default class Scene {
     this.stats.localMatrixUpdates = 0
 
     this.entities = []
+    this.trigger = []
     this.physicsController.reset()
 
     const startTime = window.performance.now()
@@ -78,6 +81,9 @@ export default class Scene {
     this.stats.entityCount = this.entities.length
 
     this.physicsController.update()
+
+    for(const trigger of this.trigger)
+      trigger.update(this.entities)
 
     if(!this.networkController) return
 
@@ -118,6 +124,9 @@ export default class Scene {
           break
         case ComponentType.AUDIO_SOURCE:
           component.bind(this.audioController.state?.context) //ToDo: Change this to be handled in controller?
+          break
+        case ComponentType.TRIGGER:
+          this.trigger.push(component)
           break
       }
     }

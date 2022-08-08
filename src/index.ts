@@ -1,7 +1,7 @@
 import Camera from './core/components/base/camera';
 import Entity from './core/scene/entity';
 import Material from './core/components/material/material';
-import { ComponentType as Component } from './core/components/base/component';
+import { ComponentType as Component, ComponentType } from './core/components/base/component';
 import Turntable from './core/components/scripts/turntable';
 import Engine from './core/engine';
 import loadGltf from './util/loader/gltfLoader';
@@ -113,8 +113,10 @@ const main = () => {
   engine.scene.add(sceneCamera)
 
   const trigger = new Entity()
+  trigger.get(ComponentType.TRANSFORM).setLocalPosition([0, 0.25, -2])
   const triggerComponent = new Trigger(vec3.fromValues(1.0, 1.0, 1.0))
   trigger.add(triggerComponent)
+
   triggerComponent.setVisible(true)
   engine.scene.add(trigger)
 

@@ -1,7 +1,9 @@
 import Rigidbody from "../../core/components/collider/rigidbody";
 import { ControlsOptions } from "../../core/components/controls/controls";
 import FirstPersonControls from "../../core/components/controls/firstPersonControls";
+import Debug from "../../core/internal/debug";
 import Entity from "../../core/scene/entity";
+import { subscribe } from "./event";
 
 export enum PlayerType {
   FIRST_PERSON,
@@ -15,6 +17,9 @@ export type PlayerCreationOptions = {
 export const createPlayer = ({ type, camera }: PlayerCreationOptions): Entity => {
   const player = new Entity()
   player.add(new Rigidbody())
+
+  subscribe('triggerenter', ({ entity }) => { Debug.info(`createPlayer(): Player entered trigger.`) })
+  subscribe('triggerleave', ({ entity }) => { Debug.info(`createPlayer(): Player left trigger.`) })
 
   switch (type) {
     case PlayerType.FIRST_PERSON: {

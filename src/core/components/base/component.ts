@@ -13,6 +13,7 @@ export enum ComponentType {
   AUDIO_SOURCE,
   ANIMATOR,
   UI,
+  TRIGGER,
   TERRAIN,
 }
 
