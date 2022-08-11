@@ -47,9 +47,9 @@ import Trigger from './core/components/trigger/trigger';
   - third person controller => DONE
   - post processing / render to texture => https://webgl2fundamentals.org/webgl/lessons/webgl-render-to-texture.html
   - wall collision - sphere / circle raycaster
-  - entity tags
+  - entity tags DONE => for now with entity uuidw
   - collision info that includes enitity ref
-  - trigger zones (aabb)
+  - trigger zones (aabb) DONE
   - positional audio
 
   Ideas:
@@ -112,6 +112,7 @@ const main = () => {
 
   engine.scene.add(sceneCamera)
 
+  /*
   const trigger = new Entity()
   trigger.get(ComponentType.TRANSFORM).setLocalPosition([0, 0.25, -2])
   const triggerComponent = new Trigger(vec3.fromValues(1.0, 1.0, 1.0))
@@ -119,7 +120,8 @@ const main = () => {
 
   triggerComponent.setVisible(true)
   engine.scene.add(trigger)
-
+  */
+ 
   const audioSource = new Entity()
   audioSource.add(new AudioSource("http://localhost:8080/res/audio/song.mp3"))
   engine.scene.add(audioSource)
@@ -136,7 +138,7 @@ const main = () => {
 
   loadGltf("http://localhost:8080/res/geo/testCollisionGeo.gltf").then((entities) => {
     for(const entity of entities) {
-      entity.add(new NormalMaterial())
+      entity.add(new UnlitTextureMaterial(new Texture("http://localhost:8080/res/map/checkerMap.png")))
       entity.add(geometryCollider)
 
       engine.scene.add(entity)
@@ -244,6 +246,7 @@ const main = () => {
 
   engine.scene.add(createPlayer({ type: PlayerType.FIRST_PERSON, camera: sceneCamera }))
 
+  /*
   loadGltf("http://localhost:8080/res/geo/testGeo.gltf").then((entities) => {
     const material = new FresnelMaterial([1.0, 1.0, 1.0]) as Material
 
@@ -256,6 +259,7 @@ const main = () => {
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test geometry = ${error}`))
+  */
 }
 
 window.onload = main;

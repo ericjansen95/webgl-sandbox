@@ -15,12 +15,12 @@
     "nodes" : [
         {
             "mesh" : 0,
-            "name" : "Plane"
+            "name" : "Cube"
         }
     ],
     "meshes" : [
         {
-            "name" : "Plane",
+            "name" : "Cube.001",
             "primitives" : [
                 {
                     "attributes" : {
@@ -37,63 +37,63 @@
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 56,
+            "count" : 46,
             "max" : [
-                8,
-                2.5,
-                1
+                4,
+                4,
+                8
             ],
             "min" : [
-                -8,
+                -4,
                 0,
-                -13
+                -8
             ],
             "type" : "VEC3"
         },
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 56,
+            "count" : 46,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
-            "count" : 56,
+            "count" : 46,
             "type" : "VEC2"
         },
         {
             "bufferView" : 3,
             "componentType" : 5123,
-            "count" : 96,
+            "count" : 93,
             "type" : "SCALAR"
         }
     ],
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 672,
+            "byteLength" : 552,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 672,
-            "byteOffset" : 672
+            "byteLength" : 552,
+            "byteOffset" : 552
         },
         {
             "buffer" : 0,
-            "byteLength" : 448,
-            "byteOffset" : 1344
+            "byteLength" : 368,
+            "byteOffset" : 1104
         },
         {
             "buffer" : 0,
-            "byteLength" : 192,
-            "byteOffset" : 1792
+            "byteLength" : 186,
+            "byteOffset" : 1472
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 1984,
+            "byteLength" : 1660,
             "uri" : "testCollisionGeo.bin"
         }
     ]

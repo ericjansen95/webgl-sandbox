@@ -49,12 +49,14 @@ export default class Scene {
       cullCount: 0
     }
 
+    /*
     const grid: Entity = new Entity()
     grid.get(ComponentType.TRANSFORM).setLocalScale([10.0, 10.0, 10.0])
     grid.get(ComponentType.TRANSFORM).setLocalPosition([-5.0, 0.0, -5.0])
     grid.add(new GridGeometry(10))
     grid.add(new UnlitMaterial([0.75, 0.75, 0.75]))
     this.root.get(ComponentType.TRANSFORM).add(grid)
+    */
 
     Debug.console.registerCommand({ name: "bv", description: "Visualize bounding volumes.", callback: this.toggleBoundingVolumes })
 

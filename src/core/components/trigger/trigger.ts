@@ -62,8 +62,8 @@ export default class Trigger implements Component {
     const max = vec3.add(vec3.create(), this.max, center)
 
     if(position[0] > max[0] || position[0] < min[0] ||
-       position[1] > max[1] || position[1] < min[0] ||
-       position[2] > max[2] || position[2] < min[2])
+       position[2] > max[2] || position[2] < min[2] ||
+       position[1] > max[1] || position[1] < min[0])
         return false
 
     return true
