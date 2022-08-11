@@ -23,8 +23,9 @@ const calcIntersectionPosition = (ray: Ray, triangle: Triangle): vec3 | null => 
   const { origin, direction, length } = ray
   const { corners, normal } = triangle
 
+  // ToDo: Check why distanceToPoint is sometimes NaN or Infinite
   const distanceToPoint = -1.0 * (vec3.dot(vec3.sub(vec3.create(), origin, corners[0]), normal) / vec3.dot(direction, normal))
-  if(distanceToPoint < 0 || distanceToPoint > length) return null
+  if(distanceToPoint > length || isNaN(distanceToPoint) || distanceToPoint < 0 ) return null
 
   const intersectionPosition = vec3.add(vec3.create(), origin, vec3.scale(vec3.create(), direction, distanceToPoint))
 
