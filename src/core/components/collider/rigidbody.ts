@@ -5,6 +5,7 @@ import { GLOBAL } from "../../constants";
 import Entity from "../../scene/entity";
 import Component, { ComponentType } from "../base/component";
 import Transform from "../base/transform";
+import UnlitMaterial from "../material/unlitMaterial";
 import Collider, { getClosestIntersection } from "./collider";
 
 export type RigidbodyState = {
@@ -19,8 +20,8 @@ export type RigidbodyConfig = {
 
 const DEFAULT_RIGIDBODY_CONFIG: RigidbodyConfig = Object.freeze({
   RAY_HEIGHT_OFFSET: 1.0,
-  CIRCLE_RAY_COUNT: 6,
-  CIRCLE_RADIUS: 0.3
+  CIRCLE_RAY_COUNT: 8,
+  CIRCLE_RADIUS: 0.4
 })
 
 export default class Rigidbody implements Component {
@@ -53,6 +54,17 @@ export default class Rigidbody implements Component {
     }
   }
 
+  /*
+    ToDo:
+    - pass in player transform from controls logic to avoid wall jitter
+    - check behaviour at arbitaly angles
+    - abstract debug vis logic and add console toggle command
+    - cleanup and state, config seperation
+    - add basic gravity
+    - add improved config logic for increased precision with ray circle check at head heigt and chest?
+    - check precision at low framerates
+    - cache most of the data on config change => positions / rotations for ray directions
+  */
   update = (colliders: Array<Collider>) => {
     const transform = this.state.self.get(ComponentType.TRANSFORM) as Transform
     const position = transform.localPosition
@@ -68,12 +80,9 @@ export default class Rigidbody implements Component {
       const rayDirection = vec3.fromValues(-Math.cos(radians), 0, Math.sin(radians))
       vec3.normalize(rayDirection, rayDirection)
 
-      const debugRayTransform = this.debugRays[rayStep - 1].get(ComponentType.TRANSFORM) as Transform
-      debugRayTransform.setLocalRotation(quat.setAxisAngle(quat.create(), GLOBAL.UP, radians))
-
-      const debugRay = this.debugRays[rayStep - 1].get(ComponentType.GEOMETRY) as Ray
-
-      this.debugRays[rayStep - 1].get(ComponentType.MATERIAL).color = [0, 1, 0]
+      const debugRay = this.debugRays[rayStep - 1]
+      const debugRayTransform = debugRay.get(ComponentType.TRANSFORM) as Transform
+      const debugRayMaterial = debugRay.get(ComponentType.MATERIAL) as UnlitMaterial
 
       const ray: Ray = {
         origin: wallRayOrigin,
@@ -83,16 +92,27 @@ export default class Rigidbody implements Component {
 
       const intersection = getClosestIntersection(ray, colliders)
       // TMP Filter out nan and pow cicle radius since instersection distance is squared
-      if(!intersection || intersection.distance > Math.pow(this.config.CIRCLE_RADIUS, 2)) continue
+      if(!intersection) {
+        debugRayMaterial.color = [0, 1, 0]
+        continue
+      }
 
-      this.debugRays[rayStep - 1].get(ComponentType.MATERIAL).color = [1, 0, 0]
+      const distance = Math.sqrt(intersection.distance)
+      if(distance > this.config.CIRCLE_RADIUS)  {
+        debugRayMaterial.color = [0, 1, 0]
+        continue
+      }
+
+      debugRayTransform.setLocalRotation(quat.setAxisAngle(quat.create(), GLOBAL.UP, radians))
+      debugRayMaterial.color = [1, 0, 0]
 
       const directionToIntersection = vec3.sub(vec3.create(), intersection.position, position)
       directionToIntersection[1] = 0
+
       vec3.normalize(directionToIntersection, directionToIntersection)
-      // TMP Inverse vector
-      vec3.rotateY(directionToIntersection, directionToIntersection, vec3.fromValues(0, 0, 0), Math.PI)
-      vec3.scaleAndAdd(position, position, directionToIntersection, Math.pow(this.config.CIRCLE_RADIUS, 2) - intersection.distance)
+      vec3.scale(directionToIntersection, directionToIntersection, -1)
+
+      vec3.scaleAndAdd(position, position, directionToIntersection, this.config.CIRCLE_RADIUS - distance)
     }
 
     // check ground collision by casting a ray down from current position with slight offset
@@ -112,6 +132,6 @@ export default class Rigidbody implements Component {
     //if (transform.localPosition[1] > (intersection ? intersection.position[1] : 0))
     //  transform.localPosition[1] += -9.81 * Time.deltaTime
 
-    transform.setLocalPosition(vec3.clone(position))
+    transform.setLocalPosition(position)
   }
 }
