@@ -21,7 +21,7 @@ export default class FlyControls implements Component {
   position: vec3
 
   constructor() {
-    this.type = ComponentType.CONTROLS
+    this.type = ComponentType.SCRIPT
 
     this.angleRotation = vec2.create()
     this.tmpAngleRotation = vec2.create()

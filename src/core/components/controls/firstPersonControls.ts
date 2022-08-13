@@ -4,8 +4,6 @@ import Component, { ComponentType } from "../base/component"
 import Time from "../../internal/time"
 import Transform from "../base/transform"
 import Debug from "../../internal/debug"
-import Collider, { getClosestIntersection } from "../collider/collider"
-import { Ray } from "../../../util/math/raycast"
 import Camera from "../base/camera"
 import { ControlsOptions, ControlsStats, getControlsInputDirection, InputDirection } from "./controls"
 import { GLOBAL } from "../../constants"
@@ -21,6 +19,7 @@ export type FirstPersonControlsConfig = {
 }
 
 export type FirstPersonControlsState = {
+  self: Entity
   transform: Transform
 
   camera: FirstPersonControlsCameraState
@@ -55,12 +54,13 @@ export default class FirstPersonControls implements Component {
   state: FirstPersonControlsState
 
   constructor({ camera }: ControlsOptions) {
-    this.type = ComponentType.CONTROLS
+    this.type = ComponentType.SCRIPT
 
     this.config = FIRST_PERSON_CONTROLS_DEFAULT_CONFIG
 
     const transform = camera.get(ComponentType.TRANSFORM) as Transform
     this.state = {
+      self: null,
       transform: null,
 
       camera: {
@@ -131,13 +131,13 @@ export default class FirstPersonControls implements Component {
     const side = vec3.cross(vec3.create(), this.state.forward, GLOBAL.UP)
     vec3.scaleAndAdd(this.state.currentPosition, this.state.currentPosition, side, -1.0 * inputDirection[0] * this.config.TRANSLATE_SPEED * Time.deltaTime)
 
-    this.state.transform.setLocalPosition(this.state.currentPosition)
+    this.state.self.get(ComponentType.RIGIDBODY).move(this.state.currentPosition)
 
     this.stats.isMoving = true
   }
 
   private updateCameraTransform = () => {
-    vec3.copy(this.state.camera.currentPosition, this.state.currentPosition)
+    vec3.copy(this.state.camera.currentPosition, this.state.self.get(ComponentType.TRANSFORM).localPosition)
     this.state.camera.currentPosition[1] += this.config.CAMERA_Y_OFFSET
 
     this.state.camera.transform.setLocalRotation(this.state.camera.currentRotation)
@@ -145,7 +145,8 @@ export default class FirstPersonControls implements Component {
   }
 
   onAdd = (self: Entity) => {
-    this.state.transform = self.get(ComponentType.TRANSFORM) as Transform
+    this.state.self = self
+    this.state.transform = this.state.self.get(ComponentType.TRANSFORM) as Transform
   }
 
   onUpdate = (self: Entity, camera: Entity) => {

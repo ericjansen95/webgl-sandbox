@@ -9,7 +9,8 @@ import UnlitMaterial from "../material/unlitMaterial";
 import Collider, { getClosestIntersection } from "./collider";
 
 export type RigidbodyState = {
-  self: Entity
+  self: Entity,
+  position: vec3
 }
 
 export type RigidbodyConfig = {
@@ -39,7 +40,8 @@ export default class Rigidbody implements Component {
 
   onAdd = (self: Entity) => {
     this.state = {
-      self
+      self,
+      position: self.get(ComponentType.TRANSFORM).localPosition
     }
 
     const wallRayOrigin = vec3.clone(vec3.fromValues(0, 0, 0))
@@ -54,6 +56,10 @@ export default class Rigidbody implements Component {
     }
   }
 
+  move = (position: vec3) => {
+    this.state.position = position
+  }
+
   /*
     ToDo:
     - pass in player transform from controls logic to avoid wall jitter
@@ -66,8 +72,7 @@ export default class Rigidbody implements Component {
     - cache most of the data on config change => positions / rotations for ray directions
   */
   update = (colliders: Array<Collider>) => {
-    const transform = this.state.self.get(ComponentType.TRANSFORM) as Transform
-    const position = transform.localPosition
+    const { position } = this.state
 
     const groundRayOrigin = vec3.clone(position)
     groundRayOrigin[1] += this.config.RAY_HEIGHT_OFFSET
@@ -132,6 +137,6 @@ export default class Rigidbody implements Component {
     //if (transform.localPosition[1] > (intersection ? intersection.position[1] : 0))
     //  transform.localPosition[1] += -9.81 * Time.deltaTime
 
-    transform.setLocalPosition(position)
+    this.state.self.get(ComponentType.TRANSFORM).setLocalPosition(position)
   }
 }
