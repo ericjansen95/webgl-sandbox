@@ -2,6 +2,7 @@ import { quat, vec3 } from "gl-matrix";
 import { createRay } from "../../../util/helper/ray";
 import { Ray } from "../../../util/math/raycast";
 import { GLOBAL } from "../../constants";
+import Time from "../../internal/time";
 import Entity from "../../scene/entity";
 import Component, { ComponentType } from "../base/component";
 import Transform from "../base/transform";
@@ -129,13 +130,16 @@ export default class Rigidbody implements Component {
     const intersection = getClosestIntersection(ray, colliders)
 
     // correct y position with intersection position
-    if(intersection)
-      position[1] = intersection.position[1]
+    //
 
     // are we above the ground or closes collision point?
     // than simulate basic physics
-    //if (transform.localPosition[1] > (intersection ? intersection.position[1] : 0))
-    //  transform.localPosition[1] += -9.81 * Time.deltaTime
+    if (position[1] > (intersection ? intersection.position[1] : 0) && intersection.distance > 1.1)
+      position[1] += -9.81 * Time.deltaTime
+    else if(intersection)
+      position[1] = intersection.position[1]
+
+    console.log(intersection.distance)
 
     this.state.self.get(ComponentType.TRANSFORM).setLocalPosition(position)
   }
