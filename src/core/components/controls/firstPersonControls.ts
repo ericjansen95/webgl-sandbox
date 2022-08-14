@@ -163,8 +163,11 @@ export default class FirstPersonControls implements Component {
     const intersectionInfo = Physics.getIntersection(ray)
     if(!intersectionInfo) return
 
-    const { position, entity } = intersectionInfo
-    console.log(entity.id)
+    const { entity } = intersectionInfo
+    if(Input.isKeyDown('e')) {
+      const entityTransform = entity.get(ComponentType.TRANSFORM) as Transform
+      entityTransform.setLocalPosition(vec3.add(vec3.create(), entityTransform.localPosition, vec3.fromValues(0, 0, -0.1)))
+    }
   }
 
   onAdd = (self: Entity) => {

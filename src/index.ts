@@ -134,12 +134,20 @@ const main = () => {
   engine.scene.add(terrain)
   */
 
-  const geometryCollider = new GeometryCollider()
+  loadGltf("http://localhost:8080/res/geo/cube.gltf").then((entities) => {
+    for(const entity of entities) {
+      entity.add(Debug.material)
+      entity.get(ComponentType.TRANSFORM).setLocalPosition(vec3.fromValues(1, 2, -2))
+      entity.add(new GeometryCollider())
+
+      engine.scene.add(entity)
+    }
+  }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
 
   loadGltf("http://localhost:8080/res/geo/testCollisionGeo.gltf").then((entities) => {
     for(const entity of entities) {
       entity.add(new UnlitTextureMaterial(new Texture("http://localhost:8080/res/map/checkerMap.png")))
-      entity.add(geometryCollider)
+      entity.add(new GeometryCollider())
 
       engine.scene.add(entity)
     }

@@ -1,9 +1,11 @@
 import { mat4, quat, vec3 } from "gl-matrix";
 import Entity from "../../scene/entity";
+import GeometryCollider from "../collider/geometryCollider";
 import Component, { ComponentType } from "./component";
 
 export default class Transform implements Component {
   type: ComponentType
+  self: Entity
 
   localPosition: vec3
   localScale: vec3
@@ -34,6 +36,10 @@ export default class Transform implements Component {
 
     this.parent = null
     this.children = new Array<Entity>()
+  }
+
+  onAdd = (self: Entity) => {
+    this.self = self
   }
 
   setLocalPosition = (position: vec3) => {
@@ -99,6 +105,9 @@ export default class Transform implements Component {
   
       mat4.fromQuat(this.localRotationMatrix, this.localRotation)
       mat4.multiply(this.localMatrix, this.localMatrix, this.localRotationMatrix)
+
+      const collider = this.self.get(ComponentType.COLLIDER) as GeometryCollider
+      if(collider?.update) collider.update(this.localMatrix)
 
       localUpdate = true
     }
