@@ -1,4 +1,4 @@
-import Rigidbody from "../../core/components/collider/rigidbody";
+import CharacterController from "../../core/components/controls/characterController";
 import { ControlsOptions } from "../../core/components/controls/controls";
 import FirstPersonControls from "../../core/components/controls/firstPersonControls";
 import Debug from "../../core/internal/debug";
@@ -16,7 +16,7 @@ export type PlayerCreationOptions = {
 
 export const createPlayer = ({ type, camera }: PlayerCreationOptions): Entity => {
   const player = new Entity()
-  player.add(new Rigidbody())
+  player.add(new CharacterController())
 
   subscribe('triggerenter', ({ entity }) => { Debug.info(`createPlayer(): Player entered trigger.`) })
   subscribe('triggerleave', ({ entity }) => { Debug.info(`createPlayer(): Player left trigger.`) })

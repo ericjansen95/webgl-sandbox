@@ -1,11 +1,11 @@
 import { roundNumber } from "../../util/math/round"
 import Collider from "../components/collider/collider"
-import Rigidbody from "../components/collider/rigidbody"
+import CharacterController from "../components/controls/characterController"
 import Debug from "./debug"
 
 type PhysicsControllerState = {
   colliders: Array<Collider>
-  rigidbodies: Array<Rigidbody>
+  rigidbodies: Array<CharacterController>
 }
 
 export type PhysicStats = {
@@ -28,7 +28,7 @@ export default class PhysicsController {
   reset = () => {
     this.state = {
       colliders: new Array<Collider>(),
-      rigidbodies: new Array<Rigidbody>()
+      rigidbodies: new Array<CharacterController>()
     }
   }
 
@@ -36,7 +36,7 @@ export default class PhysicsController {
     this.state.colliders.push(collider)
   }
 
-  addRigidbody = (rigidbody: Rigidbody) => {
+  addRigidbody = (rigidbody: CharacterController) => {
     this.state.rigidbodies.push(rigidbody)
   }
 

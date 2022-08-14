@@ -114,7 +114,7 @@ export default class Debug {
     
     if(!this.cameraEnabled) return
 
-    this.camera.get(ComponentType.CONTROLS).onUpdate(this.camera, this.camera)
+    this.camera.get(ComponentType.SCRIPT).onUpdate(this.camera, this.camera)
     this.camera.get(ComponentType.TRANSFORM).onUpdate(this.camera, this.camera)
     this.camera.get(ComponentType.CAMERA).onUpdate(this.camera, this.camera)
   }
@@ -130,7 +130,7 @@ export default class Debug {
     if(!this.camera)
       this.createCamera(this.sceneCamera)
 
-    const debugCameraControls = this.camera.get(ComponentType.CONTROLS) as FlyControls
+    const debugCameraControls = this.camera.get(ComponentType.SCRIPT) as FlyControls
     const debugCameraTransform = this.camera.get(ComponentType.TRANSFORM) as Transform
 
     // set debug camera position to scene camera
