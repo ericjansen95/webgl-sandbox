@@ -5,7 +5,8 @@ import Component, { ComponentType } from "../base/component";
 
 export type IntersectionInfo = {
   distance: number,
-  position: vec3
+  position: vec3,
+  entity: Entity
 }
 
 export const getClosestIntersection = (ray: Ray, colliders: Array<Collider>): IntersectionInfo | null => {
@@ -31,5 +32,9 @@ export default class Collider implements Component {
 
   constructor() {
     this.type = ComponentType.COLLIDER
+  }
+
+  onAdd = (self: Entity) => {
+    this.self = self
   }
 }

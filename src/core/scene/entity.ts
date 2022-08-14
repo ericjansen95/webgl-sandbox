@@ -3,15 +3,20 @@ import Transform from "../components/base/transform";
 const short = require('short-uuid');
 
 export type ID = string;
+export type Tag = string;
 
 export default class Entity {
   components: Array<Component>
+
   id: ID
+  tags: Array<Tag>
 
   constructor() {
     this.components = new Array<Component>()
-    this.id = short.generate()
 
+    this.id = short.generate()
+    this.tags = new Array()
+    
     this.add(new Transform())
   }
 

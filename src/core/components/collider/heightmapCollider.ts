@@ -68,7 +68,8 @@ export default class HeightmapCollider extends Collider {
     // construct intersection point with added y offset of center position
     const intersectionInfo: IntersectionInfo = {
       distance: vec3.sqrDist(origin, position),
-      position
+      position,
+      entity: this.self
     }
 
     return [intersectionInfo]

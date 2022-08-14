@@ -39,7 +39,7 @@ const calcIntersectionPosition = (ray: Ray, triangle: Triangle): vec3 | null => 
 
 export const sortIntersectionsByDistance = (intersections: Array<IntersectionInfo>) => intersections.sort(({distance: firstDistance}, {distance: secondDistance}) => firstDistance < secondDistance ? -1 : 1) 
 
-export default function getIntersections(ray: Ray, triangles: Array<Triangle>): Array<IntersectionInfo> {
+export default function getIntersections(ray: Ray, triangles: Array<Triangle>, entity: Entity): Array<IntersectionInfo> {
   const intersections = new Array<IntersectionInfo>()
 
   for(const triangle of triangles) {
@@ -48,7 +48,8 @@ export default function getIntersections(ray: Ray, triangles: Array<Triangle>): 
 
     intersections.push({
       distance: vec3.sqrDist(ray.origin, position),
-      position
+      position,
+      entity
     })
     break
   }

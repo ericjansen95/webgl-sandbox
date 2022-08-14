@@ -8,6 +8,8 @@ import Camera from "../base/camera"
 import { ControlsOptions, ControlsStats, getControlsInputDirection, InputDirection } from "./controls"
 import { GLOBAL } from "../../constants"
 import Input from "../../internal/input"
+import { Ray } from "../../../util/math/raycast"
+import Physics from "../../internal/physics"
 
 export type FirstPersonControlsConfig = {
   ROTATE_SPEED: number
@@ -16,6 +18,8 @@ export type FirstPersonControlsConfig = {
   CAMERA_Y_OFFSET: number
 
   GROUND_RAY_OFFSET: vec3
+
+  MAX_INTERACTION_DISTANCE: number
 }
 
 export type FirstPersonControlsState = {
@@ -44,7 +48,9 @@ const FIRST_PERSON_CONTROLS_DEFAULT_CONFIG: FirstPersonControlsConfig = Object.f
 
   CAMERA_Y_OFFSET: 1.6,
 
-  GROUND_RAY_OFFSET: vec3.fromValues(0.0, 1.0, 0.0)
+  GROUND_RAY_OFFSET: vec3.fromValues(0.0, 1.0, 0.0),
+
+  MAX_INTERACTION_DISTANCE: 1.5
 })
 
 export default class FirstPersonControls implements Component {
@@ -144,6 +150,23 @@ export default class FirstPersonControls implements Component {
     this.state.camera.transform.setLocalPosition(this.state.camera.currentPosition)
   }
 
+  interact = () => {
+    const origin = vec3.clone(this.state.currentPosition)
+    origin[1] += this.config.CAMERA_Y_OFFSET
+
+    const ray = {
+      origin,
+      direction: this.state.forward, // TMP should be view direction form camera
+      length: this.config.MAX_INTERACTION_DISTANCE
+    } as Ray
+
+    const intersectionInfo = Physics.getIntersection(ray)
+    if(!intersectionInfo) return
+
+    const { position, entity } = intersectionInfo
+    console.log(entity.id)
+  }
+
   onAdd = (self: Entity) => {
     this.state.self = self
     this.state.transform = this.state.self.get(ComponentType.TRANSFORM) as Transform
@@ -156,5 +179,7 @@ export default class FirstPersonControls implements Component {
     this.updateTranslation()
 
     this.updateCameraTransform()
+
+    this.interact()
   }
 }

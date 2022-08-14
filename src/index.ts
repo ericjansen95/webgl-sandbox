@@ -30,27 +30,26 @@ import Trigger from './core/components/trigger/trigger';
 /*
 
   General Architecture:
-  - wrapped state, stats, config
-  - options objects for parameters
+  - wrapped state, stats, config CLOSE
+  - options objects for parameters CLOSE
   - self refference by default in component
   - namespaces and modules
   - singeltons instead of static classes
   - camera creating wrapper
   - material uniform pipeline
-  - event bus
+  - event bus DONE => use vanilla js custom events
 
   First Playable:
   - multi hirachial joint skinning DONE
-  - uv driven texture mapping
+  - uv driven texture mapping DONE
   - collision => ray triangle intersection DONE
   - basic audio => emitter and listener DONE
   - third person controller => DONE
-  - post processing / render to texture => https://webgl2fundamentals.org/webgl/lessons/webgl-render-to-texture.html
-  - wall collision - sphere / circle raycaster
-  - entity tags DONE => for now with entity uuidw
-  - collision info that includes enitity ref
+  - wall collision - sphere / circle raycaster DONE
+  - entity tags DONE => for now with entity uuid DONE
+  - collision info that includes enitity ref DONE
   - trigger zones (aabb) DONE
-  - positional audio
+  - abstract physics raycast logic with static interface DONE
 
   Ideas:
   - scene skybox
@@ -63,6 +62,7 @@ import Trigger from './core/components/trigger/trigger';
   - base-server, chat-server, scene-server
 
   ToDo:
+  - override collision geometry with simplified version
   - skinned geometry stats
   - heightmap performance and sample interpolation
   - firefox fixes and optimizations

@@ -1,7 +1,5 @@
 import BoundingVolume from "../components/boundingVolume/boundingVolume";
 import Camera from "../components/base/camera";
-import GridGeometry from "../components/geometry/grid";
-import UnlitMaterial from "../components/material/unlitMaterial";
 import Debug from "../internal/debug";
 import Client from "../network/client";
 import GameNetworkController from "../network/gameNetworkController";
@@ -10,7 +8,7 @@ import { ComponentType } from "../components/base/component";
 import Transform from "../components/base/transform";
 import Geometry from "../components/geometry/geometry";
 import AudioController from "../internal/audio";
-import PhysicsController from "../internal/physics";
+import Physics from "../internal/physics";
 import { roundNumber } from "../../util/math/round";
 import Trigger from "../components/trigger/trigger";
 
@@ -32,7 +30,6 @@ export default class Scene {
   trigger: Array<Trigger>
 
   audioController: AudioController
-  physicsController: PhysicsController
   networkController: GameNetworkController
 
   constructor(camera: Entity, clientEntity: Entity | null = null, client: Client | null = null) {
@@ -62,7 +59,6 @@ export default class Scene {
     Debug.console.registerCommand({ name: "cf", description: "Visualize camera frustrum.", callback: this.toggleCameraFrustrum })
 
     this.audioController = new AudioController()
-    this.physicsController = new PhysicsController()
 
     if(!clientEntity || !client) return
 
@@ -74,7 +70,7 @@ export default class Scene {
 
     this.entities = []
     this.trigger = []
-    this.physicsController.reset()
+    Physics.reset()
 
     const startTime = window.performance.now()
 
@@ -83,7 +79,7 @@ export default class Scene {
     this.stats.updateTime = roundNumber(window.performance.now() - startTime)
     this.stats.entityCount = this.entities.length
 
-    this.physicsController.update()
+    Physics.update()
 
     for(const trigger of this.trigger)
       trigger.update(this.entities)
@@ -120,10 +116,10 @@ export default class Scene {
 
       switch (componentType) {
         case ComponentType.COLLIDER:
-          this.physicsController.addCollider(component)
+          Physics.addCollider(component)
           break
         case ComponentType.RIGIDBODY:
-          this.physicsController.addRigidbody(component)
+          Physics.addRigidbody(component)
           break
         case ComponentType.AUDIO_SOURCE:
           component.bind(this.audioController.state?.context) //ToDo: Change this to be handled in controller?

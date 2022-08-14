@@ -1,10 +1,12 @@
+import { Ray } from "../../util/math/raycast"
 import { roundNumber } from "../../util/math/round"
-import Collider from "../components/collider/collider"
+import Collider, { getClosestIntersection, IntersectionInfo } from "../components/collider/collider"
 import CharacterController from "../components/controls/characterController"
 import Debug from "./debug"
 
 type PhysicsControllerState = {
   colliders: Array<Collider>
+  colliderBackbuffer: Array<Collider>
   rigidbodies: Array<CharacterController>
 }
 
@@ -13,11 +15,11 @@ export type PhysicStats = {
   updateTime: number
 }
 
-export default class PhysicsController {
-  state: PhysicsControllerState
-  stats: PhysicStats
+export default class Physics {
+  static state: PhysicsControllerState
+  static stats: PhysicStats
 
-  constructor() {
+  static init = () => {
     this.reset()
     this.stats = {
       rigidbodyCount: 0,
@@ -25,22 +27,28 @@ export default class PhysicsController {
     }
   }
 
-  reset = () => {
+  static reset = () => {
+    // TMP collider backbuffer for getIntersection
     this.state = {
+      colliderBackbuffer: this.state ? this.state.colliders : new Array<Collider>(),
       colliders: new Array<Collider>(),
       rigidbodies: new Array<CharacterController>()
     }
   }
 
-  addCollider = (collider: Collider) => {
+  static addCollider = (collider: Collider) => {
     this.state.colliders.push(collider)
   }
 
-  addRigidbody = (rigidbody: CharacterController) => {
+  static addRigidbody = (rigidbody: CharacterController) => {
     this.state.rigidbodies.push(rigidbody)
   }
 
-  update = (): boolean => {
+  static getIntersection = (ray: Ray): IntersectionInfo | null => {
+    return getClosestIntersection(ray, this.state.colliderBackbuffer)
+  }
+
+  static update = (): boolean => {
     if(!this.state.rigidbodies.length || !this.state.colliders.length) return false
 
     const startTime = window.performance.now()

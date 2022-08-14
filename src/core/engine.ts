@@ -10,6 +10,7 @@ import Entity from "./scene/entity"
 import WebGlRenderer from "./renderer/webGlRenderer"
 import Scene from "./scene/scene"
 import { roundNumber } from "../util/math/round"
+import Physics from "./internal/physics"
 
 export type MainStats = {
   frameTime: number
@@ -30,6 +31,7 @@ export default class Engine {
     Time.init()
     Debug.init(sceneCamera)
     Input.init()
+    Physics.init()
 
     this.canvas = canvas
     this.renderer = new WebGlRenderer(this.canvas)
