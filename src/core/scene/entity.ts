@@ -2,20 +2,27 @@ import Component, { ComponentType } from "../components/base/component";
 import Transform from "../components/base/transform";
 const short = require('short-uuid');
 
-export type ID = string;
-export type Tag = string;
+export type ID = string
+export type Tag = string
+
+export type EntityMetadata = {
+  name: string,
+  id: ID,
+  tags: Array<Tag>
+}
 
 export default class Entity {
   components: Array<Component>
-
-  id: ID
-  tags: Array<Tag>
+  meta: EntityMetadata
 
   constructor() {
     this.components = new Array<Component>()
 
-    this.id = short.generate()
-    this.tags = new Array()
+    this.meta = {
+      name: '',
+      id: short.generate(),
+      tags: new Array()
+    }
     
     this.add(new Transform())
   }

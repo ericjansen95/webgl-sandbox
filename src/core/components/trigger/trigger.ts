@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix";
 import { createWireframeBox } from "../../../util/helper/box";
 import { dispatch } from "../../../util/helper/event";
-import Entity from "../../scene/entity";
+import Entity, { EntityMetadata } from "../../scene/entity";
 import entity from "../../scene/entity";
 import Component, { ComponentType } from "../base/component";
 import Transform from "../base/transform";
@@ -18,7 +18,7 @@ export default class Trigger implements Component {
   self: Entity | null
   visible: boolean
 
-  entitiesInside: Set<Entity["id"]>
+  entitiesInside: Set<EntityMetadata["id"]>
 
   constructor(size) {
     this.type = ComponentType.TRIGGER
@@ -75,9 +75,9 @@ export default class Trigger implements Component {
 
   update = (entities: Array<Entity>) => {
     for(const entity of entities) {
-      const { id } = entity
+      const { id } = entity.meta
 
-      if(id === this.self.id) continue
+      if(id === this.self.meta.id) continue
 
       if(this.isEntityInTrigger(entity)) {
         if(this.entitiesInside.has(id)) continue

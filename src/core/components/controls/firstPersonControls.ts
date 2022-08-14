@@ -164,9 +164,9 @@ export default class FirstPersonControls implements Component {
     if(!intersectionInfo) return
 
     const { entity } = intersectionInfo
-    if(Input.isKeyDown('e')) {
+    if(Input.isKeyDown('e') && entity.meta.name.includes('Door')) {
       const entityTransform = entity.get(ComponentType.TRANSFORM) as Transform
-      entityTransform.setLocalPosition(vec3.add(vec3.create(), entityTransform.localPosition, vec3.fromValues(0, 0, -0.1)))
+      entityTransform.setLocalEulerRotation([0, Math.PI * -0.5, 0])
     }
   }
 

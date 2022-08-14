@@ -40,6 +40,7 @@ import Trigger from './core/components/trigger/trigger';
   - event bus DONE => use vanilla js custom events
 
   First Playable:
+  - load textures from gltf?
   - multi hirachial joint skinning DONE
   - uv driven texture mapping DONE
   - collision => ray triangle intersection DONE
@@ -134,6 +135,7 @@ const main = () => {
   engine.scene.add(terrain)
   */
 
+  /*
   loadGltf("http://localhost:8080/res/geo/cube.gltf").then((entities) => {
     for(const entity of entities) {
       entity.add(Debug.material)
@@ -152,16 +154,16 @@ const main = () => {
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
+  */
 
-  /*
   loadGltf("http://localhost:8080/res/geo/room.gltf").then((entities) => {
     for(const entity of entities) {
       entity.add(new UnlitTextureMaterial(new Texture("http://localhost:8080/res/map/checkerMap.png")))
-
+      entity.add(new GeometryCollider())
+      
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
-  */
 
   /*
   loadGltf("http://localhost:8080/res/geo/cube.gltf").then((entities) => {

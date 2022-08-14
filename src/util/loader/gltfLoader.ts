@@ -306,6 +306,7 @@ export default function loadGltf(uri: string): Promise<GlftLoadResponse> {
     }
 
     const gltf = await gltfResponse.json() as any
+    console.log(gltf)
 
     const { buffers } = gltf
     const bufferData = new Array<ArrayBuffer>()
@@ -331,6 +332,14 @@ export default function loadGltf(uri: string): Promise<GlftLoadResponse> {
     for(const nodeIndex of Object.keys(nodes)) {
       const entity = parseEntity(gltf, bufferData, parseInt(nodeIndex, 10))
       if(!entity) continue
+
+      const transform = entity.get(ComponentType.TRANSFORM) as Transform
+
+      const { translation, name } = nodes[nodeIndex]
+      
+      if(translation) transform.setLocalPosition(translation)
+
+      entity.meta.name = name
 
       entities.push(entity)
     }
