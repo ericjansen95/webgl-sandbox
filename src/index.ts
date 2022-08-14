@@ -157,10 +157,11 @@ const main = () => {
   */
 
   loadGltf("http://localhost:8080/res/geo/room.gltf").then((entities) => {
+    const roomMaterial = new UnlitTextureMaterial(new Texture("http://localhost:8080/res/map/roomDiffuse.png"))
     for(const entity of entities) {
-      entity.add(new UnlitTextureMaterial(new Texture("http://localhost:8080/res/map/checkerMap.png")))
-      entity.add(new GeometryCollider())
-      
+      entity.add(roomMaterial)
+      if(entity.meta.name !== 'Top') entity.add(new GeometryCollider())
+
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
