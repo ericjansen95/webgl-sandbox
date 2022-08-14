@@ -59,6 +59,7 @@ export default class Scene {
     */
 
     Debug.console.registerCommand({ name: "bv", description: "Visualize bounding volumes.", callback: this.toggleBoundingVolumes })
+    Debug.console.registerCommand({ name: "cf", description: "Visualize camera frustrum.", callback: this.toggleCameraFrustrum })
 
     this.audioController = new AudioController()
     this.physicsController = new PhysicsController()
@@ -170,17 +171,23 @@ export default class Scene {
       boundingVolume.setVisible(!boundingVolume.visible)
     }
 
+    for(const entity of this.entities)
+      toggleBoundingVolume(entity)
+
+    return "Renderer::toggleBondingVolumes(): Toggled bounding volumes."
+  }
+
+  toggleCameraFrustrum = (): string => {
+    if(!this.root) return "Failed toggeling camera frustrum = no scene root found!"
+
     const toggleFrustrumPlane = (frustrumPlane: Entity) => {
       const frustrumPlaneGeometry = frustrumPlane.get(ComponentType.GEOMETRY) as Geometry
       frustrumPlaneGeometry.visible = !frustrumPlaneGeometry.visible
     }
 
-    for(const entity of this.entities)
-      toggleBoundingVolume(entity)
-
     for(const frustrumPlane of this.camera)
       toggleFrustrumPlane(frustrumPlane)
 
-    return "Renderer::toggleBondingVolumes(): Toggled bounding volumes."
+    return "Renderer::toggleBondingVolumes(): Toggled camera frustrum."
   }
 }

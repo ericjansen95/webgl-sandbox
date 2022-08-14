@@ -2,13 +2,10 @@ import { quat, vec3 } from "gl-matrix";
 import { createRay } from "../../../util/helper/ray";
 import { Ray } from "../../../util/math/raycast";
 import { GLOBAL } from "../../constants";
-import Time from "../../internal/time";
 import Entity from "../../scene/entity";
 import Component, { ComponentType } from "../base/component";
 import Transform from "../base/transform";
-import UnlitMaterial from "../material/unlitMaterial";
 import Collider, { getClosestIntersection } from "../collider/collider";
-import { debug } from "console";
 import Geometry from "../geometry/geometry";
 import Debug from "../../internal/debug";
 
@@ -39,7 +36,7 @@ const DEFAULT_CHARACTER_CONTROLLER_CONFIG: CharacterControllerConfig = Object.fr
   WALL_COLLISION_HEIGHT_STEPS: 2,
   WALL_COLLISION_RAY_COUNT: 6,
 
-  COLLIDER_RADIUS: 0.4,
+  COLLIDER_RADIUS: 0.35,
   COLLIDER_HEIGHT: 1.7,
 
   STEP_HEIGHT: 0.5
@@ -100,8 +97,7 @@ export default class CharacterController implements Component {
     const { localPosition } = this.state
 
     // WALL COLLISION
-    for(let originHeight = this.config.STEP_HEIGHT; originHeight < this.config.COLLIDER_HEIGHT - this.config.STEP_HEIGHT; originHeight += (this.config.COLLIDER_HEIGHT - (this.config.STEP_HEIGHT * 2)) / this.config.WALL_COLLISION_HEIGHT_STEPS) {
-      
+    for(let originHeight = this.config.STEP_HEIGHT; originHeight < this.config.COLLIDER_HEIGHT - this.config.STEP_HEIGHT; originHeight += (this.config.COLLIDER_HEIGHT - this.config.STEP_HEIGHT) / this.config.WALL_COLLISION_HEIGHT_STEPS) {
       for(let rotationIndex = 0; rotationIndex < this.config.WALL_COLLISION_RAY_COUNT; rotationIndex++) {
         const origin = vec3.clone(localPosition)
         origin[1] += originHeight
@@ -130,7 +126,7 @@ export default class CharacterController implements Component {
 
     // GROUND COLLISION
     const origin = vec3.clone(localPosition)
-    origin[1] += this.config.COLLIDER_HEIGHT
+    origin[1] += this.config.STEP_HEIGHT
 
     const ray: Ray = {
       origin,
@@ -162,7 +158,7 @@ export default class CharacterController implements Component {
   private createDebugRays = () => {
     this.state.debugRays = new Array()
 
-    for(let originHeight = this.config.STEP_HEIGHT; originHeight < this.config.COLLIDER_HEIGHT - this.config.STEP_HEIGHT; originHeight += (this.config.COLLIDER_HEIGHT - this.config.STEP_HEIGHT * 2) / this.config.WALL_COLLISION_HEIGHT_STEPS) {
+    for(let originHeight = this.config.STEP_HEIGHT; originHeight < this.config.COLLIDER_HEIGHT - this.config.STEP_HEIGHT; originHeight += (this.config.COLLIDER_HEIGHT - this.config.STEP_HEIGHT) / this.config.WALL_COLLISION_HEIGHT_STEPS) {
       const localPosition = vec3.fromValues(0, 0, 0)
       localPosition[1] += originHeight
 
