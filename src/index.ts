@@ -28,13 +28,12 @@ import { createPlayer, PlayerType } from './util/helper/player';
 import Trigger from './core/components/trigger/trigger';
 
 /*
-
   General Architecture:
   - wrapped state, stats, config CLOSE
   - options objects for parameters CLOSE
   - self refference by default in component
   - namespaces and modules
-  - singeltons instead of static classes
+  - singeltons instead of static classes => only static interface
   - camera creating wrapper
   - material uniform pipeline
   - event bus DONE => use vanilla js custom events
@@ -52,7 +51,32 @@ import Trigger from './core/components/trigger/trigger';
   - trigger zones (aabb) DONE
   - abstract physics raycast logic with static interface DONE
 
+  - point lights
+  - better material pipeline with uniform schema
+  - fix frustrum culling precision DONE TMP
+
+  scene-server ToDo:
+  - server network package verification => block unallowed
+  - use vanilla event system
+  - rename wording for channels to "SCENE" and "CHAT"
+  - use buffer for packages
+  - automatic connect and disconnect for first package and timeout
+
+  - server client authentication => ip based clientId
+  - server connect with same client id after reload
+  - client do not send client id in packages => use token
+
+  - server append clientId
+
+  - game network manager => create local and remote client compoents for entities?
+  - come up with a dynamic networking model => check o3d engine talk (state, event, ...)
+
+  - server abstraction with base architecture that can be shared by scene, com and chat server
+
   Ideas:
+  - usd scene parsing
+  - rendering backends => webgl & webgpu
+  - physics worker
   - scene skybox
   - update terrain lod
   - device capibility check and lod (mesh, shader, textures, ...)
@@ -63,7 +87,7 @@ import Trigger from './core/components/trigger/trigger';
   - base-server, chat-server, scene-server
 
   ToDo:
-  - override collision geometry with simplified version
+  - collider debug vis
   - skinned geometry stats
   - heightmap performance and sample interpolation
   - firefox fixes and optimizations
@@ -71,32 +95,20 @@ import Trigger from './core/components/trigger/trigger';
   - reduce matrix multipications => cache bounding volume data
   - namespaces that abstracts initialisation (and entity assemby?)
 
-  - clientId
-  - server abstraction with base architecture that can be shared by scene, com and chat server
-  - server network package verification => block unallowed
-  - server client authentication
-  - server append clientId
-  - client do not send client id in packages
-  - game network manager => create local and remote client compoents for entities
-  - server connect with same client id after reload
-  - come up with a dynamic networking model => check o3d engine talk (state, event, ...)
-
   - acceleraton velocity for third person controller ~ 0.68 m/s^2
   - instanced mesh system
-  - camera frustrum performance
-  - rename wording for channels to "SCENE" and "CHAT"
-  - return entity ref in IntersectionInfo
+  - camera frustrum performance?
+  - return entity ref in IntersectionInfo DONE
   - shared physics and movement code from server => go compiled to wasm
-
 */
 
 const main = () => {
   const canvas = document.getElementById('glCanvas') as HTMLCanvasElement
+  /*
   canvas.width = 1024
   canvas.height = 576
   canvas.style.cssText = "width: 100%; height: 100%;"
-  
-  /*
+  */
   const updateCanvasSize = () => {
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
@@ -105,7 +117,7 @@ const main = () => {
   updateCanvasSize()
 
   window.addEventListener('resize', updateCanvasSize)
-  */
+
   const sceneCamera: Entity = new Entity()
   sceneCamera.add(new Camera(Math.PI * 0.3))
 
@@ -123,9 +135,11 @@ const main = () => {
   engine.scene.add(trigger)
   */
  
+  /*
   const audioSource = new Entity()
   audioSource.add(new AudioSource("http://localhost:8080/res/audio/song.mp3"))
   engine.scene.add(audioSource)
+  */
 
   /*
   const terrain: Entity = new Entity()
@@ -156,6 +170,7 @@ const main = () => {
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
   */
 
+  /*
   loadGltf("http://localhost:8080/res/geo/room.gltf").then((entities) => {
     const roomMaterial = new UnlitTextureMaterial(new Texture("http://localhost:8080/res/map/roomDiffuse.png"))
     for(const entity of entities) {
@@ -165,6 +180,7 @@ const main = () => {
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
+  */
 
   /*
   loadGltf("http://localhost:8080/res/geo/cube.gltf").then((entities) => {
@@ -254,8 +270,6 @@ const main = () => {
     engine.scene.add(player)
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test animation geometry = ${error}`))
   */
-
-  engine.scene.add(createPlayer({ type: PlayerType.FIRST_PERSON, camera: sceneCamera }))
 
   /*
   loadGltf("http://localhost:8080/res/geo/testGeo.gltf").then((entities) => {

@@ -44,7 +44,7 @@ type FirstPersonControlsCameraState = {
 
 const FIRST_PERSON_CONTROLS_DEFAULT_CONFIG: FirstPersonControlsConfig = Object.freeze({
   ROTATE_SPEED: 0.8,
-  TRANSLATE_SPEED: 3, // m/s
+  TRANSLATE_SPEED: 12, // m/s
 
   CAMERA_Y_OFFSET: 1.6,
 

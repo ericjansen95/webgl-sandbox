@@ -2,7 +2,7 @@ import BoundingVolume from "../components/boundingVolume/boundingVolume";
 import Camera from "../components/base/camera";
 import Debug from "../internal/debug";
 import Client from "../network/client";
-import GameNetworkController from "../network/gameNetworkController";
+import SceneNetworkController from "../network/sceneNetworkController";
 import Entity from "./entity";
 import { ComponentType } from "../components/base/component";
 import Transform from "../components/base/transform";
@@ -11,6 +11,8 @@ import AudioController from "../internal/audio";
 import Physics from "../internal/physics";
 import { roundNumber } from "../../util/math/round";
 import Trigger from "../components/trigger/trigger";
+import GridGeometry from "../components/geometry/grid";
+import UnlitMaterial from "../components/material/unlitMaterial";
 
 export type SceneStats = {
   updateTime: number
@@ -30,7 +32,7 @@ export default class Scene {
   trigger: Array<Trigger>
 
   audioController: AudioController
-  networkController: GameNetworkController
+  networkController: SceneNetworkController
 
   constructor(camera: Entity, clientEntity: Entity | null = null, client: Client | null = null) {
     this.root = new Entity()
@@ -46,14 +48,12 @@ export default class Scene {
       cullCount: 0
     }
 
-    /*
     const grid: Entity = new Entity()
     grid.get(ComponentType.TRANSFORM).setLocalScale([10.0, 10.0, 10.0])
     grid.get(ComponentType.TRANSFORM).setLocalPosition([-5.0, 0.0, -5.0])
     grid.add(new GridGeometry(10))
     grid.add(new UnlitMaterial([0.75, 0.75, 0.75]))
     this.root.get(ComponentType.TRANSFORM).add(grid)
-    */
 
     Debug.console.registerCommand({ name: "bv", description: "Visualize bounding volumes.", callback: this.toggleBoundingVolumes })
     Debug.console.registerCommand({ name: "cf", description: "Visualize camera frustrum.", callback: this.toggleCameraFrustrum })
@@ -62,7 +62,7 @@ export default class Scene {
 
     if(!clientEntity || !client) return
 
-    this.networkController = new GameNetworkController(client, this.root, clientEntity)
+    this.networkController = new SceneNetworkController(client, this.root, clientEntity)
   }
 
   update = () => {

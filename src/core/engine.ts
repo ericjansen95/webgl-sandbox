@@ -11,6 +11,8 @@ import WebGlRenderer from "./renderer/webGlRenderer"
 import Scene from "./scene/scene"
 import { roundNumber } from "../util/math/round"
 import Physics from "./internal/physics"
+import Client from "./network/client"
+import { createPlayer, PlayerType } from "../util/helper/player"
 
 export type MainStats = {
   frameTime: number
@@ -36,7 +38,11 @@ export default class Engine {
     this.canvas = canvas
     this.renderer = new WebGlRenderer(this.canvas)
 
-    this.scene = new Scene(sceneCamera)
+    const player = createPlayer({ type: PlayerType.FIRST_PERSON, camera: sceneCamera })
+
+    const client = new Client(player)
+    this.scene = new Scene(sceneCamera, player, client)
+    this.scene.add(player)
 
     const update = curTime => {
       const startTime = window.performance.now()

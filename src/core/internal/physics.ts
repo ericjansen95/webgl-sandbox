@@ -49,7 +49,7 @@ export default class Physics {
   }
 
   static update = (): boolean => {
-    if(!this.state.rigidbodies.length || !this.state.colliders.length) return false
+    if(!this.state.rigidbodies.length) return false
 
     const startTime = window.performance.now()
 

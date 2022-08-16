@@ -1,7 +1,7 @@
 import Debug from "../internal/debug";
 const short = require('short-uuid');
 import Entity from "../scene/entity";
-import { getLocalClientTransform } from "./gameNetworkController";
+import { getLocalClientTransform } from "./sceneNetworkController";
 
 type ChannelType = "TEXT" | "GAME" | "GLOBAL"
  
@@ -105,8 +105,8 @@ export default class Client {
     this.listeners = new Map<ChannelType, Map<PackageType, Set<ListenerCallback>>>()
 
     Debug.console.registerCommand({ name: "st", description: "Send text message to all remote clients. Example: st 'text'", callback: this.sendTextMessage, arg: true})
-    Debug.console.registerCommand({ name: "cc", description: "Connect to server. Example: cc 'url'", callback: this.connect, arg: true})
-    Debug.console.registerCommand({ name: "dc", description: "Disconnect from server. Example: ds", callback: this.disconnect})
+    Debug.console.registerCommand({ name: "cs", description: "Connect to server. Example: cc 'url'", callback: this.connect, arg: true})
+    Debug.console.registerCommand({ name: "ds", description: "Disconnect from server. Example: ds", callback: this.disconnect})
 
     this.subscribe("GAME", "PING", (data: PingPackage["data"]) => {
       const ping: number = Math.ceil(Date.now() - data)

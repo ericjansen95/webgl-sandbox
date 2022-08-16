@@ -11,6 +11,8 @@ import Entity from "../scene/entity";
 import Client, { GameConnectPackage, GameDeltaStatePackage, GameDisconnectPackage, GameTransformPackage, GlobalConnectPackage } from "./client";
 import { ComponentType } from "../components/base/component";
 import { roundNumber } from "../../util/math/round";
+import loadGltf from "../../util/loader/gltfLoader";
+import SkinnedLambertMaterial from "../components/material/skinnedLambert";
 
 type ClientTransform = {
   currentPosition: Array<number>,
@@ -28,17 +30,17 @@ type ClientCache = {
 
 export const getLocalClientTransform = (entity: Entity): ClientTransform => {
   const transform = entity.get(ComponentType.TRANSFORM) as Transform
-  const controls = entity.get(ComponentType.CONTROLS) as FlyControls
+  //const controls = entity.get(ComponentType.CONTROLS) as FlyControls
 
   const position = vec3ToRoundedArray(transform.getGlobalPosition())
-  const rotation = roundNumber(controls.angleRotation[0])
+  //const rotation = roundNumber(controls.angleRotation[0])
 
   return {
     currentPosition: position,
     targetPosition: position,
   
-    currentRotation: rotation,
-    targetRotation: rotation 
+    currentRotation: 0,
+    targetRotation: 0 
   }
 }
 
@@ -57,7 +59,7 @@ const equalPosition = (a: Array<number>, b: Array<number>) => {
   return true
 }
 
-export default class GameNetworkController {
+export default class SceneNetworkController {
   client: Client
   timerId: NodeJS.Timer
 
@@ -153,32 +155,26 @@ export default class GameNetworkController {
     // ToDo: Decide when to spawn client => after first transform package received?
     // can this be part of the inital connect package?
 
-    const lambertMaterial: Material = new LambertMaterial([Math.random(), Math.random(), Math.random()]) as Material
-    const entity: Entity = new Entity()
-    const transform = entity.get(ComponentType.TRANSFORM) as Transform
-    transform.setLocalPosition(vec3.fromValues(position[0], position[1], position[2]))
-    transform.setLocalEulerRotation(vec3.fromValues(0.0, rotation, 0.0))
+    loadGltf("http://localhost:8080/res/geo/character.gltf").then((entities) => {
+      for(const entity of entities) {
+        entity.add(new SkinnedLambertMaterial([0.48, 0.74, 0.56]))
+        this.sceneRoot.get(ComponentType.TRANSFORM).add(entity)
 
-    const humanGeometry = new Geometry()
+        const remoteClient: ClientCache = {
+          clientId,
+          entity,
+          transform: {
+            currentPosition: position,
+            targetPosition: position,
     
-    entity.add(humanGeometry)
-    entity.add(lambertMaterial)
-
-    this.sceneRoot.get(ComponentType.TRANSFORM).add(entity)
-
-    const remoteClient: ClientCache = {
-      clientId,
-      entity,
-      transform: {
-        currentPosition: position,
-        targetPosition: position,
-
-        currentRotation: rotation,
-        targetRotation: rotation
+            currentRotation: rotation,
+            targetRotation: rotation
+          }
+        }
+    
+        this.remoteClients.set(clientId, remoteClient)
       }
-    }
-
-    this.remoteClients.set(clientId, remoteClient)
+    }).catch((error) => Debug.error(`gameNetworkController::onRemoteClientConnect(): Failed loading character entity = ${error}`))
 
     Debug.info(`gameNetworkService::onRemoteClientConnect(): Remote client = '${clientId}' connected.`)
   }

@@ -73,7 +73,8 @@ export default class Camera implements Component {
   }
 
   isPointInFront = (plane: Plane, point: vec3, radius: number = 0.0) => {
-    if(vec3.dot(point, plane.normal) + plane.distance + radius < 0.0) return false
+    // TMP Fix with plane.distance + 1 to improve precision
+    if(vec3.dot(point, plane.normal) + plane.distance + 1.0 + radius < 0.0) return false
 
     return true
   }
