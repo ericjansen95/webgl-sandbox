@@ -1,7 +1,7 @@
 import BoundingVolume from "../components/boundingVolume/boundingVolume";
 import Camera from "../components/base/camera";
 import Debug from "../internal/debug";
-import Client from "../network/client";
+import WebRTCClient from "../network/webRTCClient";
 import SceneNetworkController from "../network/sceneNetworkController";
 import Entity from "./entity";
 import { ComponentType } from "../components/base/component";
@@ -34,7 +34,7 @@ export default class Scene {
   audioController: AudioController
   networkController: SceneNetworkController
 
-  constructor(camera: Entity, clientEntity: Entity | null = null, client: Client | null = null) {
+  constructor(camera: Entity, clientEntity: Entity | null = null, client: WebRTCClient | null = null) {
     this.root = new Entity()
     this.camera = camera
     // ToDo: Add entities with scene.add() instead while update loop?
@@ -62,7 +62,7 @@ export default class Scene {
 
     if(!clientEntity || !client) return
 
-    this.networkController = new SceneNetworkController(client, this.root, clientEntity)
+    this.networkController = new SceneNetworkController(this.root, clientEntity, client.userId)
   }
 
   update = () => {

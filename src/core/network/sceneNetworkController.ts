@@ -8,13 +8,49 @@ import Transform from "../components/base/transform";
 import Debug from "../internal/debug";
 import Time from "../internal/time";
 import Entity from "../scene/entity";
-import Client, { GameConnectPackage, GameDeltaStatePackage, GameDisconnectPackage, GameTransformPackage, GlobalConnectPackage } from "./client";
+import WebRTCClient, { ReceivePackageType } from "./webRTCClient";
 import { ComponentType } from "../components/base/component";
 import { roundNumber } from "../../util/math/round";
 import loadGltf from "../../util/loader/gltfLoader";
 import SkinnedLambertMaterial from "../components/material/skinnedLambert";
+import { dispatch, subscribe } from "../../util/helper/event";
+import { equalPosition } from "../../util/math/compare";
+import { extractPackageType, parseSceneReceiveDeltaStatePackage, parseSceneReceiveServerConfigPackage, parseSceneSendTransformPackage, parseTransformPackage } from "../../util/network/package";
 
-type ClientTransform = {
+// ToDo: Create SendPackageType wrapper
+export enum SceneSendPackageType {
+  TRANSFORM = 0
+}
+
+export type SceneSendPackageBase = {
+  type: SceneSendPackageType
+}
+
+export type SceneSendTransformPackage = SceneSendPackageBase & {
+  position: Array<number>,
+  rotation: number
+}
+
+export enum SceneReceivePackageType {
+  SERVER_CONFIG = 0,
+  DELTA_STATE
+}
+
+export type SceneReceivePackageBase = {
+  type: ReceivePackageType['Scene']
+}
+
+export type SceneUserTransformPackageBody = {
+    userId: SceneUser['userId'],
+    position: Array<number>,
+    rotation: number
+}
+
+export type SceneReceiveDeltaStatePackage = SceneReceivePackageBase & {
+  userTransforms: Array<SceneUserTransformPackageBody>
+}
+
+export type SceneUserTransformCache = {
   currentPosition: Array<number>,
   targetPosition: Array<number>
 
@@ -22,17 +58,36 @@ type ClientTransform = {
   targetRotation: number
 }
 
-type ClientCache = {
-  clientId: string,
-  transform: ClientTransform,
-  entity: Entity
+enum SceneUserState {
+  ACTIVE = 0,
+  INACTIVE,
+  OFFLINE
 }
 
-export const getLocalClientTransform = (entity: Entity): ClientTransform => {
+type SceneUser = {
+  userId: number,
+
+  entity: Entity,
+  transform: SceneUserTransformCache,
+
+  lastActivity: number,
+  lastActivityTimeoutId: NodeJS.Timeout,
+
+  state: SceneUserState
+}
+
+// This is nice the reduce state management on service side => no connect and disconnect package / inital user state
+// but it comes with a few downsides
+// user can still be inactive and marked as offline after timeout
+// disconnect is not immidiate
+const SCENE_USER_INACTIVE_TIMEOUT_MS = 16000
+const SCENE_USER_OFFLINE_TIMEOUT_MS = 64000
+
+export const extractTransformCache = (entity: Entity): SceneUserTransformCache => {
   const transform = entity.get(ComponentType.TRANSFORM) as Transform
   //const controls = entity.get(ComponentType.CONTROLS) as FlyControls
 
-  const position = vec3ToRoundedArray(transform.getGlobalPosition())
+  const position = Array.from(transform.getGlobalPosition())
   //const rotation = roundNumber(controls.angleRotation[0])
 
   return {
@@ -44,50 +99,59 @@ export const getLocalClientTransform = (entity: Entity): ClientTransform => {
   }
 }
 
-const createLocalClient = (clientId: string, entity: Entity) : ClientCache => {
+const createSceneUser = (userId: SceneUser['userId'], entity: Entity): SceneUser => {
   return {
-    clientId,
+    userId,
+
     entity,
-    transform: getLocalClientTransform(entity)
+    transform: extractTransformCache(entity),
+
+    lastActivity: Date.now(),
+    lastActivityTimeoutId: null,
+  
+    state: SceneUserState.ACTIVE    
   }
 }
 
-const equalPosition = (a: Array<number>, b: Array<number>) => {
-  for (var i = 0; i < a.length; ++i) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true
+export type SceneReceiveServerConfigPackage = {
+  type: ReceivePackageType['Scene']
+  timeMs: number,
+  tickIntervalMs: number
+}
+
+export type SceneServerConfig = {
+  timeMs: SceneReceiveServerConfigPackage['timeMs'],
+  tickIntervalMs: SceneReceiveServerConfigPackage['tickIntervalMs']
 }
 
 export default class SceneNetworkController {
-  client: Client
-  timerId: NodeJS.Timer
+  serverConfig: SceneServerConfig | null
+  localUserTransformUpdateTimerId: NodeJS.Timer
 
-  localClient: ClientCache
-  remoteClients: Map<string, ClientCache>
+  localSceneUser: SceneUser
+  remoteSceneUsers: Map<SceneUser['userId'], SceneUser>
 
   sceneRoot: Entity
 
-  constructor(client: Client, sceneRoot: Entity, entity: Entity) {
-    this.client = client
-    this.localClient = createLocalClient(client.settings.clientId, entity)
+  constructor(sceneRoot: Entity, entity: Entity, userId: number) {
     this.sceneRoot = sceneRoot
-    this.remoteClients = new Map<string, ClientCache>()
+    this.serverConfig = null
 
-    this.client.subscribe("GAME", "CONNECT", this.onRemoteClientConnect)
-    this.client.subscribe("GAME", "DISCONNECT", this.onRemoteClientDisconnect)
-    this.client.subscribe("GAME", "DELTA_STATE", this.onDeltaStateUpdate)
-    this.client.subscribe("GLOBAL", "CONNECT", this.onConnect)
+    // TMP userId
+    this.localSceneUser = createSceneUser(userId, entity)
+    this.remoteSceneUsers = new Map()
+
+    subscribe('pce:client.rawpackagereceive', data => this.handleRawPackageReceive(data))
   }
 
-  tick = () => {
+  updateLocalUserTransform = () => {
     // ToDo Log tick time
 
     // get current transform
-    const currentTransform = getLocalClientTransform(this.localClient.entity)
+    const currentTransform = extractTransformCache(this.localSceneUser.entity)
 
     // update transform cache
-    const { transform } = this.localClient
+    const { transform } = this.localSceneUser
     transform.currentPosition = currentTransform.currentPosition
     transform.currentRotation = currentTransform.currentRotation
 
@@ -97,40 +161,28 @@ export default class SceneNetworkController {
     transform.targetPosition = transform.currentPosition
     transform.targetRotation = transform.currentRotation
 
-    this.onLocalClientTransformUpdate(transform)
-  }
-
-  onConnect = (data: GlobalConnectPackage["data"]) => {
-    const {timeMs, tickIntervalMs} = data
-
-    const currentTimeMs = Date.now()
-    const timeDifferenceMs = currentTimeMs - timeMs
-
-    // TMP Come up with a solution that is validated
-    // Right now we sync the local message loop to send every 0.25 * tickIntervalMs from the server tick start time
-    const syncDelayMs = Math.floor(tickIntervalMs * 0.25 - timeDifferenceMs)
-
-    setTimeout(() => {
-      this.timerId = setInterval(this.tick, tickIntervalMs)
-    }, syncDelayMs)
+    this.handleLocalUserTransformUpdate(transform)
   }
 
   update = () => {
+    // ToDo: Handle connection state or set server config to null
+    if(!this.serverConfig) return
+
     const { deltaTime } = Time
-    const { tickIntervalMs } = this.client.settings
+    const { tickIntervalMs } = this.serverConfig
 
     const INTERPOLATION_SPEED = 0.35 * (1000 / tickIntervalMs)
 
     // ToDo Log interpolation time and make this async
-    for(const client of this.remoteClients.values()) {
-      const {transform, entity} = client
+    for(const user of this.remoteSceneUsers.values()) {
+      const {transform, entity} = user
 
       const targetPosition = vec3.fromValues(transform.targetPosition[0], transform.targetPosition[1], transform.targetPosition[2])
       const currentPosition = vec3.lerp(vec3.create(), 
                                         vec3.fromValues(transform.currentPosition[0], transform.currentPosition[1], transform.currentPosition[2]), 
                                         targetPosition, 
                                         INTERPOLATION_SPEED * deltaTime)
-      transform.currentPosition = vec3ToRoundedArray(currentPosition)
+      transform.currentPosition = Array.from(currentPosition)
       
       /*
       const TWO_PI = Math.PI
@@ -141,81 +193,151 @@ export default class SceneNetworkController {
       targetRotation[1] *= TWO_PI
       */
 
+      // ToDo: Add interpolation gate for when target != current
+      // Send events pce:scene.userstarttranslate / pce:scene.userstoptranslate
+      // => can be picked up by timeout system => active / inactive / offline after timeout triggered
+
       transform.currentRotation = transform.targetRotation
   
       const transformComponent = entity.get(ComponentType.TRANSFORM) as Transform
+
       transformComponent.setLocalPosition(currentPosition)
-      transformComponent.setLocalEulerRotation(vec3.fromValues(0.0, transform.targetRotation, 0.0));
+      transformComponent.setLocalEulerRotation(vec3.fromValues(0.0, transform.targetRotation, 0.0))
     }
   }
 
-  onRemoteClientConnect = (data: GameConnectPackage["data"]) => {
-    const {clientId, position, rotation} = data
+  handleRawPackageReceive = (rawPackage: ArrayBuffer) => {
+    if(!rawPackage?.byteLength) return
 
-    // ToDo: Decide when to spawn client => after first transform package received?
-    // can this be part of the inital connect package?
+    const packageType = extractPackageType(rawPackage)
+    if(packageType === null) return
 
-    loadGltf("http://localhost:8080/res/geo/character.gltf").then((entities) => {
-      for(const entity of entities) {
-        entity.add(new SkinnedLambertMaterial([0.48, 0.74, 0.56]))
-        this.sceneRoot.get(ComponentType.TRANSFORM).add(entity)
-
-        const remoteClient: ClientCache = {
-          clientId,
-          entity,
-          transform: {
-            currentPosition: position,
-            targetPosition: position,
-    
-            currentRotation: rotation,
-            targetRotation: rotation
-          }
-        }
-    
-        this.remoteClients.set(clientId, remoteClient)
+    switch(packageType as any) {
+      case SceneReceivePackageType.SERVER_CONFIG: {
+        this.handleServerConfigUpdate(rawPackage)
+        break
       }
+      case SceneReceivePackageType.DELTA_STATE: {
+        this.handleDeltaStateUpdate(rawPackage)
+        break
+      }
+    }
+  }
+
+  handleServerConfigUpdate = (rawServerConfigPackage: ArrayBuffer) => {
+    if(!rawServerConfigPackage?.byteLength) return
+
+    const serverConfigPackage = parseSceneReceiveServerConfigPackage(rawServerConfigPackage)
+    if(!serverConfigPackage) return
+
+    console.log('server config package =', serverConfigPackage)
+
+    const { timeMs, tickIntervalMs } = serverConfigPackage
+    
+    this.serverConfig = {
+      timeMs,
+      tickIntervalMs
+    }
+
+    const timeDifferenceMs = Date.now() - timeMs
+
+    // TMP Come up with a solution that is validated
+    // Right now we sync the local message loop to send every 0.25 * tickIntervalMs from the server tick start time
+    const syncDelayMs = Math.floor((tickIntervalMs * 0.25) - timeDifferenceMs)
+
+    setTimeout(() => {
+      this.localUserTransformUpdateTimerId = setInterval(this.updateLocalUserTransform, tickIntervalMs)
+    }, syncDelayMs)
+  }
+
+  handleRemoteUserConnect = (transformPackageBody: SceneUserTransformPackageBody) => {
+    const {userId, position, rotation} = transformPackageBody
+
+    // ToDo: Load this sync from cache?
+    loadGltf("http://localhost:8080/res/geo/character.gltf").then((entities) => {
+      const entity = entities[0]
+
+      entity.add(new SkinnedLambertMaterial([0.48, 0.74, 0.56]))
+      this.sceneRoot.get(ComponentType.TRANSFORM).add(entity)
+
+      const sceneUser = {
+        userId,
+
+        entity,
+        transform: {
+          currentPosition: position,
+          targetPosition: position,
+  
+          currentRotation: rotation,
+          targetRotation: rotation
+        },
+
+        lastActivity: Date.now(),
+        lastActivityTimeoutId: null,
+
+        state: SceneUserState.ACTIVE
+      } as SceneUser
+  
+      this.remoteSceneUsers.set(userId, sceneUser)
     }).catch((error) => Debug.error(`gameNetworkController::onRemoteClientConnect(): Failed loading character entity = ${error}`))
 
-    Debug.info(`gameNetworkService::onRemoteClientConnect(): Remote client = '${clientId}' connected.`)
+    Debug.info(`gameNetworkService::onRemoteClientConnect(): Remote scene user = '${userId}' connected.`)
   }
-  onRemoteClientDisconnect = (data: GameDisconnectPackage["data"]) => {
-    const {clientId} = data
 
-    const {entity} = this.remoteClients.get(clientId);
-    (this.sceneRoot.get(ComponentType.TRANSFORM) as Transform).removeChild(entity)
+  handleRemoteUserDisconnect = (userId: SceneUser['userId']) => {
+    const { entity } = this.remoteSceneUsers.get(userId)
+    this.sceneRoot.get(ComponentType.TRANSFORM).removeChild(entity)
 
-    this.remoteClients.delete(clientId)
+    this.remoteSceneUsers.delete(userId)
     
-    Debug.warn(`gameNetworkService::onRemoteClientDisconnect(): Remote client = '${clientId}' disconnected!`)
+    Debug.warn(`gameNetworkService::handleRemoteUserDisconnect(): Disconnected user = ${userId}`)
   }
-  onDeltaStateUpdate = (data: GameDeltaStatePackage["data"]) => {
-    const transformPackages = data as Array<GameTransformPackage>
 
-    for(const transformPackage of transformPackages) {
-      const {clientId, position, rotation} = transformPackage.data
+  handleDeltaStateUpdate = (rawDeltaStatePackage: ArrayBuffer) => {
+    const deltaStatePackage = parseSceneReceiveDeltaStatePackage(rawDeltaStatePackage)
+    if(!deltaStatePackage) return
 
-      // ToDo: Check error handling => this should not happen?
-      if(this.client.settings.clientId === clientId || !this.remoteClients.has(clientId)) {
-        //Debug.error(`gameNetworkService::onRemoteClientTransformUpdate(): Received tranform update for client = '${clientId}' who does not exists!`)
+    const now = Date.now()
+
+    for(const userTransform of deltaStatePackage.userTransforms) {
+      const { userId, position, rotation } = userTransform
+
+      if(this.localSceneUser.userId === userId) continue
+
+      console.log(this.localSceneUser.userId, userId)
+
+      if(!this.remoteSceneUsers.has(userId)) {
+        this.handleRemoteUserConnect(userTransform)
         continue
       }
+      // ToDo: send this package to event bus to be picked up by 'NetworkedTransform' component
+      // do interpolation in entity update 'RemoteUserController' script
 
-      const {transform} = this.remoteClients.get(clientId)
+      const user = this.remoteSceneUsers.get(userId)
+  
+      user.transform.targetPosition = position
+      user.transform.targetRotation = rotation
 
-      transform.targetPosition = position
-      transform.targetRotation = rotation
+      user.lastActivity = now
+      if(user.lastActivityTimeoutId) clearTimeout(user.lastActivityTimeoutId)
+
+      user.lastActivityTimeoutId = setTimeout(() => { 
+        user.state = SceneUserState.INACTIVE
+
+        user.lastActivityTimeoutId = setTimeout(() => {
+          user.state = SceneUserState.OFFLINE
+
+          this.handleRemoteUserDisconnect(userId)
+        }, SCENE_USER_OFFLINE_TIMEOUT_MS)
+      }, SCENE_USER_INACTIVE_TIMEOUT_MS)
+
+      user.state = SceneUserState.ACTIVE
     }
   } 
-  onLocalClientTransformUpdate = (transform: ClientTransform) => {
-    const networkPackage: GameTransformPackage = {
-      type: "TRANSFORM",
-      data: {
-        clientId: this.localClient.clientId,
-        position: transform.targetPosition,
-        rotation: transform.targetRotation
-      }
-    }
+  handleLocalUserTransformUpdate = (transform: SceneUserTransformCache) => {
+    const rawTransformPackage = parseSceneSendTransformPackage(parseTransformPackage(transform))
+    if(!rawTransformPackage) return
 
-    this.client.sendPackage("GAME", networkPackage)
+    dispatch('pce:scene.rawpackagesend', rawTransformPackage)
   }
 }

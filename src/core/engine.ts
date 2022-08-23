@@ -11,7 +11,7 @@ import WebGlRenderer from "./renderer/webGlRenderer"
 import Scene from "./scene/scene"
 import { roundNumber } from "../util/math/round"
 import Physics from "./internal/physics"
-import Client from "./network/client"
+import WebRTCClient from "./network/webRTCClient"
 import { createPlayer, PlayerType } from "../util/helper/player"
 
 export type MainStats = {
@@ -40,7 +40,7 @@ export default class Engine {
 
     const player = createPlayer({ type: PlayerType.FIRST_PERSON, camera: sceneCamera })
 
-    const client = new Client(player)
+    const client = new WebRTCClient()
     this.scene = new Scene(sceneCamera, player, client)
     this.scene.add(player)
 
