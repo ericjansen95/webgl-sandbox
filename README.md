@@ -1,6 +1,6 @@
 # Project Choros Engine
 
-3D engine written in typescript with WebGL 2.0
+**3D engine written in typescript with WebGL 2.0**
 
 <table>
   <tr>
@@ -9,7 +9,7 @@
   </tr> 
 </table>
 
-Please notice that the engine is currently intended for educational use only (see 'goals and philosophy' section for more information).
+> Please notice that the engine is currently intended for educational use only (see 'goals and philosophy' section for more information).
 
 ## Features
 
@@ -18,7 +18,7 @@ Please notice that the engine is currently intended for educational use only (se
 
 - Frustrum culling (bounding sphere and box)
 - Indexed and skinned geometry rendering
-- Single light lambert and phong shading
+- Single directional light lambert and phong shading
 
 - Terrain component with vertex heightmap displacement
 - Discrete terrain chunk partitioning
@@ -29,35 +29,35 @@ Please notice that the engine is currently intended for educational use only (se
 
 ## Goals and Philosophy
 
-Goals of this engine are to learn and explore graphic and networking development
-with a focus on an API in favor of usability and readability similar to Unity
-instead of a highly optimized but cryptic code base as seen in some 
-data oriented approches (which might not be as revelvant for the web
-due to different java script engine implementations)
+Goals of this engine are to:
+
+- learn and explore graphics and network development
+- provide out of the box tools for engine insights to help optimization and debugging
+- create a simple API with an focus on interation speed
 
 ## Getting Started
 
-### Installing
+#### Installing
 
-```
-npm install
-```
+`npm install`
 
-### Executing program
+#### Executing program
 
-```
-npm run dev
-```
-
-## Dependencies
-
-gl-matrix
-short-uuid
+`npm run dev`
 
 ## Authors
 
 ex. Eric Jansen
 
+## Copyright
+
+Copyright 2021, 2022 Eric Jansen
+
 ## License
 
-This project is licensed under the MIT License - see the LICENSE.md file for details
+This project is licensed under the GNU GLP v3 license - see the LICENSE.md file for details.
+
+## Dependencies
+
+- gl-matrix
+- short-uuid
