@@ -297,7 +297,7 @@ const parseGeometry = (gltf: any, bufferData: Array<ArrayBuffer>, meshIndex: num
 }
 
 const parseMaterial = (gltf: any, meshIndex: number, baseUri: string): Material | null => {
-  const { meshes, materials, textures, images } = gltf
+  const { meshes, materials, textures, images, samplers } = gltf
 
   const { primitives } = meshes[meshIndex]
   const { material: materialIndex } = primitives[0]
@@ -305,11 +305,13 @@ const parseMaterial = (gltf: any, meshIndex: number, baseUri: string): Material 
   if(materialIndex == null) return null
   
   const { emissiveTexture: {index: textureIndex} } = materials[materialIndex]
-  const { source: imageIndex } = textures[textureIndex]
+  const { source: imageIndex, sampler: samplerIndex } = textures[textureIndex]
+  const { minFilter, magFilter } = samplers[samplerIndex]
   const { uri: textureName } = images[imageIndex]
 
   const textureUri = baseUri + '/' + textureName
-  return new UnlitTextureMaterial(new Texture(textureUri))
+  // TMP Hardcoded texture filter options until mip mapping is supported
+  return new UnlitTextureMaterial(new Texture(textureUri, { minFilter: 0x2601, magFilter: 0x2601 }))
 }
 
 export default function loadGltf(uri: string): Promise<GlftLoadResponse> {

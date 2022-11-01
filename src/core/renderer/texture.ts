@@ -1,15 +1,21 @@
 import { roundNumber } from "../../util/math/round"
 import Debug from "../internal/debug"
 
-export type TextureOptions = {
+type TextureSettings = {
+  minFilter: number
+  magFilter: number
 }
+
+export type TextureOptions = TextureSettings
 
 export default class Texture {
   srcUri: string
   buffer: WebGLTexture
+  settings: TextureSettings
 
-  constructor(srcUri: string, options: TextureOptions = {}) {
+  constructor(srcUri: string, options: TextureOptions = { minFilter: 0x2600, magFilter: 0x2600}) {
     this.srcUri = srcUri
+    this.settings = options
   }
 
   private load = (gl: WebGL2RenderingContext): boolean => {
@@ -25,8 +31,10 @@ export default class Texture {
     image.onload = () => {
       gl.bindTexture(gl.TEXTURE_2D, this.buffer)
 
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+      console.log(this.settings)
+
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.settings.minFilter)
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this.settings.magFilter)
 
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image)
 
