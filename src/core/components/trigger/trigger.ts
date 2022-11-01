@@ -33,7 +33,7 @@ export default class Trigger implements Component {
 
     this.createBox()
 
-    const geometry = this.box.get(ComponentType.GEOMETRY) as Geometry
+    const geometry = this.box.getComponent(ComponentType.GEOMETRY) as Geometry
     geometry.visible = visible
   }
 
@@ -41,7 +41,7 @@ export default class Trigger implements Component {
     if(!this.visible || this.box || !this.self) return false;
 
     this.box = createWireframeBox(this.min, this.max)
-    this.self.get(ComponentType.TRANSFORM).add(this.box)
+    this.self.getComponent(ComponentType.TRANSFORM).addChild(this.box)
 
     return true
   }
@@ -49,13 +49,13 @@ export default class Trigger implements Component {
   private isEntityInTrigger = (entity: Entity): boolean => {
     if(!entity) return false
 
-    const entityTransform = entity.get(ComponentType.TRANSFORM) as Transform
+    const entityTransform = entity.getComponent(ComponentType.TRANSFORM) as Transform
     
     if(!entityTransform.dirty) return false
     
     const position = entityTransform.getGlobalPosition()
 
-    const triggerTransform = this.self.get(ComponentType.TRANSFORM) as Transform
+    const triggerTransform = this.self.getComponent(ComponentType.TRANSFORM) as Transform
     const center = triggerTransform.getGlobalPosition()
 
     const min = vec3.add(vec3.create(), this.min, center)

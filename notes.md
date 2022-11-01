@@ -1,0 +1,36 @@
+# engine
+- self refference by default in component
+- namespaces and modules
+- singeltons instead of static classes => only static interface
+- camera creating wrapper
+- material uniform pipeline
+- load textures from gltf
+- point lights
+- better material pipeline with uniform schema
+- usd scene parsing
+- rendering backends => webgl & webgpu
+- physics worker
+- scene skybox
+- update terrain lod
+- device capibility check and lod (mesh, shader, textures, ...)
+- streaming (network and scene)
+- scene, sceneNetworkController, remoteClient Component, networkedTransfrom Component
+- skinned geometry stats
+- heightmap performance and sample interpolation
+- firefox fixes and optimizations
+- min max from gltf and fallback calculation
+- reduce matrix multipications => cache bounding volume data
+- namespaces that abstracts initialisation (and entity assemby?)
+- acceleraton velocity for third person controller ~ 0.68 m/s^2
+- instanced mesh system
+- shared physics and movement code from server => go compiled to wasm
+
+# scene service
+- server network package verification => block unallowed
+- server client authentication => ip based clientId
+- server connect with same client id after reload
+- client do not send client id in packages => use token
+- server append clientId
+- game network manager => create local and remote client compoents for entities?
+- come up with a dynamic networking model => check o3d engine talk (state, event, ...)
+- server abstraction with base architecture that can be shared by scene, com and chat server

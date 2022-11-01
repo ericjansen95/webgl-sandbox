@@ -60,7 +60,7 @@ export default class FlyControls implements Component {
     const side = vec3.cross(vec3.create(), forward, VECTOR_UP)
     const up = vec3.cross(vec3.create(), forward, side)
 
-    const transform = self.get(ComponentType.TRANSFORM) as Transform
+    const transform = self.getComponent(ComponentType.TRANSFORM) as Transform
 
     // TRANSLATION
 
@@ -80,6 +80,6 @@ export default class FlyControls implements Component {
   }
 
   onAdd = (self: Entity) => {
-    this.position = self.get(ComponentType.TRANSFORM).position
+    this.position = self.getComponent(ComponentType.TRANSFORM).position
   }
 }

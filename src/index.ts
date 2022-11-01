@@ -1,7 +1,7 @@
 import Camera from './core/components/base/camera';
 import Entity from './core/scene/entity';
 import Material from './core/components/material/material';
-import { ComponentType as Component, ComponentType } from './core/components/base/component';
+import { ComponentType as Component } from './core/components/base/component';
 import Turntable from './core/components/scripts/turntable';
 import Engine from './core/engine';
 import loadGltf from './util/loader/gltfLoader';
@@ -26,81 +26,7 @@ import GrassMaterial from './core/components/material/grassMaterial';
 import Geometry from './core/components/geometry/geometry';
 import { createPlayer, PlayerType } from './util/helper/player';
 import Trigger from './core/components/trigger/trigger';
-
-/*
-  General Architecture:
-  - wrapped state, stats, config CLOSE
-  - options objects for parameters CLOSE
-  - self refference by default in component
-  - namespaces and modules
-  - singeltons instead of static classes => only static interface
-  - camera creating wrapper
-  - material uniform pipeline
-  - event bus DONE => use vanilla js custom events
-
-  First Playable:
-  - load textures from gltf?
-  - multi hirachial joint skinning DONE
-  - uv driven texture mapping DONE
-  - collision => ray triangle intersection DONE
-  - basic audio => emitter and listener DONE
-  - third person controller => DONE
-  - wall collision - sphere / circle raycaster DONE
-  - entity tags DONE => for now with entity uuid DONE
-  - collision info that includes enitity ref DONE
-  - trigger zones (aabb) DONE
-  - abstract physics raycast logic with static interface DONE
-
-  - point lights
-  - better material pipeline with uniform schema
-  - fix frustrum culling precision DONE TMP
-
-  scene-server ToDo:
-  - server network package verification => block unallowed
-  - use vanilla event system
-  - rename wording for channels to "SCENE" and "CHAT"
-  - use buffer for packages
-  - automatic connect and disconnect for first package and timeout
-
-  - server client authentication => ip based clientId
-  - server connect with same client id after reload
-  - client do not send client id in packages => use token
-
-  - server append clientId
-
-  - game network manager => create local and remote client compoents for entities?
-  - come up with a dynamic networking model => check o3d engine talk (state, event, ...)
-
-  - server abstraction with base architecture that can be shared by scene, com and chat server
-
-  Ideas:
-  - usd scene parsing
-  - rendering backends => webgl & webgpu
-  - physics worker
-  - scene skybox
-  - update terrain lod
-  - device capibility check and lod (mesh, shader, textures, ...)
-  - streaming (network and scene)
-  - scene, sceneNetworkController, remoteClient Component, networkedTransfrom Component
-  - app-sandbox
-  - level wording
-  - base-server, chat-server, scene-server
-
-  ToDo:
-  - collider debug vis
-  - skinned geometry stats
-  - heightmap performance and sample interpolation
-  - firefox fixes and optimizations
-  - min max from gltf and fallback calculation
-  - reduce matrix multipications => cache bounding volume data
-  - namespaces that abstracts initialisation (and entity assemby?)
-
-  - acceleraton velocity for third person controller ~ 0.68 m/s^2
-  - instanced mesh system
-  - camera frustrum performance?
-  - return entity ref in IntersectionInfo DONE
-  - shared physics and movement code from server => go compiled to wasm
-*/
+import Skybox from './core/components/scripts/skybox';
 
 const main = () => {
   const canvas = document.getElementById('glCanvas') as HTMLCanvasElement
@@ -127,7 +53,7 @@ const main = () => {
 
   /*
   const trigger = new Entity()
-  trigger.get(ComponentType.TRANSFORM).setLocalPosition([0, 0.25, -2])
+  trigger.getComponent(Component.TRANSFORM).setLocalPosition([0, 0.25, -2])
   const triggerComponent = new Trigger(vec3.fromValues(1.0, 1.0, 1.0))
   trigger.add(triggerComponent)
 
@@ -144,25 +70,15 @@ const main = () => {
   /*
   const terrain: Entity = new Entity()
   terrain.add(new Terrain())
-  const terrainCollider = terrain.get(Component.COLLIDER) as Collider
+  const terrainCollider = terrain.getComponent(Component.COLLIDER) as Collider
 
   engine.scene.add(terrain)
   */
-
   /*
   loadGltf("http://localhost:8080/res/geo/cube.gltf").then((entities) => {
     for(const entity of entities) {
       entity.add(Debug.material)
-      entity.get(ComponentType.TRANSFORM).setLocalPosition(vec3.fromValues(1, 2, -2))
-      entity.add(new GeometryCollider())
-
-      engine.scene.add(entity)
-    }
-  }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
-
-  loadGltf("http://localhost:8080/res/geo/testCollisionGeo.gltf").then((entities) => {
-    for(const entity of entities) {
-      entity.add(new UnlitTextureMaterial(new Texture("http://localhost:8080/res/map/checkerMap.png")))
+      entity.getComponent(Component.TRANSFORM).setLocalPosition(vec3.fromValues(1, 2, -2))
       entity.add(new GeometryCollider())
 
       engine.scene.add(entity)
@@ -170,6 +86,35 @@ const main = () => {
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
   */
 
+  const checkerMaterial = new UnlitTextureMaterial(new Texture("http://localhost:8080/res/map/checkerMap.png"))
+  loadGltf("http://localhost:8080/res/geo/skydome.gltf").then((entities) => {
+    for(const entity of entities) {
+      entity.add(new Skybox("http://localhost:8080/res/map/cloudySky.jpg", sceneCamera))
+
+      engine.scene.add(entity)
+    }
+  }).catch((error) => Debug.error(`index::loadGltf(): Failed loading skydome geometry = ${error}`))
+  
+  loadGltf("http://localhost:8080/res/geo/checkerCube.gltf").then((entities) => {
+    for(const entity of entities) {
+      entity.add(Debug.material)
+      engine.scene.add(entity)
+    }
+  }).catch((error) => Debug.error(`index::loadGltf(): Failed loading skydome geometry = ${error}`))
+
+  /*
+  const geometryCollider = new GeometryCollider()
+
+  loadGltf("http://localhost:8080/res/geo/testCollisionGeo.gltf").then((entities) => {
+    for(const entity of entities) {
+      entity.add(checkerMaterial)
+      entity.add(geometryCollider)
+
+      engine.scene.add(entity)
+    }
+  }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
+  */
+ 
   /*
   loadGltf("http://localhost:8080/res/geo/room.gltf").then((entities) => {
     const roomMaterial = new UnlitTextureMaterial(new Texture("http://localhost:8080/res/map/roomDiffuse.png"))
@@ -236,7 +181,7 @@ const main = () => {
   /*
   loadGltf("http://localhost:8080/res/geo/avatar.gltf").then((entities) => {
     const player = new Entity()
-    const playerTransform = player.get(Component.TRANSFORM) as Transform
+    const playerTransform = player.getComponent(Component.TRANSFORM) as Transform
 
     player.add(new Label({text: '', offset: vec3.fromValues(0.0, 1.5, 0)}))
 
@@ -246,31 +191,30 @@ const main = () => {
     ray.add(new Ray())
     ray.add(rayMaterial)
 
-    const rayTransform = ray.get(Component.TRANSFORM) as Transform
+    const rayTransform = ray.getComponent(Component.TRANSFORM) as Transform
     rayTransform.setLocalPosition([0.0, 1.0, 0.0])
     rayTransform.setLocalEulerRotation([Math.PI * -0.5, 0.0, 0.0])
 
-    playerTransform.add(ray)
+    playerTransform.addChild(ray)
 
     const lambertMaterial = new SkinnedLambertMaterial([1.0, 1.0, 1.0]) as Material
 
     for(const entity of entities) {
       player.add(new ThirdPersonControls({
         camera: sceneCamera,
-        animator: entity.get(Component.ANIMATOR) as Animator, 
+        animator: entity.getComponent(Component.ANIMATOR) as Animator, 
         collider: [geometryCollider], 
         rayMaterial }))
 
       entity.add(lambertMaterial)
-      entity.get(Component.TRANSFORM).setLocalEulerRotation([0.0, Math.PI, 0.0])
+      entity.getComponent(Component.TRANSFORM).setLocalEulerRotation([0.0, Math.PI, 0.0])
 
-      playerTransform.add(entity)
+      playerTransform.addChild(entity)
     }
 
     engine.scene.add(player)
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test animation geometry = ${error}`))
   */
-
   /*
   loadGltf("http://localhost:8080/res/geo/testGeo.gltf").then((entities) => {
     const material = new FresnelMaterial([1.0, 1.0, 1.0]) as Material

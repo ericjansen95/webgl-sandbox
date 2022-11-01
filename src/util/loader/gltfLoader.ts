@@ -5,7 +5,11 @@ import Transform from "../../core/components/base/transform"
 import Geometry from "../../core/components/geometry/geometry"
 import SkinnedGeometry from "../../core/components/geometry/skinned"
 import SphereGeometry from "../../core/components/geometry/sphere"
+import Material from "../../core/components/material/material"
 import UnlitMaterial from "../../core/components/material/unlitMaterial"
+import UnlitTextureMaterial from "../../core/components/material/unlitTextureMaterial"
+import Debug from "../../core/internal/debug"
+import Texture from "../../core/renderer/texture"
 import Entity from "../../core/scene/entity"
 
 export type GlftLoadResponse = Array<Entity>
@@ -25,14 +29,17 @@ const componentPrimitiveType = {
   FLOAT_32: 5126
 }
 
-const parseEntity = (gltf: any, bufferData: Array<ArrayBuffer>, nodeIndex: any): Entity | null => {
-  const { mesh, skin } = gltf.nodes[nodeIndex]
-  if(mesh == null) return null
+const parseEntity = (gltf: any, bufferData: Array<ArrayBuffer>, nodeIndex: any, baseUri: string): Entity | null => {
+  const { mesh: meshIndex, skin } = gltf.nodes[nodeIndex]
+  if(meshIndex == null) return null
 
   const isSkinnedEntity = skin != undefined
 
   const entity = new Entity()
-  entity.add(parseGeometry(gltf, bufferData, mesh, skin))
+  entity.add(parseGeometry(gltf, bufferData, meshIndex, skin))
+
+  const material = parseMaterial(gltf, meshIndex, baseUri)
+  if(material) entity.add(material)
 
   if(isSkinnedEntity) {
     const animator = new Animator(parseSkeleton(gltf, bufferData, skin), parseAnimations(gltf, bufferData, skin))
@@ -190,9 +197,9 @@ const parseSkeleton = (gltf: any, bufferData: Array<ArrayBuffer>, skinIndex: num
     entity.add(jointDebugMaterial)
 
     if(parentEntityTransform)
-      parentEntityTransform.add(entity)
+      parentEntityTransform.addChild(entity)
 
-    const entityTransform = entity.get(ComponentType.TRANSFORM) as Transform
+    const entityTransform = entity.getComponent(ComponentType.TRANSFORM) as Transform
 
     const childJoints = new Array<Joint>()
 
@@ -260,13 +267,13 @@ const parseGeometry = (gltf: any, bufferData: Array<ArrayBuffer>, meshIndex: num
 
   const isSkinnedGeometry = skinIndex != undefined && gltf.skins[skinIndex]
 
-  const vbo = {} as any
+  const vao = {} as any
 
   const indicesAccessorIndex = primitive.indices as number
-  vbo.INDICES = getBufferViewFromAccessorIndex(gltf, bufferData, indicesAccessorIndex) as Uint16Array
+  vao.INDICES = getBufferViewFromAccessorIndex(gltf, bufferData, indicesAccessorIndex) as Uint16Array
 
   for(const [attribute, accessorIndex] of Object.entries(attributes as object)) {
-    vbo[attribute] = getBufferViewFromAccessorIndex(gltf, bufferData, accessorIndex)
+    vao[attribute] = getBufferViewFromAccessorIndex(gltf, bufferData, accessorIndex)
 
     if(attribute !== 'POSITION') continue
 
@@ -275,8 +282,8 @@ const parseGeometry = (gltf: any, bufferData: Array<ArrayBuffer>, meshIndex: num
       max
     } = gltf.accessors[accessorIndex]
     
-    vbo.min = min
-    vbo.max = max
+    vao.min = min
+    vao.max = max
   }
 
   let geometry = null
@@ -284,9 +291,25 @@ const parseGeometry = (gltf: any, bufferData: Array<ArrayBuffer>, meshIndex: num
   if(!isSkinnedGeometry) geometry = new Geometry()
   else geometry = new SkinnedGeometry()
 
-  geometry.setVAO(vbo)
+  geometry.setVAO(vao)
 
   return geometry
+}
+
+const parseMaterial = (gltf: any, meshIndex: number, baseUri: string): Material | null => {
+  const { meshes, materials, textures, images } = gltf
+
+  const { primitives } = meshes[meshIndex]
+  const { material: materialIndex } = primitives[0]
+
+  if(materialIndex == null) return null
+  
+  const { emissiveTexture: {index: textureIndex} } = materials[materialIndex]
+  const { source: imageIndex } = textures[textureIndex]
+  const { uri: textureName } = images[imageIndex]
+
+  const textureUri = baseUri + '/' + textureName
+  return new UnlitTextureMaterial(new Texture(textureUri))
 }
 
 export default function loadGltf(uri: string): Promise<GlftLoadResponse> {
@@ -306,7 +329,7 @@ export default function loadGltf(uri: string): Promise<GlftLoadResponse> {
     }
 
     const gltf = await gltfResponse.json() as any
-    console.log(gltf)
+    console.log('gltf =', gltf)
 
     const { buffers } = gltf
     const bufferData = new Array<ArrayBuffer>()
@@ -330,10 +353,10 @@ export default function loadGltf(uri: string): Promise<GlftLoadResponse> {
 
     const { nodes } = gltf
     for(const nodeIndex of Object.keys(nodes)) {
-      const entity = parseEntity(gltf, bufferData, parseInt(nodeIndex, 10))
+      const entity = parseEntity(gltf, bufferData, parseInt(nodeIndex, 10), baseUri)
       if(!entity) continue
 
-      const transform = entity.get(ComponentType.TRANSFORM) as Transform
+      const transform = entity.getComponent(ComponentType.TRANSFORM) as Transform
 
       const { translation, name } = nodes[nodeIndex]
       

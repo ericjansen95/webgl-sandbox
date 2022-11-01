@@ -84,7 +84,7 @@ const SCENE_USER_INACTIVE_TIMEOUT_MS = 16000
 const SCENE_USER_OFFLINE_TIMEOUT_MS = 64000
 
 export const extractTransformCache = (entity: Entity): SceneUserTransformCache => {
-  const transform = entity.get(ComponentType.TRANSFORM) as Transform
+  const transform = entity.getComponent(ComponentType.TRANSFORM) as Transform
   //const controls = entity.get(ComponentType.CONTROLS) as FlyControls
 
   const position = Array.from(transform.getGlobalPosition())
@@ -199,7 +199,7 @@ export default class SceneNetworkController {
 
       transform.currentRotation = transform.targetRotation
   
-      const transformComponent = entity.get(ComponentType.TRANSFORM) as Transform
+      const transformComponent = entity.getComponent(ComponentType.TRANSFORM) as Transform
 
       transformComponent.setLocalPosition(currentPosition)
       transformComponent.setLocalEulerRotation(vec3.fromValues(0.0, transform.targetRotation, 0.0))
@@ -258,7 +258,7 @@ export default class SceneNetworkController {
       const entity = entities[0]
 
       entity.add(new SkinnedLambertMaterial([0.48, 0.74, 0.56]))
-      this.sceneRoot.get(ComponentType.TRANSFORM).add(entity)
+      this.sceneRoot.getComponent(ComponentType.TRANSFORM).addChild(entity)
 
       const sceneUser = {
         userId,
@@ -286,7 +286,7 @@ export default class SceneNetworkController {
 
   handleRemoteUserDisconnect = (userId: SceneUser['userId']) => {
     const { entity } = this.remoteSceneUsers.get(userId)
-    this.sceneRoot.get(ComponentType.TRANSFORM).removeChild(entity)
+    this.sceneRoot.getComponent(ComponentType.TRANSFORM).removeChild(entity)
 
     this.remoteSceneUsers.delete(userId)
     

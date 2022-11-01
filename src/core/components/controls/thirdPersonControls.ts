@@ -86,12 +86,12 @@ export default class ThirdPersonControls implements Component {
 
     this.config = THIRD_PERSON_CONTROLS_DEFAULT_CONFIG
 
-    const transform = camera.get(ComponentType.TRANSFORM) as Transform
+    const transform = camera.getComponent(ComponentType.TRANSFORM) as Transform
     this.state = {
       transform: null,
 
       camera: {
-        component: camera.get(ComponentType.CAMERA) as Camera,
+        component: camera.getComponent(ComponentType.CAMERA) as Camera,
         transform,
   
         currentPosition: vec3.create(),
@@ -201,7 +201,7 @@ export default class ThirdPersonControls implements Component {
   }
 
   onAdd = (self: Entity) => {
-    this.state.transform = self.get(ComponentType.TRANSFORM) as Transform
+    this.state.transform = self.getComponent(ComponentType.TRANSFORM) as Transform
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
@@ -216,7 +216,7 @@ export default class ThirdPersonControls implements Component {
 
     this.state.animator.animations[1].weight = this.stats.speed * 0.4
 
-    const label = self.get(ComponentType.UI) as Label
+    const label = self.getComponent(ComponentType.UI) as Label
     label.state.element.innerText = formatObjectToString({controls: this.stats})
 
     Debug.updateStats({controls: this.stats})

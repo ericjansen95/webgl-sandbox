@@ -6,8 +6,8 @@ import Entity from "../../core/scene/entity";
 
 export const globalToScreenSpace = (globalPosition: vec4, entity: Entity, camera: Entity): vec2 => {
   // ToDo: cache the refs in onAdd callback
-  const transformComponent = entity.get(ComponentType.TRANSFORM) as Transform
-  const cameraComponent = camera.get(ComponentType.CAMERA) as Camera
+  const transformComponent = entity.getComponent(ComponentType.TRANSFORM) as Transform
+  const cameraComponent = camera.getComponent(ComponentType.CAMERA) as Camera
 
   const mvpMatrix = mat4.clone(transformComponent.globalMatrix)
   mat4.multiply(mvpMatrix, cameraComponent.viewMatrix, mvpMatrix)

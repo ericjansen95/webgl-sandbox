@@ -49,11 +49,11 @@ export default class Scene {
     }
 
     const grid: Entity = new Entity()
-    grid.get(ComponentType.TRANSFORM).setLocalScale([10.0, 10.0, 10.0])
-    grid.get(ComponentType.TRANSFORM).setLocalPosition([-5.0, 0.0, -5.0])
+    grid.getComponent(ComponentType.TRANSFORM).setLocalScale([10.0, 10.0, 10.0])
+    grid.getComponent(ComponentType.TRANSFORM).setLocalPosition([-5.0, 0.0, -5.0])
     grid.add(new GridGeometry(10))
     grid.add(new UnlitMaterial([0.75, 0.75, 0.75]))
-    this.root.get(ComponentType.TRANSFORM).add(grid)
+    this.root.getComponent(ComponentType.TRANSFORM).addChild(grid)
 
     Debug.console.registerCommand({ name: "bv", description: "Visualize bounding volumes.", callback: this.toggleBoundingVolumes })
     Debug.console.registerCommand({ name: "cf", description: "Visualize camera frustrum.", callback: this.toggleCameraFrustrum })
@@ -102,7 +102,7 @@ export default class Scene {
   }
 
   updateEntityTransform = (entity: Entity): void => {
-    if(entity.get(ComponentType.TRANSFORM).onUpdate()) this.stats.localMatrixUpdates++
+    if(entity.getComponent(ComponentType.TRANSFORM).onUpdate()) this.stats.localMatrixUpdates++
   }
 
   updateEntityComponents = (entity: Entity, camera: Entity): void => {
@@ -135,7 +135,7 @@ export default class Scene {
   getVisibleEntities = (): Array<Entity> => {
     const startTime = window.performance.now()
 
-    const cameraComponent = this.camera.get(ComponentType.CAMERA) as Camera
+    const cameraComponent = this.camera.getComponent(ComponentType.CAMERA) as Camera
 
     const visibleEnties = this.getEntities().filter(entity => cameraComponent.isEntityInFrustrum(entity))
 
@@ -152,8 +152,8 @@ export default class Scene {
   }
 
   add = (entity: Entity): Entity => {
-    const rootTransform = this.root.get(ComponentType.TRANSFORM) as Transform
-    rootTransform.add(entity)
+    const rootTransform = this.root.getComponent(ComponentType.TRANSFORM) as Transform
+    rootTransform.addChild(entity)
     return entity
   }
 
@@ -161,7 +161,7 @@ export default class Scene {
     if(!this.root) return "Failed toggeling bounding volumes = no scene root found!"
 
     const toggleBoundingVolume = (entity: Entity) => {
-      const boundingVolume = entity.get(ComponentType.BOUNDING_VOLUME) as BoundingVolume
+      const boundingVolume = entity.getComponent(ComponentType.BOUNDING_VOLUME) as BoundingVolume
       if(!boundingVolume) return
 
       boundingVolume.setVisible(!boundingVolume.visible)
@@ -177,7 +177,7 @@ export default class Scene {
     if(!this.root) return "Failed toggeling camera frustrum = no scene root found!"
 
     const toggleFrustrumPlane = (frustrumPlane: Entity) => {
-      const frustrumPlaneGeometry = frustrumPlane.get(ComponentType.GEOMETRY) as Geometry
+      const frustrumPlaneGeometry = frustrumPlane.getComponent(ComponentType.GEOMETRY) as Geometry
       frustrumPlaneGeometry.visible = !frustrumPlaneGeometry.visible
     }
 

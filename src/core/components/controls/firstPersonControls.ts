@@ -43,8 +43,8 @@ type FirstPersonControlsCameraState = {
 }
 
 const FIRST_PERSON_CONTROLS_DEFAULT_CONFIG: FirstPersonControlsConfig = Object.freeze({
-  ROTATE_SPEED: 0.8,
-  TRANSLATE_SPEED: 12, // m/s
+  ROTATE_SPEED: 0.6,
+  TRANSLATE_SPEED: 4, // m/s
 
   CAMERA_Y_OFFSET: 1.6,
 
@@ -64,13 +64,13 @@ export default class FirstPersonControls implements Component {
 
     this.config = FIRST_PERSON_CONTROLS_DEFAULT_CONFIG
 
-    const transform = camera.get(ComponentType.TRANSFORM) as Transform
+    const transform = camera.getComponent(ComponentType.TRANSFORM) as Transform
     this.state = {
       self: null,
       transform: null,
 
       camera: {
-        component: camera.get(ComponentType.CAMERA) as Camera,
+        component: camera.getComponent(ComponentType.CAMERA) as Camera,
         transform,
   
         currentPosition: vec3.create(),
@@ -137,13 +137,13 @@ export default class FirstPersonControls implements Component {
     const side = vec3.cross(vec3.create(), this.state.forward, GLOBAL.UP)
     vec3.scaleAndAdd(this.state.currentPosition, this.state.currentPosition, side, -1.0 * inputDirection[0] * this.config.TRANSLATE_SPEED * Time.deltaTime)
 
-    this.state.self.get(ComponentType.RIGIDBODY).move(this.state.currentPosition)
+    this.state.self.getComponent(ComponentType.RIGIDBODY).move(this.state.currentPosition)
 
     this.stats.isMoving = true
   }
 
   private updateCameraTransform = () => {
-    vec3.copy(this.state.camera.currentPosition, this.state.self.get(ComponentType.TRANSFORM).localPosition)
+    vec3.copy(this.state.camera.currentPosition, this.state.self.getComponent(ComponentType.TRANSFORM).localPosition)
     this.state.camera.currentPosition[1] += this.config.CAMERA_Y_OFFSET
 
     this.state.camera.transform.setLocalRotation(this.state.camera.currentRotation)
@@ -165,14 +165,14 @@ export default class FirstPersonControls implements Component {
 
     const { entity } = intersectionInfo
     if(Input.isKeyDown('e') && entity.meta.name.includes('Door')) {
-      const entityTransform = entity.get(ComponentType.TRANSFORM) as Transform
+      const entityTransform = entity.getComponent(ComponentType.TRANSFORM) as Transform
       entityTransform.setLocalEulerRotation([0, Math.PI * -0.5, 0])
     }
   }
 
   onAdd = (self: Entity) => {
     this.state.self = self
-    this.state.transform = this.state.self.get(ComponentType.TRANSFORM) as Transform
+    this.state.transform = this.state.self.getComponent(ComponentType.TRANSFORM) as Transform
   }
 
   onUpdate = (self: Entity, camera: Entity) => {

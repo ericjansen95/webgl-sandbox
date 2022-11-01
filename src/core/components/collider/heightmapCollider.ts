@@ -28,16 +28,18 @@ export default class HeightmapCollider extends Collider {
       this.resolution = heightmap.width
 
       const canvas = document.createElement('canvas')
-      canvas.width = this.resolution
       canvas.height = this.resolution
 
-      this.context = canvas.getContext('2d')
+      this.context = canvas.getContext('2d', {willReadFrequently: true})
       this.context.drawImage(heightmap, 0, 0, this.resolution, this.resolution)  
     })
   }
 
   getIntersections = (ray: Ray): Array<IntersectionInfo> => {
-    const { origin, direction, length } = ray
+    // ToDo: TMP check physics async init chain
+    if(this.context === undefined) return []
+
+    const { origin } = ray
 
     // project ray origin onto x, y plane
     const transformedOrigin = vec2.fromValues(origin[0], origin[2])

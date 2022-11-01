@@ -62,8 +62,8 @@ export default class Terrain implements Component {
         chunkPos = vec3.fromValues(xPos, 0.0, zPos)
         const chunk: Entity = new Entity()
 
-        chunk.get(ComponentType.TRANSFORM).setLocalPosition(chunkPos)
-        chunk.get(ComponentType.TRANSFORM).setLocalScale(chunkScale)
+        chunk.getComponent(ComponentType.TRANSFORM).setLocalPosition(chunkPos)
+        chunk.getComponent(ComponentType.TRANSFORM).setLocalScale(chunkScale)
 
         chunk.add(this.highGeometry)
         chunk.add(this.highMaterial)
@@ -78,7 +78,7 @@ export default class Terrain implements Component {
 
   onUpdate = (self: Entity, camera: Entity) => {
     return;
-    const cameraPos: vec3 = (camera.get(ComponentType.TRANSFORM) as Transform).getGlobalPosition()
+    const cameraPos: vec3 = (camera.getComponent(ComponentType.TRANSFORM) as Transform).getGlobalPosition()
     // ToDo(Eric) Check why we have to make this transform
     // => this seems wrong
     vec3.multiply(cameraPos, cameraPos, [-1.0, 1.0, -1.0])
@@ -90,7 +90,7 @@ export default class Terrain implements Component {
       const chunk: Entity = this.chunks[chunkIndex]
 
       const chunkPos: vec3 = vec3.create()
-      mat4.getTranslation(chunkPos, chunk.get(ComponentType.TRANSFORM).globalMatrix)
+      mat4.getTranslation(chunkPos, chunk.getComponent(ComponentType.TRANSFORM).globalMatrix)
       
       // ToDo(Eric) Transform bb check in 0-1 range on both axis
       const chunkCornerLowerLeft: vec2 = [chunkPos[0] - 1.0 + this.size, chunkPos[2] + 1.0 + this.size]      
@@ -138,12 +138,12 @@ export default class Terrain implements Component {
   }
 
   onAdd = (self: Entity) => {
-    const position = vec3.fromValues(this.size * -0.5, -100, this.size * -1.0)
+    const position = vec3.fromValues(this.size * -0.5, -25.0, this.size * -0.5)
 
-    this.chunks.forEach(chunk => self.get(ComponentType.TRANSFORM).add(chunk))
-    self.get(ComponentType.TRANSFORM).setLocalScale([this.size, 1.0, this.size])
+    this.chunks.forEach(chunk => self.getComponent(ComponentType.TRANSFORM).addChild(chunk))
+    self.getComponent(ComponentType.TRANSFORM).setLocalScale([this.size, 1.0, this.size])
 
-    self.get(ComponentType.TRANSFORM).setLocalPosition(position)
+    self.getComponent(ComponentType.TRANSFORM).setLocalPosition(position)
 
     self.add(new HeightmapCollider(TERRAIN_HEIGHTMAP_URI, this.height, this.size, position))
   }

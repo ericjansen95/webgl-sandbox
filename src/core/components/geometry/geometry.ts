@@ -25,6 +25,7 @@ export type VAO = {
 
   POSITION: Float32Array
   NORMAL?: Float32Array
+  TANGENT?: Float32Array
 
   INDICES?: Uint16Array
   TEXCOORD_0?: Float32Array
@@ -36,6 +37,7 @@ export type VAO = {
 export type VBO = {
   POSITION: WebGLBuffer
   NORMAL: WebGLBuffer
+  TANGENT?: WebGLBuffer
 
   INDICES?: WebGLBuffer
   TEXCOORD_0?: WebGLBuffer
@@ -47,6 +49,7 @@ export const createVAO = (): VAO => {
 
     POSITION: new Float32Array(),
     NORMAL: null,
+    TANGENT: null,
 
     INDICES: null,
     TEXCOORD_0: null,
@@ -60,6 +63,7 @@ export const createVBO = (gl: WebGL2RenderingContext): VBO => {
   return {
     POSITION: gl.createBuffer(),
     NORMAL: gl.createBuffer(),
+    TANGENT: null,
 
     INDICES: null,
     TEXCOORD_0: null
@@ -102,6 +106,13 @@ export default class Geometry implements Component {
     
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.NORMAL)
     gl.bufferData(gl.ARRAY_BUFFER, this.vao.NORMAL, usage)
+
+    if(this.vao.TANGENT) {
+      this.vbo.TANGENT = gl.createBuffer()
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.TANGENT)
+      gl.bufferData(gl.ARRAY_BUFFER, this.vao.TANGENT, usage)
+    }
     
     if(this.vao.INDICES) {
       this.vbo.INDICES = gl.createBuffer()
@@ -156,6 +167,20 @@ export default class Geometry implements Component {
       gl.vertexAttribPointer(
         material.attributeLocations.get('aVertexNormal'),
         3,
+        type,
+        normalize,
+        stride,
+        offset)
+    }
+
+    if(this.vbo.TANGENT && material.attributeLocations.get('aVertexTangent') !== -1) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo.TANGENT)
+      gl.enableVertexAttribArray(
+        material.attributeLocations.get('aVertexTangent')
+      )
+      gl.vertexAttribPointer(
+        material.attributeLocations.get('aVertexTangent'),
+        4,
         type,
         normalize,
         stride,

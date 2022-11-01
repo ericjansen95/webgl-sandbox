@@ -18,7 +18,7 @@ export default class Turntable implements Component {
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
-    const transform = self.get(ComponentType.TRANSFORM) as Transform
+    const transform = self.getComponent(ComponentType.TRANSFORM) as Transform
 
     const axisRotation = vec3.scale(vec3.create(), this.axis, this.speed * Time.deltaTime)
     transform.rotateLocalEuler(axisRotation)

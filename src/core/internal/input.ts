@@ -16,7 +16,6 @@ export default class Input {
     }
 
     document.onkeyup = (event) => this.keyState.set(event.key.toLowerCase(), false)
-  
     document.onkeydown = (event) => this.keyState.set(event.key.toLowerCase(), true)
 
     // handle this manually in game loop to keep synch?

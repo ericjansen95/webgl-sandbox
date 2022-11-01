@@ -61,9 +61,9 @@ export default class GeometryCollider extends Collider {
   onAdd = (self: Entity) => {
     this.self = self
 
-    const transform = self.get(ComponentType.TRANSFORM) as Transform
+    const transform = self.getComponent(ComponentType.TRANSFORM) as Transform
 
-    const geometry = self.get(ComponentType.GEOMETRY) as Geometry
+    const geometry = self.getComponent(ComponentType.GEOMETRY) as Geometry
     const { INDICES, POSITION } = geometry.vao
 
     this.modelSpaceTriangles = buildTriangles(INDICES, POSITION)

@@ -23,8 +23,8 @@ export default class Material implements Component {
   compile: (gl: WebGL2RenderingContext) => boolean
 
   bindBase = (gl: WebGL2RenderingContext, entity: Entity, camera: Entity, light: LightData = { mainDirection: DEFAULT_MAIN_LIGHT_DIRECTION }): boolean => {
-    const { localMatrix: modelMatrix, globalMatrix: globalMatrix } = entity.get(ComponentType.TRANSFORM) as Transform
-    const { projectionMatrix, viewMatrix, viewDir } = camera.get(ComponentType.CAMERA) as Camera
+    const { localMatrix: modelMatrix, globalMatrix: globalMatrix } = entity.getComponent(ComponentType.TRANSFORM) as Transform
+    const { projectionMatrix, viewMatrix, viewDir } = camera.getComponent(ComponentType.CAMERA) as Camera
 
     if(!this.compile(gl)) return false
     gl.useProgram(this.program)
@@ -101,6 +101,7 @@ export const compileProgram = (gl: WebGL2RenderingContext, vsSource: string, fsS
 
   attributeLocations.set('aVertexPosition', gl.getAttribLocation(program, 'aVertexPosition'))
   attributeLocations.set('aVertexNormal', gl.getAttribLocation(program, 'aVertexNormal'))
+  attributeLocations.set('aVertexTangent', gl.getAttribLocation(program, 'aVertexTangent'))
   attributeLocations.set('aVertexUv', gl.getAttribLocation(program, 'aVertexUv'))
 
   const uniformLocations: Map<string, WebGLUniformLocation> = new Map<string, WebGLUniformLocation>();

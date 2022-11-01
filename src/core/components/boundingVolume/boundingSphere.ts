@@ -24,7 +24,7 @@ export default class BoundingSphere extends BoundingVolume {
 
     this.createSphere()
 
-    const geometry = this.sphere.get(ComponentType.GEOMETRY) as Geometry
+    const geometry = this.sphere.getComponent(ComponentType.GEOMETRY) as Geometry
     geometry.visible = visible
   }
 
@@ -69,10 +69,10 @@ export default class BoundingSphere extends BoundingVolume {
     });
 
     this.sphere = new Entity()
-    const transform = this.sphere.get(ComponentType.TRANSFORM) as Transform
+    const transform = this.sphere.getComponent(ComponentType.TRANSFORM) as Transform
     this.sphere.add(sphereGeometry)
     this.sphere.add(new UnlitMaterial([1.0, 0.0, 1.0]))
-    this.self.get(ComponentType.TRANSFORM).add(this.sphere)
+    this.self.getComponent(ComponentType.TRANSFORM).addChild(this.sphere)
 
     return true
   }
@@ -80,7 +80,7 @@ export default class BoundingSphere extends BoundingVolume {
   onAdd = (self: Entity) => {
     this.self = self
 
-    const { vao } = self.get(ComponentType.GEOMETRY) as Geometry
+    const { vao } = self.getComponent(ComponentType.GEOMETRY) as Geometry
 
     this.min = vao.min
     this.max = vao.max

@@ -15,14 +15,11 @@
 
 - Entity based scene graph
 - Extendable components
-
 - Frustrum culling (bounding sphere and box)
 - Indexed and skinned geometry rendering
 - Single directional light lambert and phong shading
-
 - Terrain component with vertex heightmap displacement
 - Discrete terrain chunk partitioning
-
 - Integrated debug console and commands (shortcut: ^)
 - WebRTC networking for scene state synch between clients (see scene-server repo)
 - Basic gltf parser for geometry, joints and animations

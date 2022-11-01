@@ -29,7 +29,7 @@ export default class BoundingBox extends BoundingVolume {
 
     this.createBox()
 
-    const geometry = this.box.get(ComponentType.GEOMETRY) as Geometry
+    const geometry = this.box.getComponent(ComponentType.GEOMETRY) as Geometry
     geometry.visible = visible
   }
 
@@ -37,7 +37,7 @@ export default class BoundingBox extends BoundingVolume {
     if(!this.visible || this.box || !this.self) return false;
 
     this.box = createWireframeBox(this.min, this.max)
-    this.self.get(ComponentType.TRANSFORM).add(this.box)
+    this.self.getComponent(ComponentType.TRANSFORM).addChild(this.box)
 
     return true
   }
@@ -45,7 +45,7 @@ export default class BoundingBox extends BoundingVolume {
   onAdd = (self: Entity) => {
     this.self = self
 
-    const geometry = self.get(ComponentType.GEOMETRY) as Geometry
+    const geometry = self.getComponent(ComponentType.GEOMETRY) as Geometry
 
     this.min = geometry.vao.min
     this.max = geometry.vao.max

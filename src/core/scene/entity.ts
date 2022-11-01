@@ -31,7 +31,7 @@ export default class Entity {
     const entities = new Array<Entity>()
 
     const traverse = (parent: Entity) => {
-      for (const child of (parent.get(ComponentType.TRANSFORM) as Transform).children)
+      for (const child of (parent.getComponent(ComponentType.TRANSFORM) as Transform).children)
         traverse(child)
 
       if(this === parent) return
@@ -63,7 +63,7 @@ export default class Entity {
     return true
   }
 
-  get = (type: ComponentType): any | null => {
+  getComponent = (type: ComponentType): any | null => {
     return this.components[type] || null
   }
 }

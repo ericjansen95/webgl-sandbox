@@ -110,18 +110,18 @@ export default class Camera implements Component {
   }
 
   isEntityInFrustrum = (entity: Entity): boolean => {
-    const geometry: Geometry | null = entity.get(ComponentType.GEOMETRY)
+    const geometry: Geometry | null = entity.getComponent(ComponentType.GEOMETRY)
 
     if(!this.frustrum || !geometry?.visible) return false
     if(!geometry.cull) return true
 
     let isInFrustrum: boolean | null = null
 
-    const point: vec3 = (entity.get(ComponentType.TRANSFORM) as Transform).getGlobalPosition()
+    const point: vec3 = (entity.getComponent(ComponentType.TRANSFORM) as Transform).getGlobalPosition()
 
     // ToDo: Abstract bounding volumes with base class and type to improve component query and code flow
 
-    const boundingVolume = entity.get(ComponentType.BOUNDING_VOLUME) as BoundingBox & BoundingSphere
+    const boundingVolume = entity.getComponent(ComponentType.BOUNDING_VOLUME) as BoundingBox & BoundingSphere
 
     if(boundingVolume.radius) {
       //const scale: vec3 = (entity.get(ComponentType.TRANSFORM) as Transform).getGlobalScale()
@@ -131,7 +131,7 @@ export default class Camera implements Component {
     }
 
     if(boundingVolume.corners) {
-      const globalMatrix: mat4 = (entity.get(ComponentType.TRANSFORM) as Transform).globalMatrix
+      const globalMatrix: mat4 = (entity.getComponent(ComponentType.TRANSFORM) as Transform).globalMatrix
       isInFrustrum = this.isBoxInFrustrum(boundingVolume.corners, globalMatrix)
     }
 
@@ -143,7 +143,7 @@ export default class Camera implements Component {
   updateFrustrum = () => {
     // ToDo: Optimize this!
 
-    const position = this.self.get(ComponentType.TRANSFORM).getGlobalPosition()
+    const position = this.self.getComponent(ComponentType.TRANSFORM).getGlobalPosition()
 
     // see: http://www.lighthouse3d.com/tutorials/view-frustum-culling/geometric-approach-extracting-the-planes/
 
@@ -255,12 +255,12 @@ export default class Camera implements Component {
       frustrumPlane.add(new QuadGeometry(positions, false, false, false))
       frustrumPlane.add(debugMaterial)
   
-      this.self.get(ComponentType.TRANSFORM).add(frustrumPlane)
+      this.self.getComponent(ComponentType.TRANSFORM).addChild(frustrumPlane)
     }
   }
 
   onUpdate = (self: Entity, camera: Entity) => {
-    const globalMatrix = (self.get(ComponentType.TRANSFORM) as Transform).globalMatrix
+    const globalMatrix = (self.getComponent(ComponentType.TRANSFORM) as Transform).globalMatrix
     this.viewMatrix = mat4.invert(mat4.create(), globalMatrix)
 
     const rotation: quat = mat4.getRotation(quat.create(), globalMatrix)

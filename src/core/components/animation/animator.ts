@@ -55,10 +55,10 @@ export default class Animator implements Component {
   }
 
   onAdd = (self: Entity) => {
-    this.geometry = self.get(ComponentType.GEOMETRY) as SkinnedGeometry
+    this.geometry = self.getComponent(ComponentType.GEOMETRY) as SkinnedGeometry
 
-    const transform = self.get(ComponentType.TRANSFORM) as Transform
-    transform.add(this.skeleton.root.entity)
+    const transform = self.getComponent(ComponentType.TRANSFORM) as Transform
+    transform.addChild(this.skeleton.root.entity)
   }
 
   onUpdate = (self: Entity, camera: Entity) => {

@@ -75,7 +75,7 @@ export default class CharacterController implements Component {
     this.state = {
       self,
 
-      localPosition: self.get(ComponentType.TRANSFORM).localPosition,
+      localPosition: self.getComponent(ComponentType.TRANSFORM).localPosition,
       wallCollisionRayRotations,
 
       debug: false,
@@ -138,7 +138,7 @@ export default class CharacterController implements Component {
     if(intersection)
       localPosition[1] = intersection.position[1]
 
-    this.state.self.get(ComponentType.TRANSFORM).setLocalPosition(localPosition)
+    this.state.self.getComponent(ComponentType.TRANSFORM).setLocalPosition(localPosition)
   }
 
   toggleColliderDebug = (): string => {
@@ -146,7 +146,7 @@ export default class CharacterController implements Component {
 
     if(this.state.debugRays)
       for(const debugRay of this.state.debugRays) {
-        const rayGeometry = debugRay.get(ComponentType.GEOMETRY) as Geometry
+        const rayGeometry = debugRay.getComponent(ComponentType.GEOMETRY) as Geometry
         rayGeometry.visible = !rayGeometry.visible
       }
     else
@@ -167,12 +167,12 @@ export default class CharacterController implements Component {
 
         const { yRotation } = this.state.wallCollisionRayRotations[rotationIndex]
 
-        const transform = ray.get(ComponentType.TRANSFORM) as Transform
+        const transform = ray.getComponent(ComponentType.TRANSFORM) as Transform
         transform.setLocalPosition(localPosition)
         transform.setLocalRotation(quat.rotateY(quat.create(), quat.create(), yRotation))
 
         this.state.debugRays.push(ray)
-        this.state.self.get(ComponentType.TRANSFORM).add(ray)
+        this.state.self.getComponent(ComponentType.TRANSFORM).addChild(ray)
       }
     }
   }

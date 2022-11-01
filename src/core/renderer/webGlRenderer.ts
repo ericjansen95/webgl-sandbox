@@ -52,11 +52,11 @@ export default class WebGlRenderer {
   }
 
   renderEntity = (entity: Entity, camera: Entity) => {
-    const geometry = entity.get(ComponentType.GEOMETRY) as Geometry
+    const geometry = entity.getComponent(ComponentType.GEOMETRY) as Geometry
 
     if(!geometry) return
 
-    const material = entity.get(ComponentType.MATERIAL) as Material
+    const material = entity.getComponent(ComponentType.MATERIAL) as Material
 
     if(!material) Debug.material.bindBase(this.gl, entity, camera)
     else material.bindBase(this.gl, entity, camera)

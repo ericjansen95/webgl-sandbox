@@ -102,7 +102,7 @@ export default class Debug {
   } 
 
   private static createCamera = (sceneCamera: Entity) => {
-    const sceneCameraComponent = sceneCamera.get(ComponentType.CAMERA) as Camera
+    const sceneCameraComponent = sceneCamera.getComponent(ComponentType.CAMERA) as Camera
 
     this.camera = new Entity()
     this.camera.add(new FlyControls())
@@ -114,9 +114,9 @@ export default class Debug {
     
     if(!this.cameraEnabled) return
 
-    this.camera.get(ComponentType.SCRIPT).onUpdate(this.camera, this.camera)
-    this.camera.get(ComponentType.TRANSFORM).onUpdate(this.camera, this.camera)
-    this.camera.get(ComponentType.CAMERA).onUpdate(this.camera, this.camera)
+    this.camera.getComponent(ComponentType.SCRIPT).onUpdate(this.camera, this.camera)
+    this.camera.getComponent(ComponentType.TRANSFORM).onUpdate(this.camera, this.camera)
+    this.camera.getComponent(ComponentType.CAMERA).onUpdate(this.camera, this.camera)
   }
 
   static toggleCamera = (): string => {
@@ -124,14 +124,14 @@ export default class Debug {
 
     if(!this.cameraEnabled) return "Engine::toggleDebugCamera(): Disabled debug camera."
 
-    const sceneCameraTransform = this.sceneCamera.get(ComponentType.TRANSFORM) as Transform
+    const sceneCameraTransform = this.sceneCamera.getComponent(ComponentType.TRANSFORM) as Transform
 
     // create debug camera if none exists
     if(!this.camera)
       this.createCamera(this.sceneCamera)
 
-    const debugCameraControls = this.camera.get(ComponentType.SCRIPT) as FlyControls
-    const debugCameraTransform = this.camera.get(ComponentType.TRANSFORM) as Transform
+    const debugCameraControls = this.camera.getComponent(ComponentType.SCRIPT) as FlyControls
+    const debugCameraTransform = this.camera.getComponent(ComponentType.TRANSFORM) as Transform
 
     // set debug camera position to scene camera
     debugCameraTransform.setLocalPosition(sceneCameraTransform.getGlobalPosition())

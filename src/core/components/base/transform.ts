@@ -81,8 +81,8 @@ export default class Transform implements Component {
     return mat4.getScaling(vec3.create(), this.globalMatrix)
   }
 
-  add = (entity: Entity) => {
-    (entity.get(ComponentType.TRANSFORM) as Transform).parent = this
+  addChild = (entity: Entity) => {
+    (entity.getComponent(ComponentType.TRANSFORM) as Transform).parent = this
     this.children.push(entity)
   }
 
@@ -106,7 +106,7 @@ export default class Transform implements Component {
       mat4.fromQuat(this.localRotationMatrix, this.localRotation)
       mat4.multiply(this.localMatrix, this.localMatrix, this.localRotationMatrix)
 
-      const collider = this.self.get(ComponentType.COLLIDER) as GeometryCollider
+      const collider = this.self.getComponent(ComponentType.COLLIDER) as GeometryCollider
       if(collider?.update) collider.update(this.localMatrix)
 
       localUpdate = true
