@@ -48,7 +48,8 @@ export default class Entity {
   add = (component: Component): any | null => {
     const { type } = component as Component
 
-    if(this.components[type]) return null
+    // TMP allow component override
+    // if(this.components[type]) return null
 
     this.components[type] = component
     if(component.onAdd) component.onAdd(this)

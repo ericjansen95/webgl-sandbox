@@ -1,16 +1,28 @@
 import Component, { ComponentType } from "../base/component"
 import Entity from "../../scene/entity"
-import { mat4, vec3 } from "gl-matrix"
+import { mat4, vec2, vec3 } from "gl-matrix"
 import Transform from "../base/transform"
 import Camera from "../base/camera"
 import Debug from "../../internal/debug"
 import { roundNumber } from "../../../util/math/round"
+import Texture from "../../renderer/texture"
 
 const vsStaticSource: string = require('/src/core/components/material/shader/static.vs') as string
 
 export type LightData = { mainDirection: vec3 }
 const DEFAULT_MAIN_LIGHT_DIRECTION: vec3 = vec3.normalize(vec3.create(), [0.75, 0.25, 0.0])
-export const DEFAULT_AMBIENT_LIGHT_INTENSITY: number = 0.25
+export const DEFAULT_AMBIENT_LIGHT_INTENSITY: number = 0.29
+
+export enum UniformType {
+  FLOAT = 'float',
+  VEC2 = 'vec2',
+  VEC3 = 'vec3',
+  TEXTURE = 'texture'
+}
+export type UniformValue = number | vec2 | vec3 | Texture | any
+
+export type Uniform = {type: UniformType, value: UniformValue}
+export type Uniforms = {[uniformName: string]: Uniform}
 
 export default class Material implements Component {
   type: ComponentType
@@ -18,6 +30,7 @@ export default class Material implements Component {
 
   attributeLocations: Map<string, number>
   uniformLocations: Map<string, WebGLUniformLocation>
+  uniforms: Uniforms
 
   bind: (gl?: WebGL2RenderingContext, light?: LightData, viewDir?: vec3, offsetMatrix?: mat4) => void
   compile: (gl: WebGL2RenderingContext) => boolean
@@ -58,7 +71,7 @@ export default class Material implements Component {
     
     const result = compileProgram(gl, vsSource, fsSource)
     if(!result) {
-      Debug.info(`Material::compileBase(): Failed to compile program!`)
+      Debug.error(`Material::compileBase(): Failed to compile program!`)
       return null
     }
 
@@ -74,12 +87,56 @@ export default class Material implements Component {
     return true
   }
 
+  setUniforms = (gl: WebGL2RenderingContext) => {
+    let textureIndex = 0
+    for(const entry of Object.entries(this.uniforms)) {
+      this.setUniform(gl, entry, textureIndex)
+
+      if(entry[1].type === UniformType.TEXTURE) ++textureIndex
+    }
+  }
+
+  setUniform = (gl: WebGL2RenderingContext, entry: [string, Uniform], textureIndex: number) => {
+    const [uniformName, uniform] = entry
+    const { type, value } = uniform
+    const location = this.uniformLocations.get(uniformName)
+
+    switch(type) {
+      case UniformType.FLOAT: {
+        gl.uniform1f(location, value)
+        return
+      }
+      case UniformType.VEC2: {
+        gl.uniform2fv(location, value)
+        return
+      }
+      case UniformType.VEC3: {
+        gl.uniform3fv(location, value)
+        return
+      }
+      case UniformType.TEXTURE: {
+        // inital index is gl.TEXTURE0
+        // see: https://registry.khronos.org/OpenGL-Refpages/es2.0/xhtml/glActiveTexture.xml
+        gl.activeTexture(gl.TEXTURE0 + textureIndex)
+        value.bind(gl)
+        gl.uniform1i(location, textureIndex)
+        return
+      }
+      default: {
+        Debug.error(`Material::setUniform(): Invalid uniform type = ${type}`)
+        return
+      }
+    }
+  }
+
   constructor() {
     this.type = ComponentType.MATERIAL
     this.program = null
 
     this.attributeLocations = null
     this.uniformLocations = null
+
+    this.uniforms = null
   }
 }
 

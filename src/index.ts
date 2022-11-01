@@ -1,6 +1,6 @@
 import Camera from './core/components/base/camera';
 import Entity from './core/scene/entity';
-import Material from './core/components/material/material';
+import Material, { UniformType } from './core/components/material/material';
 import { ComponentType as Component } from './core/components/base/component';
 import Turntable from './core/components/scripts/turntable';
 import Engine from './core/engine';
@@ -27,25 +27,30 @@ import Geometry from './core/components/geometry/geometry';
 import { createPlayer, PlayerType } from './util/helper/player';
 import Trigger from './core/components/trigger/trigger';
 import Skybox from './core/components/scripts/skybox';
+import UnlitReflectiveMaterial, { PrincipleMaterialUniforms } from './core/components/material/principleMaterial';
 
 const main = () => {
+  const sceneCamera: Entity = new Entity()
+  const camera = new Camera(Math.PI * 0.3)
+  sceneCamera.add(camera)
+
   const canvas = document.getElementById('glCanvas') as HTMLCanvasElement
+
   /*
   canvas.width = 1024
   canvas.height = 576
   canvas.style.cssText = "width: 100%; height: 100%;"
   */
+
   const updateCanvasSize = () => {
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
+    //camera.updateProjection(camera.fov, canvas.width / canvas.height)
   }
 
   updateCanvasSize()
 
-  window.addEventListener('resize', updateCanvasSize)
-
-  const sceneCamera: Entity = new Entity()
-  sceneCamera.add(new Camera(Math.PI * 0.3))
+  //window.addEventListener('resize', updateCanvasSize)
 
   const engine = new Engine(canvas, sceneCamera)
 
@@ -86,21 +91,43 @@ const main = () => {
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
   */
 
-  const checkerMaterial = new UnlitTextureMaterial(new Texture("http://localhost:8080/res/map/checkerMap.png"))
+  const checkerTexture = new Texture("http://localhost:8080/res/map/checkerMap.png")
+  const checkerMaterial = new UnlitTextureMaterial(checkerTexture)
   loadGltf("http://localhost:8080/res/geo/skydome.gltf").then((entities) => {
     for(const entity of entities) {
-      entity.add(new Skybox("http://localhost:8080/res/map/cloudySky.jpg", sceneCamera))
+      entity.add(new Skybox("http://localhost:8080/res/map/sky.jpg", sceneCamera))
 
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading skydome geometry = ${error}`))
   
-  loadGltf("http://localhost:8080/res/geo/checkerCube.gltf").then((entities) => {
+  /*
+  loadGltf("http://localhost:8080/res/geo/lightmapTest.gltf").then((entities) => {
     for(const entity of entities) {
-      entity.add(Debug.material)
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading skydome geometry = ${error}`))
+  */
+
+  loadGltf("http://localhost:8080/res/geo/enviromentSphere.gltf").then((entities) => {
+    for(const entity of entities) {
+      const enviromentTexture = new Texture("http://localhost:8080/res/map/enviroment.jpg", { magFilter: 0x2601, minFilter: 0x2601 })
+      const albedoTexture = new Texture("http://localhost:8080/res/map/equirectenguarCheckerBw.jpg", { magFilter: 0x2601, minFilter: 0x2601 })
+
+      const uniforms: PrincipleMaterialUniforms = { 
+        uColor: { type: UniformType.VEC3, value: vec3.fromValues(1.0, 1.0, 1.0) }, 
+        uAlbedo: { type: UniformType.TEXTURE, value: albedoTexture },
+        uSpecular: { type: UniformType.FLOAT, value: 1.0 }, 
+        uRoughness: { type: UniformType.FLOAT, value: 0.75 },
+        uEnviroment: { type: UniformType.TEXTURE, value: enviromentTexture }, 
+      }
+      const reflectiveMaterial = new UnlitReflectiveMaterial(uniforms)
+      entity.add(reflectiveMaterial)
+      
+      engine.scene.add(entity)
+    }
+  }).catch((error) => Debug.error(`index::loadGltf(): Failed loading skydome geometry = ${error}`))
+
 
   /*
   const geometryCollider = new GeometryCollider()

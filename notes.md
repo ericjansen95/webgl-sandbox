@@ -34,3 +34,9 @@
 - game network manager => create local and remote client compoents for entities?
 - come up with a dynamic networking model => check o3d engine talk (state, event, ...)
 - server abstraction with base architecture that can be shared by scene, com and chat server
+
+vec2 directionToRectilinear(vec3 direction) {
+  float x = atan2(direction.z, direction.x) / PI;
+  float y = direction.y * 0.5 + 0.5;
+  return vec2(x, y);
+}
