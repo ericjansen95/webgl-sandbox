@@ -21,6 +21,8 @@ const DEFAULT_Z_FAR: number = 10000.0
 const VECTOR_FORWARD: vec3 = vec3.fromValues(0.0, 0.0, -1.0)
 const VECTOR_UP: vec3 = vec3.fromValues(0.0, 1.0, 0.0)
 
+const DEFAULT_CAMERA_FOV: number = Math.PI * 0.3
+
 export default class Camera implements Component {
   type: ComponentType
   self: Entity
@@ -36,7 +38,7 @@ export default class Camera implements Component {
   fov: number
   aspect: number
 
-  constructor(fov: number) {
+  constructor(fov: number = DEFAULT_CAMERA_FOV) {
     this.type = ComponentType.CAMERA
     this.projectionMatrix = mat4.create()
     this.viewMatrix = mat4.create()
@@ -49,7 +51,14 @@ export default class Camera implements Component {
     this.fov = fov
     this.aspect = window.innerWidth / window.innerHeight
 
-    window.addEventListener('resize', (event) => this.updateProjection(this.fov, window.innerWidth / window.innerHeight))
+    const updateAspect = () => {
+      const aspect = window.innerWidth / window.innerHeight
+      console.log(window.innerWidth, window.innerHeight)
+
+      this.updateProjection(this.fov, aspect)
+    }
+
+    window.addEventListener('resize', updateAspect)
   }
 
   updateProjection = (fov, aspect) => {    

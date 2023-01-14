@@ -31,7 +31,8 @@ vec4 flowColor(vec2 flowVelocity, float offset) {
 }
 
 void main() {
-  vec2 flowVelocity = cross(vVertexBinormal, vWindDirection).xy;
+  vec3 normal = normalize(vVertexBinormal);
+  vec2 flowVelocity = cross(normal, vWindDirection).xy;
   flowVelocity.y = 1.0 - flowVelocity.y;
 
   gl_FragColor = flowColor(flowVelocity, 0.0) + flowColor(flowVelocity, 0.5);
