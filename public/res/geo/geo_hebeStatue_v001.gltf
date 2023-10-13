@@ -1,0 +1,88 @@
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v1.6.16",
+        "version" : "2.0"
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0
+            ]
+        }
+    ],
+    "nodes" : [
+        {
+            "mesh" : 0,
+            "name" : "08-smk-hebe-inv-kas2918"
+        }
+    ],
+    "meshes" : [
+        {
+            "name" : "08-smk-hebe-inv-kas2918",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 0,
+                        "NORMAL" : 1
+                    },
+                    "indices" : 2
+                }
+            ]
+        }
+    ],
+    "accessors" : [
+        {
+            "bufferView" : 0,
+            "componentType" : 5126,
+            "count" : 9990,
+            "max" : [
+                0.5134143233299255,
+                2.197890520095825,
+                0.371054083108902
+            ],
+            "min" : [
+                -0.2723073363304138,
+                -0.002024935558438301,
+                -0.3907686769962311
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 1,
+            "componentType" : 5126,
+            "count" : 9990,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 2,
+            "componentType" : 5123,
+            "count" : 59997,
+            "type" : "SCALAR"
+        }
+    ],
+    "bufferViews" : [
+        {
+            "buffer" : 0,
+            "byteLength" : 119880,
+            "byteOffset" : 0
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 119880,
+            "byteOffset" : 119880
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 119994,
+            "byteOffset" : 239760
+        }
+    ],
+    "buffers" : [
+        {
+            "byteLength" : 359756,
+            "uri" : "geo_hebeStatue_v001.bin"
+        }
+    ]
+}
