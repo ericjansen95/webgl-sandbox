@@ -1,6 +1,6 @@
 import Component, { ComponentType } from "../components/base/component";
 import Transform from "../components/base/transform";
-const short = require('short-uuid');
+import * as short from 'short-uuid';
 
 export type ID = string
 export type Tag = string

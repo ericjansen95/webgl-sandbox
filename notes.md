@@ -40,3 +40,10 @@ vec2 directionToRectilinear(vec3 direction) {
   float y = direction.y * 0.5 + 0.5;
   return vec2(x, y);
 }
+
+# material system api
+- cleanup hardcoded unforms in base material
+- cleanup bind calls
+=> remove custom bind implementation in child materials
+- refactor uniform names to common schema
+- fix uniform location for textures

@@ -31,8 +31,6 @@ export default class Texture {
     image.onload = () => {
       gl.bindTexture(gl.TEXTURE_2D, this.buffer)
 
-      console.log(this.settings)
-
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.settings.minFilter)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this.settings.magFilter)
 
