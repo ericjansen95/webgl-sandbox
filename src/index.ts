@@ -128,7 +128,6 @@ const main = () => {
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading skydome geometry = ${error}`))
 
-
   /*
   const geometryCollider = new GeometryCollider()
 
@@ -169,12 +168,12 @@ const main = () => {
 
   loadGltf("http://localhost:8080/res/geo/grassChunk.gltf").then((entities) => {
     for(const entity of entities) {
-      const grassGeometry = entity.get(Component.GEOMETRY) as Geometry
+      const grassGeometry = entity.getComponent(Component.GEOMETRY) as Geometry
 
       for(let x = -3.5; x < 4; x++) {
         for(let z = -3.5; z < 4; z++) {
           const entity = new Entity()
-          const transform = entity.get(Component.TRANSFORM) as Transform
+          const transform = entity.getComponent(Component.TRANSFORM) as Transform
           transform.setLocalPosition([x, 0.0, z])
           transform.setLocalEulerRotation([0.0, Math.random() * 2.0 * Math.PI, 0.0])
 
@@ -188,12 +187,11 @@ const main = () => {
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
   */
 
-  /*
   // https://bst.icons8.com/wp-content/uploads/2020/04/illustration-art-inspiration.png
   loadGltf("http://localhost:8080/res/geo/character.gltf").then((entities) => {
     for(const entity of entities) {
       entity.add(new SkinnedLambertMaterial([0.48, 0.74, 0.56]))
-      const entityTransform = entity.get(Component.TRANSFORM) as Transform
+      const entityTransform = entity.getComponent(Component.TRANSFORM) as Transform
       entityTransform.rotateLocalEuler([0.0, Math.PI * 0.75, 0.0])
       entityTransform.setLocalPosition([-1.0, 0.0, -1.0])
       //entityTransform.setLocalScale([0.4, 0.4, 0.4])
@@ -203,7 +201,6 @@ const main = () => {
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
-  */
 
   /*
   loadGltf("http://localhost:8080/res/geo/avatar.gltf").then((entities) => {
@@ -242,20 +239,20 @@ const main = () => {
     engine.scene.add(player)
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test animation geometry = ${error}`))
   */
-  /*
+  
   loadGltf("http://localhost:8080/res/geo/testGeo.gltf").then((entities) => {
     const material = new FresnelMaterial([1.0, 1.0, 1.0]) as Material
 
     for(let entityIndex = 0; entityIndex < entities.length; entityIndex++) {
       const entity = entities[entityIndex]
-      entity.get(Component.TRANSFORM).setLocalPosition([entityIndex - entities.length + 1 + entityIndex, 0, -4])
+      entity.getComponent(Component.TRANSFORM).setLocalPosition([entityIndex - entities.length + 1 + entityIndex, 0, -4])
       entity.add(new Turntable(1, [0, 1, 0]))
       entity.add(material)
 
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test geometry = ${error}`))
-  */
+  
 }
 
 window.onload = main;

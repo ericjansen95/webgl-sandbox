@@ -1,6 +1,6 @@
-# Project Choros Engine
+# WebGL Sandbox
 
-**3D engine written in typescript with WebGL 2.0**
+**Vanllia WebGL engine written in typescript**
 
 <table>
   <tr>
@@ -8,8 +8,6 @@
     <td><img src="/public/res/img/phong.JPG" alt="phong" width = 640px height = 250px></td>
   </tr> 
 </table>
-
-> Please notice that the engine is currently intended for educational use only (see 'goals and philosophy' section for more information).
 
 ## Features
 
@@ -19,18 +17,12 @@
 - Indexed and skinned geometry rendering
 - Single directional light lambert and phong shading
 - Terrain component with vertex heightmap displacement
+- Discrete collision detection
 - Discrete terrain chunk partitioning
+- Flowmapped skydom
 - Integrated debug console and commands (shortcut: ^)
 - WebRTC networking for scene state synch between clients (see scene-server repo)
 - Basic gltf parser for geometry, joints and animations
-
-## Goals and Philosophy
-
-Goals of this engine are to:
-
-- learn and explore graphics and network development
-- provide out of the box tools for engine insights to help optimization and debugging
-- create a simple API with an focus on interation speed
 
 ## Getting Started
 
@@ -48,7 +40,7 @@ ex. Eric Jansen
 
 ## Copyright
 
-Copyright 2021, 2022 Eric Jansen
+Copyright 2021 - 2024 Eric Jansen
 
 ## License
 
