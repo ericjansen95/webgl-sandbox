@@ -72,13 +72,11 @@ const main = () => {
   engine.scene.add(audioSource)
   */
 
-  /*
   const terrain: Entity = new Entity()
   terrain.add(new Terrain())
   const terrainCollider = terrain.getComponent(Component.COLLIDER) as Collider
 
   engine.scene.add(terrain)
-  */
   /*
   loadGltf("http://localhost:8080/res/geo/cube.gltf").then((entities) => {
     for(const entity of entities) {
@@ -91,6 +89,7 @@ const main = () => {
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test collision geometry = ${error}`))
   */
 
+  /*
   const checkerTexture = new Texture("http://localhost:8080/res/map/checkerMap.png")
   const checkerMaterial = new UnlitTextureMaterial(checkerTexture)
   loadGltf("http://localhost:8080/res/geo/skydome.gltf").then((entities) => {
@@ -100,7 +99,8 @@ const main = () => {
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading skydome geometry = ${error}`))
-  
+  */
+
   /*
   loadGltf("http://localhost:8080/res/geo/lightmapTest.gltf").then((entities) => {
     for(const entity of entities) {
@@ -252,7 +252,6 @@ const main = () => {
       engine.scene.add(entity)
     }
   }).catch((error) => Debug.error(`index::loadGltf(): Failed loading test geometry = ${error}`))
-  
 }
 
 window.onload = main;

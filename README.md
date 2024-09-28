@@ -4,8 +4,8 @@
 
 <table>
   <tr>
-    <td> <img src="/public/res/img/terrain.jpg"  alt="terrain" width = 640px height = 250px ></td>
-    <td><img src="/public/res/img/phong.JPG" alt="phong" width = 640px height = 250px></td>
+    <td> <img src="/public/res/img/overview.PNG"  alt="overview" width = 640px height = 250px ></td>
+    <td><img src="/public/res/img/chunked-terrain.JPG" alt="terrain" width = 640px height = 250px></td>
   </tr> 
 </table>
 
